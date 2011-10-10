@@ -12,7 +12,7 @@
 %\crdata{0-12345-67-8/90/01}  % Allows default copyright data (0-89791-88-6/97/05) to be over-ridden - IF NEED BE.
 % --- End of Author Metadata ---
 
-\title{Real-time Refactoring Recommendations}
+\title{Real-time Code Clone Refactoring Recommendations}
 % 1st. author
 \authorinfo{Travis Mandel}
            {University of Washington}
@@ -32,11 +32,101 @@ An Eclipse plugin for providing real-time refactoring suggestions
 
 \section{Introduction}
 
-An Eclipse plugin for providing real-time refactoring suggestions.
+Code clones are typically viewed as a problem of software
+\emph{maintenance}, as failure to revise a clone can be an error. In
+addition to helping developers maintain clones, this work aims to
+identify (1) potential method calls and opportunities for method
+extraction, eliminating the introduction of unnecessary clones, and
+(2) opportunities for copy-paste coding. Both reduce development cost,
+while the first also reduces maintenance cost.
+
+\section{Evaluation}
+
+We will evaluate the tool via user case study. Each user will be given
+a series of development and maintenance tasks for an existing Java
+code base. The control group will use the stock Eclipse development
+environment, the tool group will use the Eclipse development
+environment with the tool. For the initial study for CSE 503, each
+group will consist of two individuals who have experience using the
+Java development environment.
+
+Users will be instructed that they ``own'' the code base, that is they
+have permission to introduce new methods, but must document the
+methods.
+
+\subsection{Quantitative Evaluation}
+For the development tasks, we will measure the time to complete the
+task, the number of methods extracted, and the number of code clones
+introduced into the code base, and percentage of the new code that is
+a clone of other code. For the control group, we will additionally
+record the number of times the developer searches for a method that
+performs a subtask. For the tool group, we will record the number of
+times the tool detects a code clone, the user ignores the tool's
+alert, the user views the tool's analysis, and the user acts on the
+tool's analysis. Additionally, when the user acts on the tool's
+analysis, we will record the ranking of the clone the user acted on.
+
+For the maintenance tasks, we will measure the time to complete the
+task, and whether the user has correctly revised all of the clones (as
+determined by hidden test suite). We will record the same
+group-specific metrics as for the development tasks.
+
+\subsection{Qualitative Evaluation}
+In addition to the quantitative results, we will have the study
+participants respond to the following questions:
+
+\begin{itemize}
+  \item If you extracted a method, how did you decide to extract the
+    method? 
+  \item If you chose not to extract a method, why did you decide not
+    to extract the method?
+\end{itemize}
+
+\noindent Additionally, the treatment group will respond to the following
+questions:
+
+\begin{itemize}
+  \item Did you find the tool's suggestions helpful? If not, why?
+  \item Was the ordering of the tool's suggestions valid? If not, why?
+\end{itemize}
 
 \section{Related Work}
 
-Some related work~\cite{Roy2009}.
+Roy et al provide a survey of Code Clone detection
+techniques~\cite{Roy2009}.
+
+Kawaguchi et al developed a Microsoft Visual Studio interface for
+displaying code clones in real-time to support software
+\emph{maintenance} tasks~\cite{Kawaguchi2009,Yamashina2008}. The
+SHINOBI system uses the CCFinderX's preprocessor and the Suffix Array
+technique for indexing clones. Displayed clones are ranked via the sum
+of the ratio files committed at the same time and the ratio of files
+opened or edited at the same period in Visual Studio. \todo{How do
+  they get the latter piece of information?}
+
+The work is motivated by a sliding window analysis in
+\cite{Yamashina2008} of a commercial CAD application finding that
+79.3\% of commits included modifications to files containing code
+clones, but that only 9.7\% of such commits included modifications to
+files containing the other clones. Additionally in
+\cite{Yamashina2008}, Yamashina et al make some tenuous claims based
+on interviews and observation that novice developers typically fix a
+defect first, and then have difficulty finding and revising clones,
+while experienced developers attempt to find all clones first (often
+with difficulty when identifiers have changed), and then make changes.
+
+\paragraph{Real-time Code Clone Search}
+
+Keivanloo et all describe SeClone, a system for Internet code clone
+search that performs clone pair clustering based on a ontology base on
+features such as similarity~\cite{Keivanloo2011}. Similar to CCFinder,
+it preprocesses files by generating the AST and abstracting the
+tokens. The code patterns are used to quickly perform search, false
+positives are limited by a retained set of type information. Results
+are clustered via file-level type information.
+
+
+
 
 \section{Conclusion}
 
