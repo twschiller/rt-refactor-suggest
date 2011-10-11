@@ -1,0 +1,65 @@
+\documentclass[preprint,10pt]{sigplanconf}
+
+\newcommand{\todo}[1]{{\bfseries [[#1]]}}
+%% To disable, just uncomment this line
+%% \renewcommand{\todo}[1]{\relax}
+
+\begin{document}
+%
+% --- Author Metadata here ---
+\conferenceinfo{CSE503}{'11 Seattle, USA}
+%\CopyrightYear{2007} % Allows default copyright year (20XX) to be over-ridden - IF NEED BE.
+%\crdata{0-12345-67-8/90/01}  % Allows default copyright data (0-89791-88-6/97/05) to be over-ridden - IF NEED BE.
+% --- End of Author Metadata ---
+
+\title{Real-time Refactoring Recommendations}
+% 1st. author
+\authorinfo{Travis Mandel}
+           {University of Washington}
+           {tmandel@cs.washington.edu}
+% 2nd. author
+\authorinfo{Todd W. Schiller}
+           {University of Washington}
+           {tws@cs.washington.edu}
+\maketitle
+\begin{abstract}
+An Eclipse plugin for providing real-time refactoring suggestions
+\end{abstract}
+
+\category{D.2.6}{Software Engineering}{Programming Environments}
+
+\keywords{refactoring, recommender system, code clones}
+
+\section{Introduction}
+
+We will write a Eclipse plugin that will analyze code in real time (as it is being written) to determine where refactoring is needed and alert the user. For this quarter-long project, we plan to focus on method extraction: That is, determining when your code duplicates functionality found elsewhere, so that we can suggest to the programmer that the duplicates be extracted into a method. 
+
+More concretely, we will search through the previous codebase for code that looks like a good match to the region you are currently working on (where the cursor is). This could be implemented in a variety of ways (see section~\ref{sec:related}), from simple text-based matching to syntax tree based techniques. We won't require the code to compile, so some of the more advanced techniques that require a full parse of the source will not be used. In order to be useful, we require that the method be fast (since it will occur online and search over many regions of code) and robust to identifying clones that are more obfuscated than simple copy-and-paste: Namely when a programmer re-implements the same functionality without referring to the first code section.
+
+Once we have identified the clones, we will score them with how difficult/worthwhile they would be to extract. This score will be based on a variety of heuristics such length of the clone, proximity between clones, how many parameters the extracted method would require, as well as how complete the code section they are working on is. If the score passes a threshold, we will present the refactoring suggestion to the user. The exact manner in which we present the suggestion is still undecided, but we want to make sure it is relatively intrusive so that users don't just overlook it. Popping up a dialog box is an option, as is highlighting. We could do some simple machine learning here to make sure we reduce the false positives if the user frequently rejects our suggestions.
+
+The chief benefit is that many novice or rushed programmers duplicate functionality in multiple places because they aren't aware of the other locations the code is written, or they can't be bothered finding them. It is much more useful to present these suggestions as the user is writing them instead of after the fact, as it cuts down on time spent rewriting code, helps with code maintenance, and can help prevent certain kinds of bugs (e.g. there may be more defensive programming used in one of the clones but not the other).
+
+\section{Related Work}
+\label{sec:related}
+
+Some related work~\cite{Roy2009}.
+
+\section{Conclusion}
+
+Some concluding remarks
+
+%
+% The following two commands are all you need in the
+% initial runs of your .tex file to
+% produce the bibliography for the citations in your paper.
+\bibliographystyle{abbrv}
+\bibliography{rt-refactoring-proposal,bibstring-abbrev,ernst,invariants,types}  % sigproc.bib is the name of the Bibliography in this case
+% You must have a proper ".bib" file
+%  and remember to run:
+% latex bibtex latex latex
+% to resolve all references
+%
+% ACM needs 'a single self-contained file'!
+%
+\end{document}
