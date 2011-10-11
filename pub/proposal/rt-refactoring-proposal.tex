@@ -60,12 +60,11 @@ Under the assumption that code clones are not maintained properly,
 Jeurgens et al. built a static bug detection tool based on
 inconsistencies in clones, and confirmed that clones were a major
 source of bugs in the studies subject programs~\cite{Juergens2009}.
-
-%TWS: I don't follow this argument
-%It seems reasonable to believe that if code maintenance of clones 
-%introduces bugs, clones are also a common source of bugs when they are
-%first written, because the older clone has undergone significantly more 
-%testing than the newer clone.
+Similarly, we hypothesize that when a developer (un)intentionally
+duplicates the functionality of an existing piece of code, without
+referencing the original source, that the new code is more likely to
+contain bugs than the original as it has not been tested or used in
+production.
 
 Code clones are typically viewed as a problem of software
 \emph{maintenance}, as failure to revise a clone can be an error. In
