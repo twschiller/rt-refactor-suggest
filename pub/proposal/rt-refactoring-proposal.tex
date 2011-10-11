@@ -12,7 +12,7 @@
 %\crdata{0-12345-67-8/90/01}  % Allows default copyright data (0-89791-88-6/97/05) to be over-ridden - IF NEED BE.
 % --- End of Author Metadata ---
 
-\title{Real-time Refactoring Recommendations}
+\title{Real-time Code Clone Refactoring Recommendations}
 % 1st. author
 \authorinfo{Travis Mandel}
            {University of Washington}
@@ -32,22 +32,140 @@ An Eclipse plugin for providing real-time refactoring suggestions
 
 \section{Introduction}
 
-We will write a Eclipse plugin that will analyze code in real time (as it is being written) to determine where refactoring is needed and alert the user. For this quarter-long project, we plan to focus on method extraction: That is, determining when your code duplicates functionality found elsewhere, so that we can suggest to the programmer that the duplicates be extracted into a method. 
+Code clones are typically viewed as a problem of software
+\emph{maintenance}, as failure to revise a clone can be an error. In
+addition to helping developers maintain clones, this work aims to
+identify (1) potential method calls and opportunities for method
+extraction, eliminating the introduction of unnecessary clones, and
+(2) opportunities for copy-paste coding. Both reduce development cost,
+while the first also reduces maintenance cost.
 
-More concretely, we will search through the previous codebase for code that looks like a good match to the region you are currently working on (where the cursor is). This could be implemented in a variety of ways (see section~\ref{sec:related}), from simple text-based matching to syntax tree based techniques. We won't require the code to compile, so some of the more advanced techniques that require a full parse of the source will not be used. In order to be useful, we require that the method be fast (since it will occur online and search over many regions of code) and robust to identifying clones that are more obfuscated than simple copy-and-paste: Namely when a programmer re-implements the same functionality without referring to the first code section.
 
-Once we have identified the clones, we will score them with how difficult/worthwhile they would be to extract. This score will be based on a variety of heuristics such length of the clone, proximity between clones, how many parameters the extracted method would require, as well as how complete the code section they are working on is. If the score passes a threshold, we will present the refactoring suggestion to the user. The exact manner in which we present the suggestion is still undecided, but we want to make sure it is relatively intrusive so that users don't just overlook it. Popping up a dialog box is an option, as is highlighting. We could do some simple machine learning here to make sure we reduce the false positives if the user frequently rejects our suggestions.
+\section{Finding Clones}
 
-The chief benefit is that many novice or rushed programmers duplicate functionality in multiple places because they aren't aware of the other locations the code is written, or they can't be bothered finding them. It is much more useful to present these suggestions as the user is writing them instead of after the fact, as it cuts down on time spent rewriting code, helps with code maintenance, and can help prevent certain kinds of bugs (e.g. there may be more defensive programming used in one of the clones but not the other).
+% Don't use ``we'' to refer to the tool. The tool is the tool.
+
+As the programmer develops, the tool will analyze the code to
+determine the location of code clones, to aid in refactoring (method
+extraction), method calls, or copying. In the future, the tool could
+be extended to other refactorings / uses.
+
+More concretely, the tool will search through the previous codebase for code that looks like a good match to the region you are currently working on (where the cursor is). This could be implemented in a variety of ways (see section~\ref{sec:related}), from simple text-based matching to syntax tree based techniques. The tool won't require the code to compile, so some of the more advanced techniques that require a full parse of the source will not be used. In order to be useful, we require that the method be fast (since it will occur online and search over many regions of code) and robust to identifying clones that are more obfuscated than simple copy-and-paste, such as when a programmer re-implements the same functionality without referring to the first code section.
+
+\subsection{Determining When to Make Suggestions}
+Once the tool has identified the clones, it will score them based on how difficult they would be to extract, and how worthwhile the extraction would be. This score will be based on a variety of heuristics:
+
+\begin{itemize}
+  \item length of the code clone
+  \item number of parameters in the extracted method
+  \item module distance (how far away the clone is in the code base)
+  \item how complete the current code section is
+\end{itemize}
+
+If the score passes a threshold, the tool will present the refactoring suggestions to the user. The exact manner in which it presents the suggestion is still undecided, but we want to make sure it is relatively intrusive so that programmers don't just overlook the information. Popping up a dialog box is an option, as is highlighting. We also plan to investigate, in place of a fixed threshold, simple machine learning strategies to ensure the false positives are reduced if the user frequently rejects the tool's suggestions.
+
+\section{Evaluation}
+
+%We plan to evaluate based on user studies to determine how helpful our
+%suggestions are.  Each user will be presented with an unfamiliar
+%codebase and asked to implement a new method involving several We will
+%record how many false positives there are, how many accepted
+%suggestions there are, and how many times the user uses a method we
+%extracted. We will record amount of code typed and amount of time
+%spent. We will poll users after the fact to ask them how helpful they
+%found the tool.
+
+We will evaluate the tool via user case study. Each user will be given
+a series of development and maintenance tasks for an existing Java
+code base. The control group will use the stock Eclipse development
+environment, the tool group will use the Eclipse development
+environment with the tool. For the initial study for CSE 503, each
+group will consist of two individuals who have experience using the
+Java development environment.
+
+Users will be instructed that they ``own'' the code base, that is they
+have permission to introduce new methods, but must document the
+methods.
+
+\subsection{Quantitative Evaluation}
+For the development tasks, we will measure the time to complete the
+task, the number of methods extracted, and the number of code clones
+introduced into the code base, and percentage of the new code that is
+a clone of other code. For the control group, we will additionally
+record the number of times the developer searches for a method that
+performs a subtask. For the tool group, we will record the number of
+times the tool detects a code clone, the user ignores the tool's
+alert, the user views the tool's analysis, and the user acts on the
+tool's analysis. Additionally, when the user acts on the tool's
+analysis, we will record the ranking of the clone the user acted on.
+
+For the maintenance tasks, we will measure the time to complete the
+task, and whether the user has correctly revised all of the clones (as
+determined by hidden test suite). We will record the same
+group-specific metrics as for the development tasks.
+
+\subsection{Qualitative Evaluation}
+In addition to the quantitative results, we will have the study
+participants respond to the following questions:
+
+\begin{itemize}
+  \item If you extracted a method, how did you decide to extract the
+    method? 
+  \item If you chose not to extract a method, why did you decide not
+    to extract the method?
+\end{itemize}
+
+\noindent Additionally, the treatment group will respond to the following
+questions:
+
+\begin{itemize}
+  \item Did you find the tool's suggestions helpful? If not, why?
+  \item Was the ordering of the tool's suggestions valid? If not, why?
+\end{itemize}
 
 \section{Related Work}
 \label{sec:related}
 
-Some related work~\cite{Roy2009}.
+Roy et al provide a survey of Code Clone detection
+techniques~\cite{Roy2009}.
+
+Kawaguchi et al developed a Microsoft Visual Studio interface for
+displaying code clones in real-time to support software
+\emph{maintenance} tasks~\cite{Kawaguchi2009,Yamashina2008}. The
+SHINOBI system uses the CCFinderX's preprocessor and the Suffix Array
+technique for indexing clones. Displayed clones are ranked via the sum
+of the ratio files committed at the same time and the ratio of files
+opened or edited at the same period in Visual Studio. \todo{How do
+  they get the latter piece of information?}
+
+The work is motivated by a sliding window analysis in
+\cite{Yamashina2008} of a commercial CAD application finding that
+79.3\% of commits included modifications to files containing code
+clones, but that only 9.7\% of such commits included modifications to
+files containing the other clones. Additionally in
+\cite{Yamashina2008}, Yamashina et al make some tenuous claims based
+on interviews and observation that novice developers typically fix a
+defect first, and then have difficulty finding and revising clones,
+while experienced developers attempt to find all clones first (often
+with difficulty when identifiers have changed), and then make changes.
+
+\paragraph{Real-time Code Clone Search}
+
+Keivanloo et all describe SeClone, a system for Internet code clone
+search that performs clone pair clustering based on a ontology base on
+features such as similarity~\cite{Keivanloo2011}. Similar to CCFinder,
+it preprocesses files by generating the AST and abstracting the
+tokens. The code patterns are used to quickly perform search, false
+positives are limited by a retained set of type information. Results
+are clustered via file-level type information.
+
+
+
 
 \section{Conclusion}
 
-Some concluding remarks
+The chief benefit of our tool is that many novice or rushed programmers duplicate functionality in multiple places because they aren't aware of the other locations the code is written, or they can't be bothered finding them. It is much more useful to present these suggestions as the user is writing them instead of after the fact, as it cuts down on time spent rewriting code, helps with code maintenance, and can help prevent certain kinds of bugs (e.g. there may be more defensive programming used in one of the clones but not the other).  The end product has potential to make software development a more productive and organized experience.
+
 
 %
 % The following two commands are all you need in the
