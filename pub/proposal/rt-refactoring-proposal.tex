@@ -23,7 +23,14 @@
            {tws@cs.washington.edu}
 \maketitle
 \begin{abstract}
-An Eclipse plugin for providing real-time refactoring suggestions
+In the past, code clones detection and analysis has been viewed as a
+maintenance problem. In this paper, we propose a tool and evaluation
+for eliminating the introduction of code clones during development,
+and levering similar code to boost programmer productivity. The tool
+is an Eclipse plugin providing real-time clone detection and action
+suggestions to the developer as (s)he writes and modifies
+code. Machine learning is employed to provide more pertinent results
+and suggestions to the developer.
 \end{abstract}
 
 \category{D.2.6}{Software Engineering}{Programming Environments}
@@ -32,6 +39,21 @@ An Eclipse plugin for providing real-time refactoring suggestions
 
 \section{Introduction}
 
+Yamashina et al found in a sliding window analysis of a commercial CAD
+application that 79.3\% of commits included modifications to files
+containing code clones, but that only 9.7\% of such commits included
+modifications to files containing the other
+clones~\cite{Yamashina2008}. Additionally, they report tenuous
+evidence from interviews and observation both novice and experience
+developers have difficuly finding code clones (the latter when
+identifiers have changed), and that novice developers do not
+systematically find all code clones before beginning to make
+revisions.
+
+\todo{There are studies that show both sides --- that clones are a
+  problem, and that clones aren't a problem; we need to cite some of
+  these and decide how to best present them.}
+
 Code clones are typically viewed as a problem of software
 \emph{maintenance}, as failure to revise a clone can be an error. In
 addition to helping developers maintain clones, this work aims to
@@ -39,9 +61,6 @@ identify (1) potential method calls and opportunities for method
 extraction, eliminating the introduction of unnecessary clones, and
 (2) opportunities for copy-paste coding. Both reduce development cost,
 while the first also reduces maintenance cost.
-
-%there may be more defensive programming used in one of the
-%clones but not the other).
 
 \section{Tool}
 
@@ -60,6 +79,9 @@ would be to extract (for example, this could be based on length of the
 duplicate, or how many parameters the method would require).  If the
 score passes a threshold, the tool presents the refactoring suggestion
 to the user.  
+
+%there may be more defensive programming used in one of the
+%clones but not the other).
 
 \subsection{Machine Learning}
 The tool will employ simple machine learning to reduce the number of
@@ -132,34 +154,68 @@ questions:
   \item Was the ordering of the tool's suggestions valid? If not, why?
 \end{itemize}
 
+\subsection{Threats to Validity}
+The evaluation outline in this section is meant as a preliminary study
+to investigate the efficacy of the tool --- it is not meant to be
+conclusive. That being said, this study, and potentially larger
+studies of the same design have the following potential threats to
+validity:
+
+\begin{itemize}
+  \item The study participants do not have to maintain the code in the
+    future, and are therefore may be more likely to perform a
+    short-sighted action
+  \item The results may not generalize, as in real software there may
+    be de facto or de jure restrictions (e.g., a certain module cannot
+    be changed) restricting the set of actions a user can make
+\end{itemize}
+
+We beleieve that the first threat can be mitigated via instructions to
+the study participants. The second factor may require an additional
+investigation where such restrictions are in place.
+
 \section{Related Work}
 
-Roy et al provide a survey of Code Clone detection
-techniques~\cite{Roy2009}.
+The code clone literature can be divided into two areas: (1)
+\emph{how} to detect code clones, and (2) how to best visualize the
+results of post-mortem tools, which operate over an entire solution.
+The latter varies based upon usage, e.g., for detecting plagarism
+versus development usage.
 
-Kawaguchi et al developed a Microsoft Visual Studio interface for
+Roy et al provide a survey of Code Clone detection
+techniques~\cite{Roy2009}. The rest of this section surveys the
+related work on recommender systems, code clone interfaces, and
+\emph{real-time} code clone detection.
+
+\paragraph{Recommender Systems}
+
+Holmes and Murphy built the Strathcona tool for Eclipse which displays
+relevent API usage examples to a user based on the structural context
+of a query line(s) of code the user selects in the IDE
+\cite{Holmes2005}. Related systems also exist, but require the user to
+perform a formal query, or to write special comments in the code.
+
+\paragraph{Code Clone Interfaces}
+
+Visual Studio Ultimate contains a code clone detection tool and
+interface; the tool can be run on a particular code fragment, or over
+the entire solution~\cite{VSClones}. Other commercial products and
+academic artifacts exist which provide different interfaces /
+visualizations.
+
+Perhaps the work most similar to ours is Kawaguchis et al.'s 
+Microsoft Visual Studio interface for
 displaying code clones in real-time to support software
-\emph{maintenance} tasks~\cite{Kawaguchi2009,Yamashina2008}. The
+\emph{maintenance} tasks~\cite{Kawaguchi2009,Yamashina2008}. Their
 SHINOBI system uses the CCFinderX's preprocessor and the Suffix Array
 technique for indexing clones. Displayed clones are ranked via the sum
 of the ratio files committed at the same time and the ratio of files
 opened or edited at the same period in Visual Studio. \todo{How do
   they get the latter piece of information?}
 
-The work is motivated by a sliding window analysis in
-\cite{Yamashina2008} of a commercial CAD application finding that
-79.3\% of commits included modifications to files containing code
-clones, but that only 9.7\% of such commits included modifications to
-files containing the other clones. Additionally in
-\cite{Yamashina2008}, Yamashina et al make some tenuous claims based
-on interviews and observation that novice developers typically fix a
-defect first, and then have difficulty finding and revising clones,
-while experienced developers attempt to find all clones first (often
-with difficulty when identifiers have changed), and then make changes.
-
 \paragraph{Real-time Code Clone Search}
 
-Keivanloo et all describe SeClone, a system for Internet code clone
+Keivanloo et al. describe SeClone, a system for Internet code clone
 search that performs clone pair clustering based on a ontology base on
 features such as similarity~\cite{Keivanloo2011}. Similar to CCFinder,
 it preprocesses files by generating the AST and abstracting the
@@ -167,12 +223,16 @@ tokens. The code patterns are used to quickly perform search, false
 positives are limited by a retained set of type information. Results
 are clustered via file-level type information.
 
-
-
+Lee et al. introduce a method for instant structural code clone search
+over large repositories by utilizing an R*tree indexing structure over
+the characteristic vectors~\cite{Lee2010}.
 
 \section{Conclusion}
 
-Some concluding remarks
+In the past, code clones detection and analysis has been viewed as a
+maintenance problem. We have proposed a tool and evaluation for
+eliminating the introduction of code clones during development, and
+levering similar code to boost programmer productivity.
 
 %
 % The following two commands are all you need in the
