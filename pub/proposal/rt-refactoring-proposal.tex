@@ -60,12 +60,11 @@ Under the assumption that code clones are not maintained properly,
 Jeurgens et al. built a static bug detection tool based on
 inconsistencies in clones, and confirmed that clones were a major
 source of bugs in the studies subject programs~\cite{Juergens2009}.
-
-%TWS: I don't follow this argument
-%It seems reasonable to believe that if code maintenance of clones 
-%introduces bugs, clones are also a common source of bugs when they are
-%first written, because the older clone has undergone significantly more 
-%testing than the newer clone.
+Similarly, we hypothesize that when a developer (un)intentionally
+duplicates the functionality of an existing piece of code, without
+referencing the original source, that the new code is more likely to
+contain bugs than the original as it has not been tested or used in
+production.
 
 Code clones are typically viewed as a problem of software
 \emph{maintenance}, as failure to revise a clone can be an error. In
@@ -112,10 +111,10 @@ capture the value of the clone for method extraction or copying:
 \end{itemize}
 
 If the score exceeds a threshold, the tool will present the 
-suggestions to the user.  In many cases it may suffice simply to show
-the "top hit", but in others it may be helpful to show a larger
-ranking.  The exact manner in which it presents the suggestion(s) to
-the developer is still undecided, but we want to make sure it is
+clone suggestions to the user, along with potential refactoring options.  
+In many cases it may suffice simply to show the "top hit", but in others 
+it may be helpful to show a larger ranking.  The exact manner in which it 
+presents the suggestion(s) to the developer is still undecided, but we want to make sure it is
 relatively intrusive so that programmers don't just ignore the
 information. Popping up a dialog box is an option, as is highlighting
 the relevant block of code. We also plan to investigate, in place of a
