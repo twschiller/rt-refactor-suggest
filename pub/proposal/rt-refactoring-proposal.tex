@@ -23,13 +23,14 @@
            {tws@cs.washington.edu}
 \maketitle
 \begin{abstract}
-In the past, code clones detection and analysis has been viewed as a
+In the past, code clone detection and analysis has been viewed as a
 maintenance problem. In this paper, we propose a tool and evaluation
 for eliminating the introduction of code clones during development,
-and leverage code similarity to boost programmer productivity. The tool
+and leveraging code similarity to boost programmer productivity. The tool
 is an Eclipse plugin providing real-time clone detection and action
 suggestions to the developer as (s)he writes and modifies
-code. Machine learning is employed to provide more pertinent results
+code. If time allows, machine learning will be 
+employed to provide more pertinent results
 and suggestions to the developer.
 \end{abstract}
 
@@ -59,22 +60,23 @@ Under the assumption that code clones are not maintained properly,
 Jeurgens et al. built a static bug detection tool based on
 inconsistencies in clones, and confirmed that clones were a major
 source of bugs in the studies subject programs~\cite{Juergens2009}.
-It seems reasonable to believe that if code maintenance of clones 
-introduces bugs, clones are also a common source of bugs when they are
-first written, because the older clone has undergone significantly more 
-testing than the newer clone.
+
+%TWS: I don't follow this argument
+%It seems reasonable to believe that if code maintenance of clones 
+%introduces bugs, clones are also a common source of bugs when they are
+%first written, because the older clone has undergone significantly more 
+%testing than the newer clone.
 
 Code clones are typically viewed as a problem of software
 \emph{maintenance}, as failure to revise a clone can be an error. In
 addition to helping developers maintain clones, this work aims to
 identify (1) potential method calls and opportunities for method
 extraction, eliminating the introduction of unnecessary clones, and
-(2) opportunities for copy-paste coding. Both reduce development cost 
+(2) opportunities for ``copy and paste'' coding. Both reduce development cost 
 due to rewriting and debugging duplicated code,
-while the first also reduces maintenance cost.  The first also
-improves code consistency and conventions by unifying
-code written by different developers, and often improves code readability and 
-modularity.
+while the first also reduces maintenance cost; unifying code written
+by multiple developers may also improve code consistency, readability, 
+and modularity.
 
 \section{Finding Clones}
 
@@ -85,11 +87,22 @@ determine the location of code clones, to aid in refactoring (method
 extraction), method calls, or copying. In the future, the tool could
 be extended to other refactorings / uses.
 
-More concretely, the tool will search through the previous codebase for code that looks like a good match to the region that is currently being working on (i.e. where the cursor is). This could be implemented in a variety of ways (see section~\ref{sec:related}), from simple text-based matching to syntax tree based techniques. The tool won't require the code to compile, so some of the more advanced techniques that require a full parse of the source will not be used. In order to be practical in an online setting with a large codebase, we require that the method be fast and robust to identifying clones that are more obfuscated than simple copy-and-paste, such as when a programmer re-implements the same functionality without referring to the first code section.
+More concretely, the tool will search the existing codebase for code
+that similar to the region that is currently being working on
+(i.e. where the cursor is). The search can be implemented in a variety
+of ways (see section~\ref{sec:related}), from simple text-based
+matching to syntax tree based techniques. The tool won't require the
+code to compile, so techniques that require a complete / typable parse
+of the source will not be used. In order to be practical in an online
+setting with a large codebase, we require that the method be fast and
+robust to identifying clones that are more obfuscated than direct
+copying, such as when a programmer re-implements the same
+functionality.
+%without referring to the first code section.
 
 \subsection{Determining When to Make Suggestions}
-Once the tool has identified the clones, it will score each one based on how difficult they would be to extract, and how worthwhile the extraction would be. This score will be based on a variety of heuristics:
-
+The tool will score the clone based on a variety of heuristics that
+capture the value of the clone for method extraction or copying:
 
 \begin{itemize}
   \item length of the code clone
@@ -98,7 +111,19 @@ Once the tool has identified the clones, it will score each one based on how dif
   \item how complete the current code section is
 \end{itemize}
 
-If the score passes a threshold, the tool will present the refactoring suggestions to the user.   In many cases it may suffice simply to show the "top hit", but in others it may be helpful to show a larger ranking.  The exact manner in which it presents the suggestion(s) to the programmer is still undecided, but we want to make sure it is relatively intrusive so that programmers don't just ignore the information. Popping up a dialog box is an option, as is highlighting the relevant block of code. We also plan to investigate, in place of a fixed threshold, simple machine learning strategies to ensure the false positives are reduced if the user frequently rejects the tool's suggestions.  This will take the form of a classifier using the heuristics as input, and may be trained on each individual user to account for different programming styles.
+If the score exceeds a threshold, the tool will present the 
+suggestions to the user.  In many cases it may suffice simply to show
+the "top hit", but in others it may be helpful to show a larger
+ranking.  The exact manner in which it presents the suggestion(s) to
+the developer is still undecided, but we want to make sure it is
+relatively intrusive so that programmers don't just ignore the
+information. Popping up a dialog box is an option, as is highlighting
+the relevant block of code. We also plan to investigate, in place of a
+fixed threshold, simple machine learning strategies to ensure the
+false positives are reduced if the user frequently rejects the tool's
+suggestions.  This will take the form of a classifier using the
+heuristics as input, and may be trained on each individual user to
+account for different programming styles.
 
 \section{Evaluation}
 
@@ -113,17 +138,19 @@ If the score passes a threshold, the tool will present the refactoring suggestio
 
 We will evaluate the tool via user case study. Each user will be given
 a series of development and maintenance tasks for an existing Java
-code base. The control group will use the stock Eclipse development
+code base. Subjects will be provided with a suite of unit tests covering the
+entire codebase (and their new development task) which must all pass
+before the task is considered complete.
+
+The control group will use the stock Eclipse development
 environment, the tool group will use the Eclipse development
 environment with the tool. For the initial study for CSE 503, each
 group will consist of two individuals who have experience using the
-Java development environment.
+Java development environment.  
 
-Users will be instructed that they ``own'' the code base, that is they
+Subjects will be instructed that they ``own'' the code base, that is they
 have permission to introduce new methods, but must document the
-methods.  They will be given a suite of unit tests convering the entire 
-codebase (and their new development task) which must all pass
-before the task is considered complete.
+methods.  
 
 \subsection{Quantitative Evaluation}
 For the development tasks, we will measure the time to complete the
@@ -175,10 +202,11 @@ validity:
   \item The results may not generalize, as in real software there may
     be de facto or de jure restrictions (e.g., a certain module cannot
     be changed) restricting the set of actions a user can make
-  \item  This tool seems especially helpful if it suggests that a person is 
-    cloning code which that person personally wrote in the past.  Due to time 
-    limitations this scenario may be difficult to induce, as it usually occurs after
-    one has been working on the same project for a long time.
+  \item This tool seems especially helpful if it suggests that a
+    developer is cloning code which that developer personally wrote in the
+    past.  Due to time limitations this scenario may be difficult to
+    induce, as it usually occurs after one has been working on the
+    same project for a long time.
 \end{itemize}
 
 We believe that the first threat can be mitigated via instructions to
@@ -243,11 +271,14 @@ the characteristic vectors~\cite{Lee2010}.
 \section{Conclusion}
 
 In the past, code clones detection and analysis has been viewed as a
-maintenance problem. We believe the problems code clones pose are 
-more serious, especially those that are re-written instead of being a 
-"copy and paste".  We have proposed a tool and evaluation for
+maintenance problem. 
+%TWS: We haven't substantiated the following claim anywhere:
+%We believe the problems code clones pose are 
+%more serious, especially those that are re-written instead of being a 
+%"copy and paste".  
+We have proposed a tool and evaluation for
 eliminating the introduction of code clones during development, and
-levering similar code to boost programmer productivity and improve
+leveraging similar code to boost programmer productivity and improve
 code robustness and organization.
 
 %
