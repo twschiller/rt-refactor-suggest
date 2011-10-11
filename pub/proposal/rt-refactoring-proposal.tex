@@ -1,0 +1,296 @@
+\documentclass[preprint,10pt]{sigplanconf}
+
+\newcommand{\todo}[1]{{\bfseries [[#1]]}}
+%% To disable, just uncomment this line
+%% \renewcommand{\todo}[1]{\relax}
+
+\begin{document}
+%
+% --- Author Metadata here ---
+\conferenceinfo{CSE503}{'11 Seattle, USA}
+%\CopyrightYear{2007} % Allows default copyright year (20XX) to be over-ridden - IF NEED BE.
+%\crdata{0-12345-67-8/90/01}  % Allows default copyright data (0-89791-88-6/97/05) to be over-ridden - IF NEED BE.
+% --- End of Author Metadata ---
+
+\title{Real-time Code Clone Refactoring Recommendations}
+% 1st. author
+\authorinfo{Travis Mandel}
+           {University of Washington}
+           {tmandel@cs.washington.edu}
+% 2nd. author
+\authorinfo{Todd W. Schiller}
+           {University of Washington}
+           {tws@cs.washington.edu}
+\maketitle
+\begin{abstract}
+In the past, code clone detection and analysis has been viewed as a
+maintenance problem. In this paper, we propose a tool and evaluation
+for eliminating the introduction of code clones during development,
+and leveraging code similarity to boost programmer productivity. The tool
+is an Eclipse plugin providing real-time clone detection and action
+suggestions to the developer as (s)he writes and modifies
+code. If time allows, machine learning will be 
+employed to provide more pertinent results
+and suggestions to the developer.
+\end{abstract}
+
+\category{D.2.6}{Software Engineering}{Programming Environments}
+
+\keywords{refactoring, recommender system, code clones}
+
+\section{Introduction}
+
+Numerous studies suggest that code clones impair the maintainability
+of software.
+
+Yamashina et al. found in a sliding window analysis of a commercial CAD
+application that 79.3\% of commits included modifications to files
+containing code clones, but that only 9.7\% of such commits included
+modifications to files containing the other
+clones suggesting some clones may have erroneously not been updated
+~\cite{Yamashina2008}. 
+%Additionally, they report tenuous
+%evidence from interviews and observation both novice and experience
+%developers have difficuly finding code clones (the latter when
+%identifiers have changed), and that novice developers do not
+%systematically find all code clones before beginning to make
+%revisions.
+
+Under the assumption that code clones are not maintained properly,
+Jeurgens et al. built a static bug detection tool based on
+inconsistencies in clones, and confirmed that clones were a major
+source of bugs in the studies subject programs~\cite{Juergens2009}.
+Similarly, we hypothesize that when a developer (un)intentionally
+duplicates the functionality of an existing piece of code, without
+referencing the original source, that the new code is more likely to
+contain bugs than the original as it has not been tested or used in
+production.
+
+Code clones are typically viewed as a problem of software
+\emph{maintenance}, as failure to revise a clone can be an error. In
+addition to helping developers maintain clones, this work aims to
+identify (1) potential method calls and opportunities for method
+extraction, eliminating the introduction of unnecessary clones, and
+(2) opportunities for ``copy and paste'' coding. Both reduce development cost 
+due to rewriting and debugging duplicated code,
+while the first also reduces maintenance cost; unifying code written
+by multiple developers may also improve code consistency, readability, 
+and modularity.
+
+\section{Finding Clones}
+
+% Don't use ``we'' to refer to the tool. The tool is the tool.
+
+As the programmer develops, the tool will analyze the code to
+determine the location of code clones, to aid in refactoring (method
+extraction), method calls, or copying. In the future, the tool could
+be extended to other refactorings / uses.
+
+More concretely, the tool will search the existing codebase for code
+that similar to the region that is currently being working on
+(i.e. where the cursor is). The search can be implemented in a variety
+of ways (see section~\ref{sec:related}), from simple text-based
+matching to syntax tree based techniques. The tool won't require the
+code to compile, so techniques that require a complete / typable parse
+of the source will not be used. In order to be practical in an online
+setting with a large codebase, we require that the method be fast and
+robust to identifying clones that are more obfuscated than direct
+copying, such as when a programmer re-implements the same
+functionality.
+%without referring to the first code section.
+
+\subsection{Determining When to Make Suggestions}
+The tool will score the clone based on a variety of heuristics that
+capture the value of the clone for method extraction or copying:
+
+\begin{itemize}
+  \item length of the code clone
+  \item number of parameters in the extracted method
+  \item module distance (how far away the clone is in the code base)
+  \item how complete the current code section is
+\end{itemize}
+
+If the score exceeds a threshold, the tool will present the 
+suggestions to the user.  In many cases it may suffice simply to show
+the "top hit", but in others it may be helpful to show a larger
+ranking.  The exact manner in which it presents the suggestion(s) to
+the developer is still undecided, but we want to make sure it is
+relatively intrusive so that programmers don't just ignore the
+information. Popping up a dialog box is an option, as is highlighting
+the relevant block of code. We also plan to investigate, in place of a
+fixed threshold, simple machine learning strategies to ensure the
+false positives are reduced if the user frequently rejects the tool's
+suggestions.  This will take the form of a classifier using the
+heuristics as input, and may be trained on each individual user to
+account for different programming styles.
+
+\section{Evaluation}
+
+%We plan to evaluate based on user studies to determine how helpful our
+%suggestions are.  Each user will be presented with an unfamiliar
+%codebase and asked to implement a new method involving several We will
+%record how many false positives there are, how many accepted
+%suggestions there are, and how many times the user uses a method we
+%extracted. We will record amount of code typed and amount of time
+%spent. We will poll users after the fact to ask them how helpful they
+%found the tool.
+
+We will evaluate the tool via user case study. Each user will be given
+a series of development and maintenance tasks for an existing Java
+code base. Subjects will be provided with a suite of unit tests covering the
+entire codebase (and their new development task) which must all pass
+before the task is considered complete.
+
+The control group will use the stock Eclipse development
+environment, the tool group will use the Eclipse development
+environment with the tool. For the initial study for CSE 503, each
+group will consist of two individuals who have experience using the
+Java development environment.  
+
+Subjects will be instructed that they ``own'' the code base, that is they
+have permission to introduce new methods, but must document the
+methods.  
+
+\subsection{Quantitative Evaluation}
+For the development tasks, we will measure the time to complete the
+task, the number of methods extracted, and the number of code clones
+introduced into the code base, and percentage of the new code that is
+a clone of other code. For the control group, we will additionally
+record the number of times the developer searches for a method that
+performs a subtask. For the tool group, we will record the number of
+times the tool detects a code clone, the user ignores the tool's
+alert, the user views the tool's analysis, and the user acts on the
+tool's analysis. Additionally, when the user acts on the tool's
+analysis, we will record the ranking of the clone the user acted on.
+
+For the maintenance tasks, we will measure the time to complete the
+task, and whether the user has correctly revised all of the clones (as
+determined by hidden test suite). We will record the same
+group-specific metrics as for the development tasks.
+
+\subsection{Qualitative Evaluation}
+In addition to the quantitative results, we will have the study
+participants respond to the following questions:
+
+\begin{itemize}
+  \item If you extracted a method, how did you decide to extract the
+    method? 
+  \item If you chose not to extract a method, why did you decide not
+    to extract the method?
+\end{itemize}
+
+\noindent Additionally, the treatment group will respond to the following
+questions:
+
+\begin{itemize}
+  \item Did you find the tool's suggestions helpful? If not, why?
+  \item Was the ordering of the tool's suggestions valid? If not, why?
+\end{itemize}
+
+\subsection{Threats to Validity}
+The evaluation outline in this section is meant as a preliminary study
+to investigate the efficacy of the tool --- it is not meant to be
+conclusive. That being said, this study, and potentially larger
+studies of the same design have the following potential threats to
+validity:
+
+\begin{itemize}
+  \item The study participants do not have to maintain the code in the
+    future, and are therefore may be more likely to perform a
+    short-sighted action
+  \item The results may not generalize, as in real software there may
+    be de facto or de jure restrictions (e.g., a certain module cannot
+    be changed) restricting the set of actions a user can make
+  \item This tool seems especially helpful if it suggests that a
+    developer is cloning code which that developer personally wrote in the
+    past.  Due to time limitations this scenario may be difficult to
+    induce, as it usually occurs after one has been working on the
+    same project for a long time.
+\end{itemize}
+
+We believe that the first threat can be mitigated via instructions to
+the study participants. The second factor may require an additional
+investigation where such restrictions are in place.  The third factor
+requires a long-term study over weeks, months, or years.
+
+\section{Related Work}
+\label{sec:related}
+
+The vast majority of the code clone literature can be divided into two areas: (1)
+\emph{how} to detect code clones, and (2) how to best visualize the
+results of post-mortem tools, which operate over an entire solution.
+The latter varies based upon usage, e.g., for detecting plagiarism
+versus development usage.
+
+Roy et al provide a survey of code clone detection
+techniques~\cite{Roy2009}. The rest of this section surveys the
+related work on recommender systems, code clone interfaces, and
+\emph{real-time} code clone detection.
+
+\paragraph{Recommender Systems}
+
+Holmes and Murphy built the Strathcona tool for Eclipse which displays
+relevant API usage examples to a user based on the structural context
+of a query line(s) of code the user selects in the IDE
+\cite{Holmes2005}. Related systems also exist, but require the user to
+perform a formal query, or to write special comments in the code.
+
+\paragraph{Code Clone Interfaces}
+
+Visual Studio Ultimate contains a code clone detection tool and
+interface; the tool can be run on a particular code fragment, or over
+the entire solution~\cite{VSClones}. Other commercial products and
+academic artifacts exist which provide different interfaces /
+visualizations.
+
+Perhaps the work most similar to ours is Kawaguchis et al.'s 
+Microsoft Visual Studio interface for
+displaying code clones in real-time to support software
+\emph{maintenance} tasks~\cite{Kawaguchi2009,Yamashina2008}. Their
+SHINOBI system uses the CCFinderX's preprocessor and the Suffix Array
+technique for indexing clones. Displayed clones are ranked via the sum
+of the ratio files committed at the same time and the ratio of files
+opened or edited at the same period in Visual Studio. \todo{How do
+  they get the latter piece of information?}
+
+\paragraph{Real-time Code Clone Search}
+
+Keivanloo et al. describe SeClone, a system for Internet code clone
+search that performs clone pair clustering based on a ontology base on
+features such as similarity~\cite{Keivanloo2011}. Similar to CCFinder,
+it preprocesses files by generating the AST and abstracting the
+tokens. The code patterns are used to quickly perform search, false
+positives are limited by a retained set of type information. Results
+are clustered via file-level type information.
+
+Lee et al. introduce a method for instant structural code clone search
+over large repositories by utilizing an R*tree indexing structure over
+the characteristic vectors~\cite{Lee2010}.
+
+\section{Conclusion}
+
+In the past, code clones detection and analysis has been viewed as a
+maintenance problem. 
+%TWS: We haven't substantiated the following claim anywhere:
+%We believe the problems code clones pose are 
+%more serious, especially those that are re-written instead of being a 
+%"copy and paste".  
+We have proposed a tool and evaluation for
+eliminating the introduction of code clones during development, and
+leveraging similar code to boost programmer productivity and improve
+code robustness and organization.
+
+%
+% The following two commands are all you need in the
+% initial runs of your .tex file to
+% produce the bibliography for the citations in your paper.
+\bibliographystyle{abbrv}
+\bibliography{rt-refactoring-proposal,bibstring-abbrev,ernst,invariants,types}  % sigproc.bib is the name of the Bibliography in this case
+% You must have a proper ".bib" file
+%  and remember to run:
+% latex bibtex latex latex
+% to resolve all references
+%
+% ACM needs 'a single self-contained file'!
+%
+\end{document}
