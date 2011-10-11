@@ -26,7 +26,7 @@
 In the past, code clones detection and analysis has been viewed as a
 maintenance problem. In this paper, we propose a tool and evaluation
 for eliminating the introduction of code clones during development,
-and levering similar code to boost programmer productivity. The tool
+and leverage code similarity to boost programmer productivity. The tool
 is an Eclipse plugin providing real-time clone detection and action
 suggestions to the developer as (s)he writes and modifies
 code. Machine learning is employed to provide more pertinent results
@@ -39,20 +39,26 @@ and suggestions to the developer.
 
 \section{Introduction}
 
-Yamashina et al found in a sliding window analysis of a commercial CAD
+Numerous studies suggest that code clones impair the maintainability
+of software.
+
+Yamashina et al. found in a sliding window analysis of a commercial CAD
 application that 79.3\% of commits included modifications to files
 containing code clones, but that only 9.7\% of such commits included
 modifications to files containing the other
-clones~\cite{Yamashina2008}. Additionally, they report tenuous
-evidence from interviews and observation both novice and experience
-developers have difficuly finding code clones (the latter when
-identifiers have changed), and that novice developers do not
-systematically find all code clones before beginning to make
-revisions.
+clones suggesting some clones may have erroneously not been updated
+~\cite{Yamashina2008}. 
+%Additionally, they report tenuous
+%evidence from interviews and observation both novice and experience
+%developers have difficuly finding code clones (the latter when
+%identifiers have changed), and that novice developers do not
+%systematically find all code clones before beginning to make
+%revisions.
 
-\todo{There are studies that show both sides --- that clones are a
-  problem, and that clones aren't a problem; we need to cite some of
-  these and decide how to best present them.}
+Under the assumption that code clones are not maintained properly,
+Jeurgens et al. built a static bug detection tool based on
+inconsistencies in clones, and confirmed that clones were a major
+source of bugs in the studies subject programs~\cite{Juergens2009}.
 
 Code clones are typically viewed as a problem of software
 \emph{maintenance}, as failure to revise a clone can be an error. In
@@ -176,13 +182,13 @@ investigation where such restrictions are in place.
 
 \section{Related Work}
 
-The code clone literature can be divided into two areas: (1)
+The vast majority of the code clone literature can be divided into two areas: (1)
 \emph{how} to detect code clones, and (2) how to best visualize the
 results of post-mortem tools, which operate over an entire solution.
 The latter varies based upon usage, e.g., for detecting plagarism
 versus development usage.
 
-Roy et al provide a survey of Code Clone detection
+Roy et al provide a survey of code clone detection
 techniques~\cite{Roy2009}. The rest of this section surveys the
 related work on recommender systems, code clone interfaces, and
 \emph{real-time} code clone detection.
