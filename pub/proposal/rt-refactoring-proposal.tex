@@ -21,6 +21,12 @@
 \authorinfo{Todd W. Schiller}
            {University of Washington}
            {tws@cs.washington.edu}
+
+% 3rd. author
+\authorinfo{Michael D. Ernst}
+           {University of Washington}
+           {mernst@cs.washington.edu}
+
 \maketitle
 \begin{abstract}
 In the past, code clone detection and analysis has been viewed as a
@@ -39,7 +45,7 @@ and suggestions to the developer.
 \keywords{refactoring, recommender system, code clones}
 
 \section{Introduction}
-
+\label{sec:intro}
 Numerous studies suggest that code clones impair the maintainability
 of software.
 
@@ -49,6 +55,11 @@ containing code clones, but that only 9.7\% of such commits included
 modifications to files containing the other
 clones suggesting some clones may have erroneously not been updated
 ~\cite{Yamashina2008}. 
+In a study of a commercial product line, Li and Ernst report that 4\%
+of bugs were duplicated across at least one product or file;
+additionally, they identified 282, 44, and 33 duplicated bugs in the
+Linux kernel, Git, and PostgreSQL respectively~\cite{LiE2011}.
+
 %Additionally, they report tenuous
 %evidence from interviews and observation both novice and experience
 %developers have difficuly finding code clones (the latter when
@@ -61,38 +72,65 @@ Jeurgens et al. built a static bug detection tool based on
 inconsistencies in clones, and confirmed that clones were a major
 source of bugs in the studies subject programs~\cite{Juergens2009}.
 Similarly, we hypothesize that when a developer (un)intentionally
-duplicates the functionality of an existing piece of code, without
+nearly duplicates the functionality of an existing piece of code, without
 referencing the original source, that the new code is more likely to
 contain bugs than the original as it has not been tested or used in
 production.
 
 Code clones are typically viewed as a problem of software
-\emph{maintenance}, as failure to revise a clone can be an error. In
-addition to helping developers maintain clones, this work aims to
-identify (1) potential method calls and opportunities for method
-extraction, eliminating the introduction of unnecessary clones, and
-(2) opportunities for ``copy and paste'' coding. Both reduce development cost 
-due to rewriting and debugging duplicated code,
-while the first also reduces maintenance cost; unifying code written
-by multiple developers may also improve code consistency, readability, 
-and modularity.
+\emph{maintenance}, as failure to revise a clone can be an error. 
+Or, the task of identifying code clones is considered a separate and
+independent development task, and thus may not be performed in a
+manner consistent with eliminating bugs.
+
+In addition to helping developers \emph{maintain} clones, this work
+aims to help developers \emph{develop} more effectively by
+facilitating actions in the presence of system clones, existing code
+that is a (partial) clone of the source under development:
+
+\begin{enumerate}
+  \item Replacing the code under development with a method call
+  \item Extracting all, or part, of the system clone as a method;
+    replacing the code under development with a call to the extracted
+    method
+  \item \todo{Making analogous changes to the system clones, a la
+    ``simultaneous editing''~\cite{Miller2002}?}
+  \item Copying the system clone to the code under development,
+    substituting identifiers as needed
+\end{enumerate}
+
+All four actions reduce development cost due to rewriting and
+debugging duplicated code, while \#1-3 reduce maintenance costs;
+unifying unifying code written by multiple developers may also improve
+code consistency, readability, and modularity.
 
 \section{Finding Clones}
 
 % Don't use ``we'' to refer to the tool. The tool is the tool.
 
-As the programmer develops, the tool will analyze the code to
-determine the location of code clones, to aid in refactoring (method
-extraction), method calls, or copying. In the future, the tool could
-be extended to other refactorings / uses.
+%As the programmer develops, the tool will analyze the code to
+%determine the location of code clones, to aid in refactoring (method
+%extraction), method calls, or copying. In the future, the tool could
+%be extended to other refactorings / uses.
 
-More concretely, the tool will search the existing codebase for code
-that similar to the region that is currently being working on
+To support the developer actions enumerated in section~\ref{sec:intro},
+the tool will search the existing codebase for code
+that is similar to the region that is currently being developed or maintained
 (i.e. where the cursor is). The search can be implemented in a variety
 of ways (see section~\ref{sec:related}), from simple text-based
-matching to syntax tree based techniques. The tool won't require the
+matching to a syntax tree or program dependence graph based approach~\cite{LiE2011}. 
+The tool won't require the
 code to compile, so techniques that require a complete / typable parse
-of the source will not be used. In order to be practical in an online
+of the source will not be used exclusively. 
+\todo{Investigate and clarify what information is available in Eclipse
+  in different states of well-formedness. Todd thinks that parsable
+  programs that are not completely parsable are actually common during
+  development; similarly, we may be able to force completions that
+  make the programs parasable. Our best bet may be to use the best
+  technique available, e.g., using a PDG approach is the code compiles
+  completely}
+
+In order to be practical in an online
 setting with a large codebase, we require that the method be fast and
 robust to identifying clones that are more obfuscated than direct
 copying, such as when a programmer re-implements the same
@@ -112,11 +150,13 @@ capture the value of the clone for method extraction or copying:
 
 If the score exceeds a threshold, the tool will present the 
 clone suggestions to the user, along with potential refactoring options.  
-In many cases it may suffice simply to show the "top hit", but in others 
-it may be helpful to show a larger ranking.  The exact manner in which it 
+In many cases it may suffice simply to show actions based on the "top hit", but in others 
+it may be helpful to show a larger ranking. The exact manner in which the tool
 presents the suggestion(s) to the developer is still undecided, but we want to make sure it is
 relatively intrusive so that programmers don't just ignore the
-information. Popping up a dialog box is an option, as is highlighting
+information. 
+\todo{Is this explanation now sufficient, given the addition the introduction?}
+Popping up a dialog box is an option, as is highlighting
 the relevant block of code. We also plan to investigate, in place of a
 fixed threshold, simple machine learning strategies to ensure the
 false positives are reduced if the user frequently rejects the tool's
@@ -135,11 +175,14 @@ account for different programming styles.
 %spent. We will poll users after the fact to ask them how helpful they
 %found the tool.
 
-We will evaluate the tool via user case study. Each user will be given
+We will evaluate the tool via controlled user study. Each user will be given
 a series of development and maintenance tasks for an existing Java
 code base. Subjects will be provided with a suite of unit tests covering the
 entire codebase (and their new development task) which must all pass
 before the task is considered complete.
+\todo{Characterize the tasks and code base} 
+\todo{How are we going to direct users toward creating or maintaining
+  clones?, or will the code base already have clones?}
 
 The control group will use the stock Eclipse development
 environment, the tool group will use the Eclipse development
@@ -153,12 +196,16 @@ methods.
 
 \subsection{Quantitative Evaluation}
 For the development tasks, we will measure the time to complete the
-task, the number of methods extracted, and the number of code clones
+task, the number of times the the tool detects a code clone (or would
+detect a clone, for the control group),
+the number of methods extracted, and the number of code clones
 introduced into the code base, and percentage of the new code that is
-a clone of other code. For the control group, we will additionally
+a clone of other code. 
+For the control group, we will additionally
 record the number of times the developer searches for a method that
-performs a subtask. For the tool group, we will record the number of
-times the tool detects a code clone, the user ignores the tool's
+performs a subtask. 
+For the tool group, we will record the number of
+times the user ignores the tool's
 alert, the user views the tool's analysis, and the user acts on the
 tool's analysis. Additionally, when the user acts on the tool's
 analysis, we will record the ranking of the clone the user acted on.
@@ -218,7 +265,7 @@ requires a long-term study over weeks, months, or years.
 
 The vast majority of the code clone literature can be divided into two areas: (1)
 \emph{how} to detect code clones, and (2) how to best visualize the
-results of post-mortem tools, which operate over an entire solution.
+results of post-mortem tools, which operate over an entire system.
 The latter varies based upon usage, e.g., for detecting plagiarism
 versus development usage.
 
@@ -239,9 +286,10 @@ perform a formal query, or to write special comments in the code.
 
 Visual Studio Ultimate contains a code clone detection tool and
 interface; the tool can be run on a particular code fragment, or over
-the entire solution~\cite{VSClones}. Other commercial products and
-academic artifacts exist which provide different interfaces /
-visualizations.
+the entire solution~\cite{VSClones}. 
+%Other commercial products and
+%academic artifacts exist which provide different interfaces /
+%visualizations.
 
 Perhaps the work most similar to ours is Kawaguchis et al.'s 
 Microsoft Visual Studio interface for
