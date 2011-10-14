@@ -9,3 +9,5 @@ syntax: glob
 *.pdf
 *.ps
 bib
+
+rtrefactor/bin
