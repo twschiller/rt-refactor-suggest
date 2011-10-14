@@ -284,11 +284,33 @@ the entire solution~\cite{VSClones}.
 %academic artifacts exist which provide different interfaces /
 %visualizations.
 
-Perhaps the work most similar to ours is Kawaguchis et al.'s 
+From a user-interface stand-point, perhaps the work most similar to
+ours is de Wit et al.'s \textsc{CloneBoard} Eclipse plugin that tracks
+clone created by copy-paste operations~\cite{deWit2009}. Inspired
+by~\cite{Mann2006}, the plugin registers code from copy-paste
+operations as clones and prompts the developer with a set of actions
+when the clone is modified: parameterize clone, unmark clone's tail,
+unmark clone's head, postpone resolution, unmark clone, apply changes
+to all clones, ignore changes. Inconsistent clones are identified via
+a red marker on the left-column of the editor. Unlike our tool, only
+clones arising from copy-paste operations are tracked, and the
+developer explicitly manages the clone linkages.
+
+Duala-Ekoko et al. present \textsc{CloneTracker}, an Eclipse plugin
+for managing code clones that abstracts groups of clones via clone
+region descriptors (CRDs) to track clones across software
+versions~\cite{Duala-Ekoko2007}. The tool requires users to explicitly
+create tracked clone groups by ``documenting'' a group of results from
+the SimScan clone detection tool. \textsc{CloneTracker} additionally
+supports simultaneously editing clones. However, in the author's
+trials, the success rate of this feature to correctly modify the
+clones was 80\%.
+
+Kawaguchis et al. present a  
 Microsoft Visual Studio interface for
 displaying code clones in real-time to support software
 \emph{maintenance} tasks~\cite{Kawaguchi2009,Yamashina2008}. Their
-SHINOBI system uses the CCFinderX's preprocessor and the Suffix Array
+\textsc{Shinobi} system uses the CCFinderX's preprocessor and the Suffix Array
 technique for indexing clones. Displayed clones are ranked via the sum
 of the ratio files committed at the same time and the ratio of files
 opened or edited at the same period in Visual Studio. \todo{How do
