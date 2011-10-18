@@ -1,0 +1,17 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Real-time Refactoring Suggestions
+Bundle-SymbolicName: edu.washington.cs.rtrefactor; singleton:=true
+Bundle-Version: 1.0.0.0
+Bundle-Activator: edu.washington.cs.rtrefactor.Activator
+Bundle-Vendor: University of Washington CSE
+Require-Bundle: org.eclipse.ui,
+ org.eclipse.core.runtime,
+ org.eclipse.core.filebuffers;bundle-version="3.5.200",
+ org.eclipse.jface.text;bundle-version="3.7.1",
+ org.eclipse.jdt.ui,
+ org.eclipse.jdt.core;bundle-version="3.7.1"
+Bundle-RequiredExecutionEnvironment: JavaSE-1.6
+Bundle-ActivationPolicy: lazy
+Bundle-ClassPath: .,
+ lib/guava-10.0.jar
