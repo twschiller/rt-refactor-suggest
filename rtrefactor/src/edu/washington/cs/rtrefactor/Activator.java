@@ -39,9 +39,7 @@ public class Activator extends AbstractUIPlugin implements IStartup{
 	public void earlyStartup() {
 		//this method is called when Eclipse starts
 		//refer to the documentation for the limitations
-		
-		// TODO Auto-generated method stub
-		
+	
 	}
 	
 	/**
