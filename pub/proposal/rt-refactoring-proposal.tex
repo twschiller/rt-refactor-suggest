@@ -264,8 +264,8 @@ versus development usage.
 
 Roy et al provide a survey of code clone detection
 techniques~\cite{Roy2009}. The rest of this section surveys the
-related work on recommender systems, code clone interfaces, and
-\emph{real-time} code clone detection.
+related work on recommender systems, clone refactoring,
+ code clone interfaces, and \emph{real-time} code clone detection.
 
 \paragraph{Recommender Systems}
 
@@ -274,6 +274,18 @@ relevant API usage examples to a user based on the structural context
 of a query line(s) of code the user selects in the IDE
 \cite{Holmes2005}. Related systems also exist, but require the user to
 perform a formal query, or to write special comments in the code.
+
+\paragraph{Refactoring clones}
+
+There has been significant research in how to refactor code containing clones
+to improve code maintenance and readability.  Fanta and Rajlich propose a number of
+potential refactorings for clones including function insertion and function encapsulation,
+in part proposing certain clones be extracted into methods \cite{Fanta1999}.  They 
+present a C++ case study which demonstrates that code refactoring is an important 
+addition to clone detection.
+
+Higo et al present Aries, a tool which integrates various clone information to present 
+to the user \cite{Higo2008}.  It shows the cloned blocks of code and presents refactoring options such as method extraction , but it also displays various metrics, such as position in the class hierarchy, and number of external variables. These metrics are intended to help the programmer decide which refactoring, if any, is  appropriate. 
 
 \paragraph{Code Clone Interfaces}
 
