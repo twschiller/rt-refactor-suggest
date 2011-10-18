@@ -22,5 +22,12 @@
             class="edu.washington.cs.rtrefactor.Activator">
       </startup>
    </extension>
+   <extension
+         point="org.eclipse.jdt.ui.quickFixProcessors">
+      <quickFixProcessor
+            class="edu.washington.cs.rtrefactor.CloneQuickFixHook"
+            id="edu.washington.cs.rtrefactor.CloneQuickFixHook">
+      </quickFixProcessor>
+   </extension>
 
 </plugin>

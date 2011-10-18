@@ -8,7 +8,9 @@ Bundle-Vendor: University of Washington CSE
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
  org.eclipse.core.filebuffers;bundle-version="3.5.200",
- org.eclipse.jface.text;bundle-version="3.7.1"
+ org.eclipse.jface.text;bundle-version="3.7.1",
+ org.eclipse.jdt.ui,
+ org.eclipse.jdt.core;bundle-version="3.7.1"
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Bundle-ActivationPolicy: lazy
 Bundle-ClassPath: .,
