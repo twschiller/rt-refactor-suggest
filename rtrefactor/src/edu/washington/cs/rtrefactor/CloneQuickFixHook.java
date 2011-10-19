@@ -10,6 +10,13 @@ import org.eclipse.jdt.ui.text.java.IQuickFixProcessor;
 /**
  * A shell Quick Fix hook (to add quick fix suggestions for a given problem type).
  * Added mostly to add the needed references to the project
+
+ * http://www.eclipse.org/forums/index.php/mv/tree/68017/#page_top
+ * We currently have a gap here: quick fix indication for warnings and 
+ * errors is hard-coded to the "org.eclipse.jdt.ui.warning" and 
+ * "org.eclipse.jdt.ui.error" types (excluding sub-types) i.e. if you 
+ * create markers of that type you should get the light bulb.
+ * 
  * @author Todd Schiller
  */
 // TODO activate this hook in the activator?
