@@ -29,5 +29,28 @@
             id="edu.washington.cs.rtrefactor.CloneQuickFixHook">
       </quickFixProcessor>
    </extension>
+   <extension
+         point="org.eclipse.ui.actionSets">
+      <actionSet
+            id="edu.washington.cs.rtrefactor.actionSet"
+            label="Run Clone Detection"
+            visible="true">
+         <menu
+               id="rtRefactorMenu"
+               label="Real-time Refactor">
+            <separator
+                  name="rtRefactorGroup">
+            </separator>
+         </menu>
+         <action
+               class="edu.washington.cs.rtrefactor.actions.RunCloneDetection"
+               icon="icons/sample.gif"
+               id="edu.washington.cs.rtrefactor.actions.RunCloneDetection"
+               label="Detect Code Clones"
+               toolbarPath="rtRefactorGroup"
+               tooltip="Detect Code Clones">
+         </action>
+      </actionSet>
+   </extension>
 
 </plugin>
