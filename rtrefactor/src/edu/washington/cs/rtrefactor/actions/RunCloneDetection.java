@@ -1,13 +1,20 @@
 package edu.washington.cs.rtrefactor.actions;
 
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.EnumSet;
+import java.util.List;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.action.IAction;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.IWorkbenchWindowActionDelegate;
-import org.eclipse.jface.dialogs.MessageDialog;
+import org.eposoft.jccd.data.SimilarityGroupManager;
+import org.eposoft.jccd.data.SimilarityPair;
+
+import com.google.common.collect.Lists;
 
 import edu.washington.cs.rtrefactor.detect.CloneDetector;
 
@@ -39,20 +46,50 @@ public class RunCloneDetection implements IWorkbenchWindowActionDelegate {
 			"Real-time Refactoring Suggestions",
 			"Starting clone detection");
 		
+		SimilarityGroupManager m = null;
+		
 		try {
-			CloneDetector.detect(EnumSet.allOf(CloneDetector.JccdOptions.class));
+			m = CloneDetector.detect(EnumSet.allOf(CloneDetector.JccdOptions.class));
 		} catch (CoreException e) {
 			e.printStackTrace();
 			MessageDialog.openError(
 				window.getShell(),
 				"Real-time Refactoring Suggestions",
 				"Core error running clone detection");
+			return;
 		} catch (Exception e){
 			e.printStackTrace();
 			MessageDialog.openError(
 				window.getShell(),
 				"Real-time Refactoring Suggestions",
 				"Error running clone detection");
+			return;
+		}
+		
+		//Example code for sorting Similarity pairs by quality score
+		List<SimilarityPair> xxx = Lists.newArrayList(m.getPairs());
+		Collections.sort(xxx, new Comparator<SimilarityPair>(){
+			@Override
+			public int compare(SimilarityPair o1, SimilarityPair o2) {
+				return Double.compare(CloneDetector.qualityScore(o1), CloneDetector.qualityScore(o2));
+			}
+		});
+		
+		for (SimilarityPair p : xxx){
+			try{
+				String t1 = CloneDetector.getSource(p.getFirstNode());
+				String t2 = CloneDetector.getSource(p.getSecondNode());
+				System.out.println("=================================");
+				System.out.println("=================================");
+				
+				System.out.println(CloneDetector.getFile(p.getFirstNode()).getPath() + " ---------------");
+				System.out.println(t1);
+				
+				System.out.println(CloneDetector.getFile(p.getSecondNode()).getPath() + " ---------------");
+				System.out.println(t2);
+			}catch(Exception e){
+				e.printStackTrace();
+			}
 		}
 		
 		MessageDialog.openInformation(
