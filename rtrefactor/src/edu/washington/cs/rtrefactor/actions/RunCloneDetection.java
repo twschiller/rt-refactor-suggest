@@ -2,6 +2,7 @@ package edu.washington.cs.rtrefactor.actions;
 
 import java.io.File;
 import java.util.HashMap;
+import java.util.Set;
 
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.dialogs.MessageDialog;
@@ -12,6 +13,7 @@ import org.eclipse.ui.IWorkbenchWindowActionDelegate;
 
 import edu.washington.cs.rtrefactor.Activator;
 import edu.washington.cs.rtrefactor.detect.CheckStyleDetector;
+import edu.washington.cs.rtrefactor.detect.ClonePair;
 import edu.washington.cs.rtrefactor.detect.IDetector;
 import edu.washington.cs.rtrefactor.detect.JccdDetector;
 import edu.washington.cs.rtrefactor.detect.SimianDetector;
@@ -58,8 +60,10 @@ public class RunCloneDetection implements IWorkbenchWindowActionDelegate {
 			detector = new SimianDetector();
 		}
 		
+		Set<ClonePair> pairs = null;
+		
 		try {
-			detector.detect(new HashMap<File, String>());
+			pairs = detector.detect(new HashMap<File, String>());
 		} catch (Exception ex) {
 			ex.printStackTrace();
 			
@@ -73,7 +77,7 @@ public class RunCloneDetection implements IWorkbenchWindowActionDelegate {
 		MessageDialog.openInformation(
 				window.getShell(),
 				"Real-time Refactoring Suggestions",
-				"Finished running clone detection");
+				"Finished running clone detection. Clones detected: " + pairs.size());
 	}
 
 	/**
