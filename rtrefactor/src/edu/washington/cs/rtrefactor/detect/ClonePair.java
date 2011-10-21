@@ -2,7 +2,7 @@ package edu.washington.cs.rtrefactor.detect;
 
 /**
  * A record describing a clone pair; the "order" of the cloned regions is insignificant
- * and is guaranteed to be maintained
+ * and is <b>not</b> guaranteed to be maintained
  * @author Todd Schiller
  */
 public class ClonePair {
@@ -15,7 +15,7 @@ public class ClonePair {
 	
 	/**
 	 * Create a clone pair record; the "order" of the cloned regions is insignificant
-	 * and is guaranteed to be maintained
+	 * and is <b>not</b> guaranteed to be maintained
 	 * @param first one side of the pair
 	 * @param second the other side of the pair
 	 * @param score the quality of the match
