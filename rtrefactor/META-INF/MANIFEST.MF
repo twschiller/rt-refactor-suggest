@@ -18,4 +18,7 @@ Bundle-ClassPath: .,
  lib/guava-10.0.jar,
  lib/antlr-3.0.1.jar,
  lib/jccd-1.0.6.jar,
- lib/log4j-1.2.8.jar
+ lib/log4j-1.2.8.jar,
+ lib/sootclasses-2.4.0.jar,
+ lib/checkstyle-5.4-all.jar,
+ lib/simian-2.3.33.jar
