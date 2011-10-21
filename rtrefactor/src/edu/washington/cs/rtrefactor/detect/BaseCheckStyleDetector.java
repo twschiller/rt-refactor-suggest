@@ -121,7 +121,17 @@ public abstract class BaseCheckStyleDetector<T extends AbstractFileSetCheck> imp
 		checker.process(DetectorUtil.collect());
 		checker.destroy();
 		
-		return new HashSet<ClonePair>();
+		HashSet<ClonePair> result = new HashSet<ClonePair>();
+		for (AuditEvent e : errs){
+			LocalizedMessage m = e.getLocalizedMessage();
+			
+			result.add(new ClonePair(
+					new SourceRegion(new SourceLocation(new File(e.getFileName()), e.getLine(), e.getColumn())),
+					new SourceRegion(new SourceLocation(new File(m.getSourceName()), m.getLineNo(), m.getColumnNo())),
+					1.0 // no way of comparing the single point clones
+				));
+		}
+		return result;
 	}	
 	
 }
