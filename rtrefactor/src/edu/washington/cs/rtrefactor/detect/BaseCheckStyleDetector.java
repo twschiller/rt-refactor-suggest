@@ -5,7 +5,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeSet;
 
 import org.eclipse.core.runtime.CoreException;
 
@@ -16,8 +15,6 @@ import com.puppycrawl.tools.checkstyle.api.AbstractFileSetCheck;
 import com.puppycrawl.tools.checkstyle.api.AuditEvent;
 import com.puppycrawl.tools.checkstyle.api.AuditListener;
 import com.puppycrawl.tools.checkstyle.api.CheckstyleException;
-import com.puppycrawl.tools.checkstyle.api.LocalizedMessage;
-import com.puppycrawl.tools.checkstyle.api.MessageDispatcher;
 
 /**
  * Base class for CheckStyle detector plugins
@@ -29,6 +26,7 @@ public abstract class BaseCheckStyleDetector<T extends AbstractFileSetCheck> imp
 	private final T check;
 	
 	private final List<AuditEvent> errs;
+	
 	
 	/**
 	 * 
@@ -45,7 +43,6 @@ public abstract class BaseCheckStyleDetector<T extends AbstractFileSetCheck> imp
 		errs = Lists.newArrayList();
 		
 		this.check = check;
-		this.check.setMessageDispatcher(new CloneMessageDispatcher());
 		
 		checker.setBasedir(baseDir.getAbsolutePath());
 		checker.addFileSetCheck(check);
@@ -59,22 +56,6 @@ public abstract class BaseCheckStyleDetector<T extends AbstractFileSetCheck> imp
 	 */
 	protected T getCheck(){
 		return check;
-	}
-	
-	private class CloneMessageDispatcher implements MessageDispatcher{
-
-		@Override
-		public void fireErrors(String arg0, TreeSet<LocalizedMessage> arg1) {
-		}
-
-		@Override
-		public void fireFileFinished(String arg0) {
-		}
-
-		@Override
-		public void fireFileStarted(String arg0) {
-		}
-		
 	}
 	
 	private class CloneAuditListener implements AuditListener{
@@ -113,6 +94,13 @@ public abstract class BaseCheckStyleDetector<T extends AbstractFileSetCheck> imp
 		return new HashSet<ClonePair>(Sets.filter(detect(dirty), new DetectorUtil.ActiveRegion(active)));
 	}
 	
+	/**
+	 * Construct a clone pair from a detector audit event
+	 * @param e the audit event
+	 * @return the clone pair
+	 */
+	protected abstract ClonePair makeClonePair(AuditEvent e);
+	
 	@Override
 	/**
 	 * {@inheritDoc}
@@ -123,13 +111,7 @@ public abstract class BaseCheckStyleDetector<T extends AbstractFileSetCheck> imp
 		
 		HashSet<ClonePair> result = new HashSet<ClonePair>();
 		for (AuditEvent e : errs){
-			LocalizedMessage m = e.getLocalizedMessage();
-			
-			result.add(new ClonePair(
-					new SourceRegion(new SourceLocation(new File(e.getFileName()), e.getLine(), e.getColumn())),
-					new SourceRegion(new SourceLocation(new File(m.getSourceName()), m.getLineNo(), m.getColumnNo())),
-					1.0 // no way of comparing the single point clones
-				));
+			result.add(makeClonePair(e));
 		}
 		return result;
 	}	
