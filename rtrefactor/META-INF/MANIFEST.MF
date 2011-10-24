@@ -22,3 +22,5 @@ Bundle-ClassPath: .,
  lib/sootclasses-2.4.0.jar,
  lib/checkstyle-5.4-all.jar,
  lib/simian-2.3.33.jar
+Import-Package: org.eclipse.ui.editors.text,
+ org.eclipse.ui.texteditor
