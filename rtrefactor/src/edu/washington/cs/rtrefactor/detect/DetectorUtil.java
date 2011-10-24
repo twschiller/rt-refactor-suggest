@@ -55,14 +55,17 @@ public abstract class DetectorUtil {
 	}
 	
 	/**
-	 * Add the {@code .java} files contained within the workspace to the list {@code files}
+	 * Add the {@code .java} files contained within the workspace to the list {@code files}. Skips
+	 * projects that are closed.
 	 * @param workspace the workspace
 	 * @throws CoreException iff a resource is not accessible
 	 */
 	public static void collect(IWorkspaceRoot workspace, List<File> files) throws CoreException{
 		for (IProject project : workspace.getProjects()){
-			for (IResource r : project.members(false)){
-				collect(r, files);
+			if (project.isOpen()){
+				for (IResource r : project.members(false)){
+					collect(r, files);
+				}
 			}
 		}
 	}
