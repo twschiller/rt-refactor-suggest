@@ -11,6 +11,8 @@ import com.puppycrawl.tools.checkstyle.api.AuditEvent;
 import com.puppycrawl.tools.checkstyle.api.CheckstyleException;
 import com.puppycrawl.tools.checkstyle.checks.duplicates.StrictDuplicateCodeCheck;
 
+import edu.washington.cs.rtrefactor.preferences.PreferenceUtil.Preference;
+
 /**
  * The CheckStyle "strict" code clone detection tool. 
  * See <a href="http://checkstyle.sourceforge.net/config_duplicates.html">http://checkstyle.sourceforge.net/config_duplicates.html</a>
@@ -18,18 +20,22 @@ import com.puppycrawl.tools.checkstyle.checks.duplicates.StrictDuplicateCodeChec
  * @author Todd Schiller
  */
 public class CheckStyleDetector extends BaseCheckStyleDetector<StrictDuplicateCodeCheck> {
-
-	// TODO use configuration for minimum number of lines
-	public static final int MINIMUM_LINES = 5;
 	
 	public static final String DEFAULT_CONFIG_NAME = "default";
 	public static final String NAME = "CheckStyle";
 	
 	private static final Pattern EN_REGEX = Pattern.compile("Found duplicate of ([\\d,]+) lines in (.*?), starting from line ([\\d,]+)");
 	
+	public static final Preference<?> PREFERENCES[] = new Preference[]{
+		new Preference<Integer>(NAME, "Min", "Minimum # of lines to match", 5)
+	};
+		
 	public CheckStyleDetector(){
 		super(new StrictDuplicateCodeCheck(), ResourcesPlugin.getWorkspace().getRoot().getLocation().toFile());
-		getCheck().setMin(MINIMUM_LINES);
+		
+		for (Preference<?> x : PREFERENCES){
+			setPreference(x);
+		}
 		
 		try{
 			getCheck().configure(new DefaultConfiguration(DEFAULT_CONFIG_NAME));

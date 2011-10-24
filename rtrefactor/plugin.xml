@@ -5,9 +5,21 @@
    <extension
          point="org.eclipse.ui.preferencePages">
       <page
-            name="Real-time Refactoring"
             class="edu.washington.cs.rtrefactor.preferences.RtRefactorPreferencePage"
-            id="edu.washington.cs.rtrefactor.preferences.RtRefactorPreferencePage">
+            id="edu.washington.cs.rtrefactor.preferences.RtRefactorPreferencePage"
+            name="Real-time Refactoring">
+      </page>
+      <page
+            category="edu.washington.cs.rtrefactor.preferences.RtRefactorPreferencePage"
+            class="edu.washington.cs.rtrefactor.preferences.CheckStylePreferencePage"
+            id="edu.washington.cs.rtrefactor.preferences.CheckStylePreferencePage"
+            name="CheckStyle">
+      </page>
+       <page
+            category="edu.washington.cs.rtrefactor.preferences.RtRefactorPreferencePage"
+            class="edu.washington.cs.rtrefactor.preferences.SimianPreferencePage"
+            id="edu.washington.cs.rtrefactor.preferences.SimianPreferencePage"
+            name="Simian">
       </page>
    </extension>
    <extension

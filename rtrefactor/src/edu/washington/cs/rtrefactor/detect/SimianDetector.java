@@ -11,6 +11,8 @@ import com.puppycrawl.tools.checkstyle.DefaultConfiguration;
 import com.puppycrawl.tools.checkstyle.api.AuditEvent;
 import com.puppycrawl.tools.checkstyle.api.CheckstyleException;
 
+import edu.washington.cs.rtrefactor.preferences.PreferenceUtil.Preference;
+
 /**
  * The Simian code clone detection tool. For more information see 
  * <a href="http://www.harukizaemon.com/simian/">http://www.harukizaemon.com/simian/</a>.
@@ -23,10 +25,32 @@ public class SimianDetector extends BaseCheckStyleDetector<SimianCheck> {
 	
 	private static final Pattern EN_REGEX = Pattern.compile("Found ([\\d,]+) lines ending at line ([\\d,]+) duplicated in (.*?) between lines ([\\d,]+) and ([\\d,]+).");
 	
-	
+	public static final Preference<?> PREFERENCES[] = new Preference[]{
+		new Preference<Integer>(NAME, "Threshold", "Minimum number of lines in a match", 6),
+		new Preference<Boolean>(NAME, "IgnoreVariableNames", "Ignore name differences between variables", true),
+		new Preference<Boolean>(NAME, "IgnoreCurlyBraces", "Ignore curly braces", false),
+		new Preference<Boolean>(NAME, "IgnoreIdentifiers", "Completely ignore all identfiers", false),
+		new Preference<Boolean>(NAME, "IgnoreIdentifierCase", "Match identifiers irrespective of case", false),
+		new Preference<Boolean>(NAME, "IgnoreStringCase", "Match string literals irrespective of case", false),
+		new Preference<Boolean>(NAME, "IgnoreStrings", "Ignore differences in strings", false),
+		new Preference<Boolean>(NAME, "IgnoreNumbers", "Ignore differences in numbers", false),
+		new Preference<Boolean>(NAME, "IgnoreCharacters", "Ignore differences in characters", false),
+		new Preference<Boolean>(NAME, "IgnoreCharacterCase", "Ignore differences in character case", false),
+		new Preference<Boolean>(NAME, "IgnoreLiterals", "Ignore differences in literals", false),
+		new Preference<Boolean>(NAME, "IgnoreSubtypeNames", "Ignore name differences between subclasses", false),
+		new Preference<Boolean>(NAME, "IgnoreModifiers", "Ignore modifiers", false),
+		new Preference<Boolean>(NAME, "BalanceParentheses", "Consider expression inside parenthesis split across lines as one", true),
+		new Preference<Boolean>(NAME, "BalanceSquareBrackets", "Consider expression inside square brackets split across lines as one", false),
+	};
 	
 	public SimianDetector(){
 		super(new SimianCheck(), ResourcesPlugin.getWorkspace().getRoot().getLocation().toFile());
+
+		for (Preference<?> x : PREFERENCES){
+			setPreference(x);
+		}
+		
+		getCheck().setLanguage("java");
 		
 		try{
 			getCheck().configure(new DefaultConfiguration(DEFAULT_CONFIG_NAME));

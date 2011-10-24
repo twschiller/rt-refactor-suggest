@@ -6,5 +6,5 @@ package edu.washington.cs.rtrefactor.preferences;
 public class PreferenceConstants {
 
 	public static final String P_CHOICE = "cloneDetector";
-	
+
 }

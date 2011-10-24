@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.jface.preference.IPreferenceStore;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
@@ -15,6 +16,9 @@ import com.puppycrawl.tools.checkstyle.api.AbstractFileSetCheck;
 import com.puppycrawl.tools.checkstyle.api.AuditEvent;
 import com.puppycrawl.tools.checkstyle.api.AuditListener;
 import com.puppycrawl.tools.checkstyle.api.CheckstyleException;
+
+import edu.washington.cs.rtrefactor.Activator;
+import edu.washington.cs.rtrefactor.preferences.PreferenceUtil.Preference;
 
 /**
  * Base class for CheckStyle detector plugins
@@ -26,7 +30,6 @@ public abstract class BaseCheckStyleDetector<T extends AbstractFileSetCheck> imp
 	private final T check;
 	
 	private final List<AuditEvent> errs;
-	
 	
 	/**
 	 * 
@@ -85,6 +88,34 @@ public abstract class BaseCheckStyleDetector<T extends AbstractFileSetCheck> imp
 		public void fileStarted(AuditEvent e) {
 		}
 	}	
+	
+	/** 
+	 * Set the preference set[{@code preference}] via reflection
+	 * @param preference the preference name (case-sensitive)
+	 * @param value value for the preference
+	 */
+	protected <Q> void setPreference(Preference<Q> preference){	
+		IPreferenceStore store = Activator.getDefault().getPreferenceStore();
+		
+		Class<?> clazz = getCheck().getClass();
+		
+		try {
+			String name = "set" + preference.getName();
+			Q val = preference.getDefault();
+			
+			if (val instanceof Integer){
+				clazz.getMethod(name, int.class).invoke(getCheck(), store.getInt(preference.getKey()));
+			}else if (val instanceof Boolean){
+				clazz.getMethod(name, boolean.class).invoke(getCheck(), store.getBoolean(preference.getKey()));		
+			}else if (val instanceof String){
+				clazz.getMethod(name, String.class).invoke(getCheck(), store.getString(preference.getKey()));
+			}else{
+				throw new RuntimeException("Preference type " + val.getClass().getSimpleName() + " not supported");
+			}
+		} catch (Exception e) {
+			throw new RuntimeException("Error setting preference " + preference, e);
+		}
+	}
 	
 	@Override
 	/**
