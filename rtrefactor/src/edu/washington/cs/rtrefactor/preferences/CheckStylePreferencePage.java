@@ -9,6 +9,8 @@ import edu.washington.cs.rtrefactor.Activator;
 import edu.washington.cs.rtrefactor.detect.CheckStyleDetector;
 
 /**
+ * Preference Page for the CheckStyle code duplicate code detector
+ * 
  * This class represents a preference page that
  * is contributed to the Preferences dialog. By 
  * subclassing <samp>FieldEditorPreferencePage</samp>, we
