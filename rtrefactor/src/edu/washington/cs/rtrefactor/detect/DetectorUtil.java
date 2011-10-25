@@ -1,7 +1,9 @@
 package edu.washington.cs.rtrefactor.detect;
 
 import java.io.File;
-import java.util.List;
+import java.io.IOException;
+import java.nio.charset.Charset;
+import java.util.Map;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
@@ -12,7 +14,9 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 
 import com.google.common.base.Predicate;
-import com.google.common.collect.Lists;
+import com.google.common.collect.BiMap;
+import com.google.common.collect.HashBiMap;
+import com.google.common.io.Files;
 
 /**
  * Common utility methods for code clone detectors
@@ -20,36 +24,59 @@ import com.google.common.collect.Lists;
  */
 public abstract class DetectorUtil {
 
+	// TODO introduce types so that the BiMap type parameters aren't the same (i.e., qualified types?)
+	
 	/**
 	 * Get all {@code .java} files in the workspace
-	 * @return all {@code .java} files in the workspace
+	 * @param dirty the active buffer content for dirty files
+	 * @return map from underlying {@code .java} buffers to files containing their content
 	 * @throws CoreException iff a resource is not accessible
+	 * @throws IOException iff a temporary file could not be created for a dirty buffer
 	 */
-	public static List<File> collect() throws CoreException{
-		List<File> files = Lists.newArrayList();
+	public static BiMap<File,File> collect(Map<File, String> dirty) throws CoreException, IOException{
+		BiMap<File,File> files = HashBiMap.create();
 		IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
-		collect(root, files);
+		collect(root, dirty, files);
 		return files;
 	}
 	
 	
 	/**
-	 * Add the {@code .java} files contained within {@code resource} to the list {@code files}
+	 * Add the {@code .java} files contained within {@code resource} to the map {@code files}
 	 * @param resource the Eclipse resource
-	 * @param files a non-null list of files
+	 * @param dirty the active buffer content for dirty files
+	 * @param files map from underlying {@code .java} buffers to files containing their content
 	 * @throws CoreException iff a resource is not accessible
+	 * @throws IOException iff a temporary file could not be created for a dirty buffer
 	 */
-	public static void collect(IResource resource, List<File> files) throws CoreException{
+	public static void collect(IResource resource, Map<File, String> dirty, BiMap<File,File> files) throws CoreException, IOException{
 		if (resource instanceof IFile){
 			IFile f = (IFile) resource;
 			
 			if (f.getFileExtension() != null && f.getFileExtension().equals("java")){
-				files.add(f.getLocation().toFile());
+				
+				boolean isDirty = false;
+				
+				for (File df : dirty.keySet()){
+					if (df.equals(f.getLocation().toFile())){
+						File tmp = File.createTempFile("rtrefactor", ".java");
+						Files.write(dirty.get(df), tmp, Charset.defaultCharset());
+						
+						files.put(f.getLocation().toFile(), tmp);
+						
+						isDirty = true;
+						break;
+					}
+				}
+				
+				if (!isDirty){
+					files.put(f.getLocation().toFile(), f.getLocation().toFile());
+				}
 			}
 		}
 		else if (resource instanceof IFolder){
 			for (IResource s : ((IFolder) resource).members(false)){
-				collect(s, files);
+				collect(s, dirty, files);
 			}
 		}
 	}
@@ -58,13 +85,16 @@ public abstract class DetectorUtil {
 	 * Add the {@code .java} files contained within the workspace to the list {@code files}. Skips
 	 * projects that are closed.
 	 * @param workspace the workspace
+	 * @param dirty the active buffer content for dirty files
+	 * @param files map from underlying {@code .java} buffers to files containing their content
 	 * @throws CoreException iff a resource is not accessible
+	 * @throws IOException iff a temporary file could not be created for a dirty buffer
 	 */
-	public static void collect(IWorkspaceRoot workspace, List<File> files) throws CoreException{
+	public static void collect(IWorkspaceRoot workspace, Map<File, String> dirty, BiMap<File,File> files) throws CoreException, IOException{
 		for (IProject project : workspace.getProjects()){
 			if (project.isOpen()){
 				for (IResource r : project.members(false)){
-					collect(r, files);
+					collect(r, dirty, files);
 				}
 			}
 		}
@@ -87,5 +117,4 @@ public abstract class DetectorUtil {
 			return active.overlaps(pair.getFirst()) || active.overlaps(pair.getSecond());
 		}
 	}
-	
 }

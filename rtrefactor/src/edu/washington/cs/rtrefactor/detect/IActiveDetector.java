@@ -1,6 +1,7 @@
 package edu.washington.cs.rtrefactor.detect;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Map;
 import java.util.Set;
 
@@ -18,8 +19,9 @@ public interface IActiveDetector {
 	 * @param active the active region
 	 * @return the set of code clone pairs
 	 * @throws CoreException iff there is an error accessing a resource
+	 * @throws IOException iff a temporary file could not be created for a dirty buffer
 	 */
-	Set<ClonePair> detect(Map<File, String> dirty, SourceRegion active) throws CoreException;
+	Set<ClonePair> detect(Map<File, String> dirty, SourceRegion active) throws CoreException, IOException;
 	
 	/**
 	 * Get the name of the detector
