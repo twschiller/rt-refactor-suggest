@@ -1,8 +1,9 @@
 package edu.washington.cs.rtrefactor.detect;
 
 import java.io.File;
+import java.io.IOException;
+import java.util.Collection;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -20,7 +21,8 @@ import org.eposoft.jccd.detectors.ASTDetector;
 import org.eposoft.jccd.preprocessors.APreprocessor;
 
 import com.google.common.base.Function;
-import com.google.common.collect.Lists;
+import com.google.common.collect.BiMap;
+import com.google.common.collect.Collections2;
 import com.google.common.collect.Sets;
 
 import edu.washington.cs.rtrefactor.Activator;
@@ -126,16 +128,19 @@ public class JccdDetector implements IActiveDetector, IDetector{
 	
 	/**
 	 * Convert a JCCD node describing a region to the common region interface
+	 * @param map from result filenames to Eclipse resource filenames
 	 * @param node JCCD analysis node
-	 * @return 
+	 * @return a source region
 	 */
-	private static SourceRegion mkRegion(ANode node){
+	private static SourceRegion mkRegion(BiMap<File, File> files, ANode node){
 		SourceUnitPosition minPos = APipeline.getFirstNodePosition(node);
 		SourceUnitPosition maxPos = APipeline.getLastNodePosition(node);	
 		
+		File underlying = files.get(getFile(node));
+		
 		return new SourceRegion(
-				new SourceLocation(getFile(node), minPos.getLine(), minPos.getCharacter()),
-				new SourceLocation(getFile(node), maxPos.getLine(), maxPos.getCharacter())
+				new SourceLocation(underlying, minPos.getLine(), minPos.getCharacter()),
+				new SourceLocation(underlying, maxPos.getLine(), maxPos.getCharacter())
 				);
 	}
 	
@@ -143,8 +148,8 @@ public class JccdDetector implements IActiveDetector, IDetector{
 	/**
 	 * {@inheritDoc}
 	 */
-	public Set<ClonePair> detect(Map<File, String> dirty, SourceRegion active)
-			throws CoreException {
+	public Set<ClonePair> detect(Map<File, String> dirty, SourceRegion active) throws CoreException, IOException {
+		
 		return new HashSet<ClonePair>(Sets.filter(detect(dirty), new DetectorUtil.ActiveRegion(active)));
 	}
 
@@ -152,12 +157,13 @@ public class JccdDetector implements IActiveDetector, IDetector{
 	/**
 	 * {@inheritDoc}
 	 */
-	public Set<ClonePair> detect(Map<File, String> dirty) throws CoreException {
+	public Set<ClonePair> detect(Map<File, String> dirty) throws CoreException, IOException {
 		Set<ClonePair> result = Sets.newHashSet();
 		
-		List<File> files = DetectorUtil.collect();
+		// switch direction: result name -> resource name
+		BiMap<File, File> files = DetectorUtil.collect(dirty).inverse();
 	
-		List<JCCDFile> jccdFiles = Lists.transform(files, new Function<File, JCCDFile>(){
+		Collection<JCCDFile> jccdFiles = Collections2.transform(files.keySet(), new Function<File, JCCDFile>(){
 			@Override
 			public JCCDFile apply(File input) {
 				return new JCCDFile(input);
@@ -171,8 +177,8 @@ public class JccdDetector implements IActiveDetector, IDetector{
 		for (SimilarityPair p : m.getPairs()){
 			result.add(
 				new ClonePair(
-					mkRegion((ANode) p.getFirstNode()),
-					mkRegion((ANode) p.getSecondNode()),
+					mkRegion(files, (ANode) p.getFirstNode()),
+					mkRegion(files, (ANode) p.getSecondNode()),
 					qualityScore(p)));
 		}
 	

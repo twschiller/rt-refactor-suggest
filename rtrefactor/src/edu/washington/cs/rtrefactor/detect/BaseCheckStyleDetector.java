@@ -1,6 +1,7 @@
 package edu.washington.cs.rtrefactor.detect;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -9,6 +10,7 @@ import java.util.Set;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.preference.IPreferenceStore;
 
+import com.google.common.collect.BiMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.puppycrawl.tools.checkstyle.Checker;
@@ -121,28 +123,47 @@ public abstract class BaseCheckStyleDetector<T extends AbstractFileSetCheck> imp
 	/**
 	 * {@inheritDoc}
 	 */
-	public Set<ClonePair> detect(Map<File, String> dirty, SourceRegion active) throws CoreException{	
+	public Set<ClonePair> detect(Map<File, String> dirty, SourceRegion active) throws CoreException, IOException{	
 		return new HashSet<ClonePair>(Sets.filter(detect(dirty), new DetectorUtil.ActiveRegion(active)));
 	}
 	
 	/**
+	 * If file path is relative, return absolute path from base directory; otherwise,
+	 * return the file
+	 * @param file the file
+	 * @return the corresponding file object with an absolute path
+	 */
+	public File absolutePath(File file){
+		if (file.isAbsolute()){
+			return file;
+		}else{
+			return new File(checker.getBasedir(), file.getPath());
+		}
+	}
+	
+	/**
 	 * Construct a clone pair from a detector audit event
+	 * @param files map from result filenames to Eclipse resource filenames
 	 * @param e the audit event
 	 * @return the clone pair
 	 */
-	protected abstract ClonePair makeClonePair(AuditEvent e);
+	protected abstract ClonePair makeClonePair(BiMap<File,File> files, AuditEvent e);
 	
 	@Override
 	/**
 	 * {@inheritDoc}
 	 */
-	public Set<ClonePair> detect(Map<File, String> dirty) throws CoreException {
-		checker.process(DetectorUtil.collect());
+	public Set<ClonePair> detect(Map<File, String> dirty) throws CoreException, IOException {
+		
+		// switch: view is result name -> Eclipse resource underlier
+		BiMap<File,File> files = DetectorUtil.collect(dirty).inverse();
+		
+		checker.process(Lists.newArrayList(files.keySet()));
 		checker.destroy();
 		
 		HashSet<ClonePair> result = new HashSet<ClonePair>();
 		for (AuditEvent e : errs){
-			result.add(makeClonePair(e));
+			result.add(makeClonePair(files, e));
 		}
 		return result;
 	}	

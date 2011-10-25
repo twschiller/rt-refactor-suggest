@@ -6,6 +6,7 @@ import java.util.regex.Pattern;
 
 import org.eclipse.core.resources.ResourcesPlugin;
 
+import com.google.common.collect.BiMap;
 import com.harukizaemon.simian.SimianCheck;
 import com.puppycrawl.tools.checkstyle.DefaultConfiguration;
 import com.puppycrawl.tools.checkstyle.api.AuditEvent;
@@ -67,22 +68,26 @@ public class SimianDetector extends BaseCheckStyleDetector<SimianCheck> {
 		return NAME;
 	}
 
-	private SourceRegion mkRegion(AuditEvent e, Matcher m){
+	private SourceRegion mkRegion(BiMap<File, File> files, AuditEvent e, Matcher m){
 		int endLine = Integer.parseInt(m.group(2).replace(",",""));
 		
+		File underlier = files.get(super.absolutePath(new File(e.getFileName())));
+		
 		return new SourceRegion(
-				new SourceLocation(new File(e.getFileName()), e.getLine(), 0),
-				new SourceLocation(new File(e.getFileName()), endLine + 1, 0));
+				new SourceLocation(underlier, e.getLine(), 0),
+				new SourceLocation(underlier, endLine + 1, 0));
 	}
 	
-	private SourceRegion mkOtherRegion(AuditEvent e, Matcher m){
+	private SourceRegion mkOtherRegion(BiMap<File, File> files, AuditEvent e, Matcher m){
 		File src = new File(m.group(3));
 		int otherStart = Integer.parseInt(m.group(4).replace(",",""));
 		int otherEnd = Integer.parseInt(m.group(5).replace(",",""));
 		
+		File underlier = files.get(super.absolutePath(src));
+		
 		return new SourceRegion(
-				new SourceLocation(src, otherStart, 0),
-				new SourceLocation(src, otherEnd + 1, 0));
+				new SourceLocation(underlier, otherStart, 0),
+				new SourceLocation(underlier, otherEnd + 1, 0));
 	}
 	
 	private double quality(AuditEvent e, Matcher m){
@@ -97,11 +102,11 @@ public class SimianDetector extends BaseCheckStyleDetector<SimianCheck> {
 	/**
 	 * {@inheritDoc}
 	 */
-	protected ClonePair makeClonePair(AuditEvent e) {
+	protected ClonePair makeClonePair(BiMap<File, File> files, AuditEvent e) {
 		Matcher m = EN_REGEX.matcher(e.getMessage());
 		
 		if (m.matches()){
-			return new ClonePair(mkRegion(e,m), mkOtherRegion(e,m), quality(e,m));
+			return new ClonePair(mkRegion(files, e, m), mkOtherRegion(files, e, m), quality(e,m));
 		}else{
 			throw new RuntimeException("Internal error parsing Simian message: " + e.getMessage());	
 		}
