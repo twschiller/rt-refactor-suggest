@@ -5,6 +5,7 @@ import org.eclipse.jface.preference.IPreferenceStore;
 
 import edu.washington.cs.rtrefactor.Activator;
 import edu.washington.cs.rtrefactor.detect.CheckStyleDetector;
+import edu.washington.cs.rtrefactor.detect.JccdDetector;
 import edu.washington.cs.rtrefactor.detect.SimianDetector;
 import edu.washington.cs.rtrefactor.preferences.PreferenceUtil.Preference;
 
@@ -21,8 +22,9 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
 	 */
 	public void initializeDefaultPreferences() {
 		IPreferenceStore store = Activator.getDefault().getPreferenceStore();
-		store.setDefault(PreferenceConstants.P_CHOICE, "JCCD");
+		store.setDefault(PreferenceConstants.P_CHOICE, "Simian");
 	
+		initializeDefaultPreferences(store, JccdDetector.PREFERENCES);
 		initializeDefaultPreferences(store, CheckStyleDetector.PREFERENCES);
 		initializeDefaultPreferences(store, SimianDetector.PREFERENCES);
 	}

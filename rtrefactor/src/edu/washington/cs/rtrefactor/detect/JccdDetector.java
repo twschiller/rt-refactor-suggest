@@ -1,13 +1,13 @@
 package edu.washington.cs.rtrefactor.detect;
 
 import java.io.File;
-import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.eposoft.jccd.data.ASourceUnit;
 import org.eposoft.jccd.data.JCCDFile;
 import org.eposoft.jccd.data.SimilarityGroupManager;
@@ -17,17 +17,14 @@ import org.eposoft.jccd.data.ast.ANode;
 import org.eposoft.jccd.data.ast.NodeTypes;
 import org.eposoft.jccd.detectors.APipeline;
 import org.eposoft.jccd.detectors.ASTDetector;
-import org.eposoft.jccd.preprocessors.java.CompleteToBlock;
-import org.eposoft.jccd.preprocessors.java.GeneralizeClassDeclarationNames;
-import org.eposoft.jccd.preprocessors.java.GeneralizeMethodArgumentTypes;
-import org.eposoft.jccd.preprocessors.java.GeneralizeMethodDeclarationNames;
-import org.eposoft.jccd.preprocessors.java.GeneralizeMethodReturnTypes;
-import org.eposoft.jccd.preprocessors.java.GeneralizeVariableDeclarationTypes;
-import org.eposoft.jccd.preprocessors.java.GeneralizeVariableNames;
+import org.eposoft.jccd.preprocessors.APreprocessor;
 
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+
+import edu.washington.cs.rtrefactor.Activator;
+import edu.washington.cs.rtrefactor.preferences.PreferenceUtil.Preference;
 
 /**
  * A simple clone detector using the <a href="http://jccd.sourceforge.net/">JCCD clone detection pipeline</a>  
@@ -43,56 +40,54 @@ public class JccdDetector implements IActiveDetector, IDetector{
 //			return Double.compare(qualityScore(o1), qualityScore(o2));
 //		}
 //	});
+	
 	public static final String NAME = "JCCD";
+	
+	private static final String PREPROCESSOR_PACKAGE = "org.eposoft.jccd.preprocessors.java";
 	
 	private final APipeline<?> detector = new ASTDetector();
 
-	/**
-	 * JCCD Clone Detection Options
-	 * @author Todd Schiller
-	 */
-	public enum JccdOptions{
-		GeneralizeMethodDeclarationNames,
-		GeneralizeVariableNames,
-		CompleteToBlock,
-		GeneralizeMethodArgumentTypes,
-		GeneralizeMethodReturnTypes,
-		GeneralizeVariableDeclarationTypes,
-		GeneralizeClassDeclarationNames
-	}
+	// TODO add the other configuration options
+	
+	public static final Preference<?> PREFERENCES[] = new Preference[]{
+		new Preference<Boolean>(NAME, "GeneralizeMethodDeclarationNames", "Ignore method declaration names", true),
+		new Preference<Boolean>(NAME, "GeneralizeVariableNames", "Ignore variable names", true),
+		new Preference<Boolean>(NAME, "CompleteToBlock", "Adds blocks to single arguments around control flow", false),
+		new Preference<Boolean>(NAME, "GeneralizeMethodArgumentTypes", "Ignore method argument types", false),
+		new Preference<Boolean>(NAME, "GeneralizeMethodReturnTypes", "Ignore method return types", false),
+		new Preference<Boolean>(NAME, "GeneralizeClassDeclarationNames", "Ignore class declaration names", true),
+	};
 	
 	/**
-	 * Create a JCCD code clone detector with all options activate
+	 * Create a JCCD code clone detector using the options from the Eclipse preference page
 	 */
 	public JccdDetector(){
-		this(EnumSet.allOf(JccdOptions.class));
+		for (Preference<?> x : PREFERENCES){
+			setPreference(x);
+		}	
 	}
 	
 	/**
-	 * Create a JCCD code clone detector with the given set of options activated
-	 * @param options the active set of options
+	 * Set the JCCD preferences by reflectively instantiating corresponding operator
+	 * @param preference the preference descriptor
 	 */
-	public JccdDetector(EnumSet<JccdOptions> options){
-		if (options.contains(JccdOptions.GeneralizeClassDeclarationNames)){
-			detector.addOperator(new GeneralizeClassDeclarationNames());
-		}
-		if (options.contains(JccdOptions.GeneralizeMethodDeclarationNames)){
-			detector.addOperator(new GeneralizeMethodDeclarationNames());
-		}
-		if (options.contains(JccdOptions.GeneralizeVariableNames)){
-			detector.addOperator(new GeneralizeVariableNames());
-		}
-		if (options.contains(JccdOptions.CompleteToBlock)){
-			detector.addOperator(new CompleteToBlock());
-		}
-		if (options.contains(JccdOptions.GeneralizeMethodArgumentTypes)){
-			detector.addOperator(new GeneralizeMethodArgumentTypes());
-		}
-		if (options.contains(JccdOptions.GeneralizeMethodReturnTypes)){
-			detector.addOperator(new GeneralizeMethodReturnTypes());
-		}
-		if (options.contains(JccdOptions.GeneralizeVariableDeclarationTypes)){
-			 detector.addOperator(new GeneralizeVariableDeclarationTypes());
+	private <Q> void setPreference(Preference<Q> preference){	
+		IPreferenceStore store = Activator.getDefault().getPreferenceStore();
+		
+		try {
+			String name = "set" + preference.getName();
+			Q val = preference.getDefault();
+			
+			if (val instanceof Boolean){
+				if (store.getBoolean(name)){
+					detector.addOperator((APreprocessor) Class.forName(PREPROCESSOR_PACKAGE + "." + name).newInstance());
+				}
+			}else{
+				throw new RuntimeException("Preference type " + val.getClass().getSimpleName() + " not supported");
+			}
+			
+		} catch (Exception e) {
+			throw new RuntimeException("Error setting preference " + preference, e);
 		}
 	}
 	

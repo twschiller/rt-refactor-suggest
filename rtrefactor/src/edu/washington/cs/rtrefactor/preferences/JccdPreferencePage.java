@@ -1,12 +1,16 @@
 package edu.washington.cs.rtrefactor.preferences;
 
-import org.eclipse.jface.preference.*;
-import org.eclipse.ui.IWorkbenchPreferencePage;
+import org.eclipse.jface.preference.FieldEditor;
+import org.eclipse.jface.preference.FieldEditorPreferencePage;
 import org.eclipse.ui.IWorkbench;
+import org.eclipse.ui.IWorkbenchPreferencePage;
 
 import edu.washington.cs.rtrefactor.Activator;
+import edu.washington.cs.rtrefactor.detect.JccdDetector;
 
 /**
+ * Preference Page for the JCCD code clone detector pipeline
+ * 
  * This class represents a preference page that
  * is contributed to the Preferences dialog. By 
  * subclassing <samp>FieldEditorPreferencePage</samp>, we
@@ -20,14 +24,15 @@ import edu.washington.cs.rtrefactor.Activator;
  * be accessed directly via the preference store.
  */
 
-public class RtRefactorPreferencePage
+public class JccdPreferencePage
 	extends FieldEditorPreferencePage
 	implements IWorkbenchPreferencePage {
 
-	public RtRefactorPreferencePage() {
+	
+	public JccdPreferencePage() {
 		super(GRID);
 		setPreferenceStore(Activator.getDefault().getPreferenceStore());
-		setDescription("RT Refactor Code Detector Configuration");
+		setDescription("JCCD Clone Detection Pipeline Preferences");
 	}
 	
 	/**
@@ -38,15 +43,14 @@ public class RtRefactorPreferencePage
 	 */
 	public void createFieldEditors() {
 	
-		addField(new RadioGroupFieldEditor(
-				PreferenceConstants.P_CHOICE,
-			"Code Clone Detector",
-			1,
-			new String[][] { 
-				{"CheckStyle", "CheckStyle" },
-				{ "JCCD", "JCCD" }, 
-				{"Simian", "Simian" },
-		}, getFieldEditorParent()));
+		PreferenceUtil.createFieldEditor(getFieldEditorParent(), 
+				new PreferenceUtil.FieldAdder() {
+					@Override
+					public void addField(FieldEditor editor) {
+						JccdPreferencePage.this.addField(editor);
+					}
+				}, 
+				JccdDetector.PREFERENCES);
 	}
 
 	/* (non-Javadoc)
