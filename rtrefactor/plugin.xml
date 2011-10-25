@@ -15,6 +15,12 @@
             id="edu.washington.cs.rtrefactor.preferences.CheckStylePreferencePage"
             name="CheckStyle">
       </page>
+      <page
+            category="edu.washington.cs.rtrefactor.preferences.RtRefactorPreferencePage"
+            class="edu.washington.cs.rtrefactor.preferences.JccdPreferencePage"
+            id="edu.washington.cs.rtrefactor.preferences.JccdPreferencePage"
+            name="JCCD">
+       </page>
        <page
             category="edu.washington.cs.rtrefactor.preferences.RtRefactorPreferencePage"
             class="edu.washington.cs.rtrefactor.preferences.SimianPreferencePage"
