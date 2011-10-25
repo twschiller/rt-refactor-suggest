@@ -70,5 +70,56 @@
          </action>
       </actionSet>
    </extension>
-
+   
+   
+    <extension
+         point="org.eclipse.ui.editors">
+      <editor
+            class="edu.washington.cs.rtrefactor.reconciler.CloneEditor"
+            contributorClass="org.eclipse.jdt.internal.ui.javaeditor.CompilationUnitEditorActionContributor"
+            default="true"
+            extensions="java"
+            icon="icons/sample.gif"
+            id="edu.washington.cs.rtrefactor.reconciler.CloneEditor"
+            name="Java Clone Editor">
+      </editor>
+   </extension>
+   
+   <extension
+         id="cloneMarker"
+         name="Clone Marker"
+         point="org.eclipse.core.resources.markers">
+         <super type="org.eclipse.core.resources.textmarker"/>         
+     	 <persistent value="true"/>   
+   </extension>
+   
+   <extension point="org.eclipse.ui.editors.annotationTypes">
+     <type
+       super="org.eclipse.ui.workbench.texteditor.warning"
+        markerType="rtrefactor.cloneMarker"
+        name="rtrefactor.cloneAnnotation"
+        />
+    </extension>
+    
+     <extension point="org.eclipse.ui.editors.markerAnnotationSpecification">
+     <specification
+        annotationType="rtrefactor.cloneAnnotation"
+        icon="icons/sample.gif"
+        quickFixIcon="icons/marker.png"
+        label="Clone Marking"
+        presentationLayer="0"
+        includeOnPreferencePage="true"
+        colorPreferenceKey="rtrefactor.highlight.color"
+        colorPreferenceValue="255,0,255"
+        highlightPreferenceKey="highlight.background"
+        highlightPreferenceValue="true"
+        textPreferenceKey="rtrefactor.highlight.text"
+        textPreferenceValue="true"
+        textStylePreferenceKey="rtrefactor.highlight.text.style"
+        textStylePreferenceValue="IBEAM"
+        overviewRulerPreferenceKey="rtrefactor.overview"
+        overviewRulerPreferenceValue="true"
+        verticalRulerPreferenceKey="rtrefactor.verticalRuler"
+        verticalRulerPreferenceValue="true"/>
+  </extension>
 </plugin>
