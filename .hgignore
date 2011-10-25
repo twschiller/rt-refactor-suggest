@@ -11,3 +11,5 @@ syntax: glob
 bib
 
 rtrefactor/bin
+glob:pub/proposal/rt-refactoring-proposal - Copy.tex
+glob:*.orig
