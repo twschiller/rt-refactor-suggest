@@ -71,11 +71,18 @@ public class SimianDetector extends BaseCheckStyleDetector<SimianCheck> {
 	private SourceRegion mkRegion(BiMap<File, File> files, AuditEvent e, Matcher m){
 		int endLine = Integer.parseInt(m.group(2).replace(",",""));
 		
-		File underlier = files.get(super.absolutePath(new File(e.getFileName())));
+		File abs = super.absolutePath(super.absolutePath(new File(e.getFileName())));
 		
-		return new SourceRegion(
+		
+		if (files.containsKey(abs)){
+			File underlier = files.get(abs);
+		
+			return new SourceRegion(
 				new SourceLocation(underlier, e.getLine(), 0),
 				new SourceLocation(underlier, endLine + 1, 0));
+		}else{
+			throw new RuntimeException("internal error: temporary source file " + abs.getAbsolutePath() + " is not registered");
+		}
 	}
 	
 	private SourceRegion mkOtherRegion(BiMap<File, File> files, AuditEvent e, Matcher m){
@@ -83,11 +90,17 @@ public class SimianDetector extends BaseCheckStyleDetector<SimianCheck> {
 		int otherStart = Integer.parseInt(m.group(4).replace(",",""));
 		int otherEnd = Integer.parseInt(m.group(5).replace(",",""));
 		
-		File underlier = files.get(super.absolutePath(src));
-		
-		return new SourceRegion(
-				new SourceLocation(underlier, otherStart, 0),
-				new SourceLocation(underlier, otherEnd + 1, 0));
+		File abs = super.absolutePath(src);
+				
+		if (files.containsKey(abs)){
+			File underlier = files.get(abs);
+			
+			return new SourceRegion(
+					new SourceLocation(underlier, otherStart, 0),
+					new SourceLocation(underlier, otherEnd + 1, 0));			
+		}else{
+			throw new RuntimeException("internal error: temporary source file " + abs.getAbsolutePath() + " is not registered");
+		}
 	}
 	
 	private double quality(AuditEvent e, Matcher m){

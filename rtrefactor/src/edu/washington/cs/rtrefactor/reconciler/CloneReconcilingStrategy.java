@@ -1,7 +1,6 @@
 package edu.washington.cs.rtrefactor.reconciler;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -9,7 +8,6 @@ import java.util.Set;
 
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.preference.IPreferenceStore;
@@ -105,7 +103,7 @@ public class CloneReconcilingStrategy implements IReconcilingStrategy,IReconcili
 			return;
 		}
 		
-		System.out.println("Running detector!");
+		CloneReconciler.reconcilerLog.debug("Running clone detector");
 		
 		/*Perform either incremental or non-incremental reconcile*/
 		SourceRegion active;
@@ -113,12 +111,12 @@ public class CloneReconcilingStrategy implements IReconcilingStrategy,IReconcili
 		{
 			active = new SourceRegion(convertOffset(dirtyRegion.getOffset()), 
 					convertOffset(dirtyRegion.getOffset() + dirtyRegion.getLength()) );
-			System.out.println("incremental detection, dirty region is " + dirtyRegion.getText());
 		}
-		else
+		else{
 			active = new SourceRegion(new SourceLocation(fFile, 0, 0), 
 					new SourceLocation(fFile, lines-1, lastOff));
-		
+		}
+			
 		/*Clear the annotations that overlap with the target area*/
 		removeAnnotations(convertSourceLocation(active.getStart()), convertSourceLocation(active.getEnd()));
 		
@@ -127,17 +125,19 @@ public class CloneReconcilingStrategy implements IReconcilingStrategy,IReconcili
 		try {
 			hs = detector.detect(dirty, active);
 		} catch (Exception e) {
-			e.printStackTrace();
-			System.out.println("detector failed!");
+			CloneReconciler.reconcilerLog.error("Clone detection failed", e);
 			return;
 		} 
 		
-		System.out.println("Detector returned " + hs.size() + " pairs");
+		CloneReconciler.reconcilerLog.debug("Detector returned " + hs.size() + " pairs");
+		
 		/*Mark the clones in the file*/
 		for(ClonePair cp : hs)
 		{
 			boolean added = false;
-			System.out.println(cp.getFirst().getFile() +" "+ cp.getSecond().getFile());
+			
+			CloneReconciler.reconcilerLog.debug("Marking clone pair: " + cp.getFirst().getFile().getName() + " " + cp.getSecond().getFile().getName());
+			
 			if(cp.getFirst().getFile().equals(fFile))
 			{
 				addAnnotation(cp.getFirst());
@@ -152,9 +152,6 @@ public class CloneReconcilingStrategy implements IReconcilingStrategy,IReconcili
 			/* We should always add at least one annotation per pair*/
 			assert added ;
 		}
-		
-		
-		
 	}
 
 	@Override
@@ -173,12 +170,10 @@ public class CloneReconcilingStrategy implements IReconcilingStrategy,IReconcili
 	/* Adds a clone annotation to the given source region*/
 	private void addAnnotation(SourceRegion r)
 	{
-		
-		System.out.println("Adding annotation!");
+		CloneReconciler.reconcilerLog.debug("Adding annotation to source region");
 		int off = convertSourceLocation(r.getStart());
 		int len = convertSourceLocation(r.getEnd()) - off;
 		fAnnotationModel.addAnnotation(new CloneAnnotation(), new Position(off, len));
-
 	}
 	
 	/*

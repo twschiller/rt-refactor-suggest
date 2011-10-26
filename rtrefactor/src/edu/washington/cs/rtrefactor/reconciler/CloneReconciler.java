@@ -1,5 +1,6 @@
 package edu.washington.cs.rtrefactor.reconciler;
 
+import org.apache.log4j.Logger;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.reconciler.DirtyRegion;
 import org.eclipse.jface.text.reconciler.IReconcilingStrategy;
@@ -13,6 +14,8 @@ import edu.washington.cs.rtrefactor.preferences.PreferenceConstants;
  */
 public class CloneReconciler extends MonoReconciler{
 
+	public static Logger reconcilerLog = Logger.getLogger("reconciler");
+	
 	/*The latest value of the incremental preference*/
 	Boolean fIncrementalPreference = null; 
 
@@ -43,7 +46,7 @@ public class CloneReconciler extends MonoReconciler{
 		Boolean incremental = store.getBoolean(PreferenceConstants.P_INCREMENT);
 		if(incremental != fIncrementalPreference)
 		{
-			System.out.println("changing incremental to " + incremental);
+			reconcilerLog.info("Changing incremental to " + incremental);
 			fIncrementalPreference = incremental;
 			setIsIncrementalReconciler(fIncrementalPreference);
 			return true;

@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.Map;
 
+import org.apache.log4j.Logger;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
@@ -24,6 +25,9 @@ import com.google.common.io.Files;
  */
 public abstract class DetectorUtil {
 
+	private static final String DETECTOR_LOG_NAME = "detector";
+	public static final Logger detectLog = Logger.getLogger(DETECTOR_LOG_NAME);
+	
 	// TODO introduce types so that the BiMap type parameters aren't the same (i.e., qualified types?)
 	
 	/**
@@ -61,6 +65,8 @@ public abstract class DetectorUtil {
 					if (df.equals(f.getLocation().toFile())){
 						File tmp = File.createTempFile("rtrefactor", ".java");
 						Files.write(dirty.get(df), tmp, Charset.defaultCharset());
+						
+						detectLog.debug("Registered temporary file " + tmp.getAbsolutePath() + " for dirty buffer " + df.getAbsolutePath());
 						
 						files.put(f.getLocation().toFile(), tmp);
 						

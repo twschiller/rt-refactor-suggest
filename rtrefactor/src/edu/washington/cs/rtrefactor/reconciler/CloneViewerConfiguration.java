@@ -30,7 +30,4 @@ public class CloneViewerConfiguration extends JavaSourceViewerConfiguration {
 		}
 		return null;
 	}
-
-
-
 }

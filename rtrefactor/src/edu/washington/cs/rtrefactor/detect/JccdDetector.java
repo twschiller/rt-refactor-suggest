@@ -158,6 +158,8 @@ public class JccdDetector implements IActiveDetector, IDetector{
 	 * {@inheritDoc}
 	 */
 	public Set<ClonePair> detect(Map<File, String> dirty) throws CoreException, IOException {
+		DetectorUtil.detectLog.debug("Begin full clone detection with detector JCCD");
+		
 		Set<ClonePair> result = Sets.newHashSet();
 		
 		// switch direction: result name -> resource name
@@ -181,7 +183,8 @@ public class JccdDetector implements IActiveDetector, IDetector{
 					mkRegion(files, (ANode) p.getSecondNode()),
 					qualityScore(p)));
 		}
-	
+		
+		DetectorUtil.detectLog.debug("End full clone detection with detector JCCD");
 		return result;
 	}
 	
