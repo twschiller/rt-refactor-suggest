@@ -1,7 +1,6 @@
 package edu.washington.cs.rtrefactor.reconciler;
 
 
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jdt.internal.ui.JavaPlugin;
 import org.eclipse.jdt.internal.ui.javaeditor.CompilationUnitEditor;
 import org.eclipse.jdt.ui.text.IJavaPartitions;
@@ -13,7 +12,6 @@ import org.eclipse.jface.text.source.IOverviewRuler;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.jface.text.source.IVerticalRuler;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.ui.IEditorInput;
 
 /* This editor is like a java editor, but extending with clone detection
  * functionality.

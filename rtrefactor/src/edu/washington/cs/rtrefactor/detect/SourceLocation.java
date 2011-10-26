@@ -14,12 +14,21 @@ public class SourceLocation implements Comparable<SourceLocation>{
 	
 	/**
 	 * Construct a record describing a location in a source file
-	 * @param file the source file, or file underlying the buffer
-	 * @param line the line number
-	 * @param offset the offset on the line
+	 * @param file the source file, or file underlying the buffer (non-null)
+	 * @param line the line number (>= 0)
+	 * @param offset the offset on the line (>= 0)
 	 */
 	public SourceLocation(File file, int line, int offset) {
 		super();
+		
+		if (file == null){
+			throw new NullPointerException("Attempt to create source location with no associated source file");
+		}else if (line < 0){
+			throw new IllegalArgumentException("Attempt to create source location with a negative line number");
+		}else if (offset < 0){
+			throw new IllegalArgumentException("Attempt to create source location with a negative line offset");	
+		}
+		
 		this.file = file;
 		this.line = line;
 		this.offset = offset;
@@ -57,9 +66,9 @@ public class SourceLocation implements Comparable<SourceLocation>{
 	 */
 	public int compareTo(SourceLocation o) {
 		if (o == null){
-			throw new NullPointerException();
+			throw new NullPointerException("Attempt to compare source location to null");
 		}else if(!file.equals(o.file)){
-			throw new IllegalArgumentException();
+			throw new IllegalArgumentException("Cannot compare source locations with different underlying files");
 		}
 		
 		if (line == o.line){

@@ -154,6 +154,7 @@ public abstract class BaseCheckStyleDetector<T extends AbstractFileSetCheck> imp
 	 * {@inheritDoc}
 	 */
 	public Set<ClonePair> detect(Map<File, String> dirty) throws CoreException, IOException {
+		DetectorUtil.detectLog.debug("Begin full clone detection with detector " + check.getClass().getName());
 		
 		// switch: view is result name -> Eclipse resource underlier
 		BiMap<File,File> files = DetectorUtil.collect(dirty).inverse();
@@ -165,6 +166,11 @@ public abstract class BaseCheckStyleDetector<T extends AbstractFileSetCheck> imp
 		for (AuditEvent e : errs){
 			result.add(makeClonePair(files, e));
 		}
+		
+		// clear errors from the previous run
+		errs.clear();
+		
+		DetectorUtil.detectLog.debug("End full clone detection with detector " + check.getClass().getName());
 		return result;
 	}	
 	
