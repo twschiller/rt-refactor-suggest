@@ -47,6 +47,10 @@ public class RtRefactorPreferencePage
 				{ "JCCD", "JCCD" }, 
 				{"Simian", "Simian" },
 		}, getFieldEditorParent()));
+		
+		addField(new BooleanFieldEditor(
+				PreferenceConstants.P_INCREMENT,
+			"Incremental Detection",  getFieldEditorParent()));
 	}
 
 	/* (non-Javadoc)
