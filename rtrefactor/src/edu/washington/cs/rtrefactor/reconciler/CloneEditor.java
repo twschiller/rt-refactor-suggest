@@ -15,62 +15,46 @@ import org.eclipse.jface.text.source.IVerticalRuler;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IEditorInput;
 
+/* This editor is like a java editor, but extending with clone detection
+ * functionality.
+ */
 public class CloneEditor extends CompilationUnitEditor {
 
 	public CloneEditor() {
 		super();
-		//int a = createJavaSourceViewerConfiguration();
-		//System.out.println("SVConfig: " + getSourceViewerConfiguration());
-		//getSourceViewerConfiguration().
-		//setSourceViewerConfiguration(new XMLConfiguration());
-		//JavaSourceViewer sv = (JavaSourceViewer) getSourceViewer();
-		//IReconciler ir = sv.setReconciler(null);
 	}
 
-	//copied from eclipse, override
+	/*We override this method to hook up the CloneViewerConfiguration,
+	 *  and to install the reconciler on the viewer.
+	 * @see org.eclipse.jdt.internal.ui.javaeditor.JavaEditor#createJavaSourceViewerConfiguration()
+	 */
 	protected JavaSourceViewerConfiguration createJavaSourceViewerConfiguration() {
-		System.out.println("New config");
 		JavaTextTools textTools= JavaPlugin.getDefault().getJavaTextTools();
 
 		CloneViewerConfiguration tc =  new CloneViewerConfiguration(textTools.getColorManager(), getPreferenceStore(), this, IJavaPartitions.JAVA_PARTITIONING);
 		ISourceViewer sourceViewer = getSourceViewer();
 		if(sourceViewer != null && sourceViewer instanceof CloneSourceViewer)
 		{
-			System.out.println("changing reconciler " + sourceViewer);
 			IReconciler reconciler= tc.getReconciler(sourceViewer);
 			if (reconciler != null) {
 				reconciler.install(sourceViewer);
+				/* We know it is our own viewer because we override 
+				 *  createJavaSourceViewer().
+				 *  
+				 *  A normal sourceViewer does not make setReconciler visible,
+				 *  	but ours does.
+				 */
 				((CloneSourceViewer)sourceViewer).setReconciler(reconciler);
 			}
 		}
 
 		return tc;
 	}
-
+	
+	/* This is overidden to return our modified viewer */
 	protected ISourceViewer createJavaSourceViewer(Composite parent, IVerticalRuler verticalRuler, IOverviewRuler overviewRuler, boolean isOverviewRulerVisible, int styles, IPreferenceStore store) {
 		return new CloneSourceViewer(parent, verticalRuler, getOverviewRuler(), isOverviewRulerVisible(), styles, store);
 	}
 
-	protected void doSetInput(IEditorInput input) throws CoreException {
-		System.out.println("calling setInput");
-		ISourceViewer sourceViewer1 = getSourceViewer();
-		System.out.println(sourceViewer1);
-		super.doSetInput(input);
-		CloneSourceViewer javaSourceViewer= null;
-		ISourceViewer sourceViewer = getSourceViewer();
-		System.out.println(sourceViewer);
-		if (sourceViewer instanceof CloneSourceViewer)
-			javaSourceViewer= (CloneSourceViewer)sourceViewer;
-
-
-		if (javaSourceViewer != null && javaSourceViewer.getReconciler() == null) {
-			System.out.println("Changing reconciler");
-			IReconciler reconciler= getSourceViewerConfiguration().getReconciler(javaSourceViewer);
-			if (reconciler != null) {
-				reconciler.install(javaSourceViewer);
-				javaSourceViewer.setReconciler(reconciler);
-			}
-		}
-	}
 
 }

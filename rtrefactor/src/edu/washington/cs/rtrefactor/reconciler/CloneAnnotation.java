@@ -11,7 +11,7 @@ public class CloneAnnotation extends Annotation implements IQuickFixableAnnotati
 
 
 
-	//TODO: This need to take args with clone info
+	//TODO: This probably needs to take args with clone info
 	public CloneAnnotation() {
 		super(TYPE, false, "New Clone");
 	}

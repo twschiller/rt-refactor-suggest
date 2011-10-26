@@ -47,6 +47,7 @@ public class CloneReconcilingStrategy implements IReconcilingStrategy,IReconcili
 	private IActiveDetector detector = null;
 	
 	//TODO: Is this the best way to determine if the preference has changed?
+	/* The latest value of the detector preference*/
 	private String detectorPreference;
 	
 	public CloneReconcilingStrategy(ISourceViewer viewer, ITextEditor editor)
@@ -54,15 +55,16 @@ public class CloneReconcilingStrategy implements IReconcilingStrategy,IReconcili
 		fViewer = viewer;
 		fAnnotationModel = fViewer.getAnnotationModel();
 		fEditor = editor;
+		/*This will initialize the detector*/
 		checkPreferences();
-		
-
 		
 	}
 	
 	@Override
 	public void setDocument(IDocument document) {
 		fDocument = document;
+		
+		/*Get the File corresponding to the Document and store it in a field */
 		IResource res = (IResource) fEditor.getEditorInput().getAdapter(IResource.class);
 		IPath fPath = ResourcesPlugin.getWorkspace().getRoot().getLocation();
 		fPath = fPath.append(res.getFullPath().makeAbsolute());
@@ -71,10 +73,7 @@ public class CloneReconcilingStrategy implements IReconcilingStrategy,IReconcili
 
 	@Override
 	public void reconcile(DirtyRegion dirtyRegion, IRegion subRegion) {
-		// TODO Make sure this is called
-		System.out.println("incremental called");
 		doReconcile(dirtyRegion);
-		
 	}
 
 	@Override
@@ -82,8 +81,8 @@ public class CloneReconcilingStrategy implements IReconcilingStrategy,IReconcili
 		doReconcile(null);
 	}
 	
-	/*
-	 * dirtyRegion is null if whole file
+	/* Performs the clone detection.
+	 * dirtyRegion is null if we should reconcile the entire file
 	 */
 	private void doReconcile(DirtyRegion dirtyRegion)
 	{
@@ -91,11 +90,12 @@ public class CloneReconcilingStrategy implements IReconcilingStrategy,IReconcili
 		checkPreferences();
 		
 		
-		
+		/* For now, only one file is dirty (the current one)*/
+		/* This is the same way java does parsing/building */
 		Map<File, String> dirty = new HashMap<File, String>();
 		dirty.put(fFile, fDocument.get());
 		
-		
+		/*Get the line,offset of the last character in the file*/
 		int lines = fDocument.getNumberOfLines();
 		int lastOff = 0;
 		try {
@@ -104,30 +104,36 @@ public class CloneReconcilingStrategy implements IReconcilingStrategy,IReconcili
 			e.printStackTrace();
 			return;
 		}
+		
 		System.out.println("Running detector!");
 		
+		/*Perform either incremental or non-incremental reconcile*/
 		SourceRegion active;
 		if(dirtyRegion != null)
 		{
 			active = new SourceRegion(convertOffset(dirtyRegion.getOffset()), 
 					convertOffset(dirtyRegion.getOffset() + dirtyRegion.getLength()) );
-			System.out.println("incremental, direty region is " + dirtyRegion.getText());
+			System.out.println("incremental detection, dirty region is " + dirtyRegion.getText());
 		}
 		else
 			active = new SourceRegion(new SourceLocation(fFile, 0, 0), 
 					new SourceLocation(fFile, lines-1, lastOff));
 		
+		/*Clear the annotations that overlap with the target area*/
 		removeAnnotations(convertSourceLocation(active.getStart()), convertSourceLocation(active.getEnd()));
+		
+		/*Run the detection*/
 		Set<ClonePair> hs = null;
 		try {
 			hs = detector.detect(dirty, active);
 		} catch (Exception e) {
 			e.printStackTrace();
-			System.out.println("detector failed");
+			System.out.println("detector failed!");
 			return;
 		} 
 		
 		System.out.println("Detector returned " + hs.size() + " pairs");
+		/*Mark the clones in the file*/
 		for(ClonePair cp : hs)
 		{
 			boolean added = false;
@@ -143,6 +149,7 @@ public class CloneReconcilingStrategy implements IReconcilingStrategy,IReconcili
 				added = true;
 			}
 			
+			/* We should always add at least one annotation per pair*/
 			assert added ;
 		}
 		
@@ -163,6 +170,7 @@ public class CloneReconcilingStrategy implements IReconcilingStrategy,IReconcili
 	}
 	
 	//TODO: What other info is needed here?
+	/* Adds a clone annotation to the given source region*/
 	private void addAnnotation(SourceRegion r)
 	{
 		
@@ -174,7 +182,7 @@ public class CloneReconcilingStrategy implements IReconcilingStrategy,IReconcili
 	}
 	
 	/*
-	 * Removes all annotations in a range
+	 * Removes all annotations that overlap with the given offset range
 	 */
 	private void removeAnnotations(int start, int end)
 	{
@@ -194,7 +202,9 @@ public class CloneReconcilingStrategy implements IReconcilingStrategy,IReconcili
 	}
 	
 	
-	
+	/* Check to see if the detector preference changed.
+	 * If it did, switch detectors. 
+	 */
 	private void checkPreferences()
 	{
 		IPreferenceStore store = Activator.getDefault().getPreferenceStore();
@@ -204,11 +214,11 @@ public class CloneReconcilingStrategy implements IReconcilingStrategy,IReconcili
 			detectorPreference = name;
 			initializeDetector();
 		}
-
 		
 		
 	}
 	
+	/* Initialize the detector based on the "detectorPreference" field */
 	private void initializeDetector()
 	{
 		if (detectorPreference.equalsIgnoreCase(JccdDetector.NAME)){
@@ -222,6 +232,11 @@ public class CloneReconcilingStrategy implements IReconcilingStrategy,IReconcili
 	
 	
 	//TODO: Maybe these conversion methods could go elsewhere?
+	
+	/* 
+	 * Given a source location, return the corresponding character 
+	 * offset in the file
+	 */
 	private int convertSourceLocation(SourceLocation sl)
 	{
 		int off;
@@ -240,6 +255,10 @@ public class CloneReconcilingStrategy implements IReconcilingStrategy,IReconcili
 		return off;
 	}
 	
+	/*
+	 * Given a character offset into the current document, returns a new 
+	 * SourceLocation representing the same location.
+	 */
 	private SourceLocation convertOffset(int offset)
 	{
 		int line =0, newOffset =0;
@@ -252,7 +271,6 @@ public class CloneReconcilingStrategy implements IReconcilingStrategy,IReconcili
 				lineOff = fDocument.getLineOffset(line-1);
 			newOffset = offset - lineOff;
 		} catch (BadLocationException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return new SourceLocation(fFile, line, newOffset);
