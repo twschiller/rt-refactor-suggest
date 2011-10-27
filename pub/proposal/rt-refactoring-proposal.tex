@@ -109,26 +109,46 @@ code consistency, readability, and modularity.
 To support the developer actions enumerated in section~\ref{sec:intro},
 the tool will search the existing codebase for code
 that is similar to the region that is currently being developed or maintained
-(i.e. where the cursor is). The search can be implemented in a variety
-of ways (see section~\ref{sec:related}), from simple text-based
-matching to a syntax tree or program dependence graph based approach~\cite{LiE2011}. 
-The tool won't require the
-code to compile, so techniques that require a complete / typable parse
-of the source will not be used exclusively. 
-\todo{Investigate and clarify what information is available in Eclipse
-  in different states of well-formedness. Todd thinks that parsable
-  programs that are not completely parsable are actually common during
-  development; similarly, we may be able to force completions that
-  make the programs parasable. Our best bet may be to use the best
-  technique available, e.g., using a PDG approach is the code compiles
-  completely}
+(i.e. where the cursor is). The search is performed using the clone detectors
+described in section~\ref{sec:detectors}. 
 
 In order to be practical in an online
-setting with a large codebase, we require that the method be fast and
+setting with a large codebase, the detectors must be
+fast and
 robust to identifying clones that are more obfuscated than direct
 copying, such as when a programmer re-implements the same
 functionality.
 %without referring to the first code section.
+
+\subsection{Clone Detectors}
+\label{sec:detectors}
+The tool is currently packaged with three code clone detectors:
+
+\begin{enumerate}
+\item The Java Code Clone Detection (JCCD) API~\cite{JCCD}: performs
+  AST-based similarity detection with support for a pipeline of AST
+  operators; requires that the source files are parsable.
+\item Checkstyle~\cite{CheckStyle}: performs a textual comparison on
+  the lines of a program
+\item Simian~\cite{Simian}: the Simian software is proprietary (though
+  free for non-commercial use), but it appears the Simian can perform
+  both textual and AST-based detection.
+\end{enumerate}
+
+All three detectors perform detection over the entire codebase, as
+opposed to searching for clones for a given query. The speed of JCCD
+and Checkstyle may not be pratical for real-time detection in large
+projects. Since both are open source, we can and will optimize the
+detection for use in our tool, if necessary. 
+
+We have been in contact with Li et al.~\cite{LiE2011} to apply program
+dependence graph (PDG) approaches to clone search, however at this
+time our search for a tool for generating detailed Java PDGs has been
+unsuccessful.
+
+Currently, only a single detector can be active at a time. In the
+future, it may be beneficial to run the analyses simultaneously and
+combine results.
 
 \subsection{Determining When to Make Suggestions}
 The tool will score the clone based on a variety of heuristics that
