@@ -53,6 +53,7 @@ public class CloneReconcilingStrategy implements IReconcilingStrategy,IReconcili
 	private ITextEditor fEditor;
 	
 	
+	
 	private IActiveDetector detector = null;
 	
 	public CloneReconcilingStrategy(ISourceViewer viewer, ITextEditor editor)
@@ -178,8 +179,12 @@ public class CloneReconcilingStrategy implements IReconcilingStrategy,IReconcili
 	}
 
 	@Override
+	/**
+	 * Fully parses the whole document.  Should only be called if this is not
+	 * an incremental reconciler.
+	 */
 	public void initialReconcile() {
-		// TODO Do we need to do anything here? (Before the user types)
+		doReconcile(null);
 		
 	}
 	

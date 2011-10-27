@@ -54,6 +54,7 @@ public class CloneEditor extends CompilationUnitEditor {
 		return tc;
 	}
 	
+
 	/** This is overidden to return our modified CloneSourceViewer */
 	protected ISourceViewer createJavaSourceViewer(Composite parent, IVerticalRuler verticalRuler, IOverviewRuler overviewRuler, boolean isOverviewRulerVisible, int styles, IPreferenceStore store) {
 		return new CloneSourceViewer(parent, verticalRuler, getOverviewRuler(), isOverviewRulerVisible(), styles, store);

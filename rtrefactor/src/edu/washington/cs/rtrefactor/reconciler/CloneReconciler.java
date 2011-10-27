@@ -4,6 +4,7 @@ import org.apache.log4j.Logger;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.reconciler.DirtyRegion;
 import org.eclipse.jface.text.reconciler.IReconcilingStrategy;
+import org.eclipse.jface.text.reconciler.IReconcilingStrategyExtension;
 import org.eclipse.jface.text.reconciler.MonoReconciler;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
@@ -20,6 +21,8 @@ public class CloneReconciler extends MonoReconciler{
 
 	public static Logger reconcilerLog = Logger.getLogger("reconciler");
 	
+	//TODO: I don't think we should be storing this, we could call 
+	//  getReconcilingStrategy (TSM)
 	CloneReconcilingStrategy strategy = null;
 	
 	public CloneReconciler(CloneReconcilingStrategy strategy) {
@@ -52,6 +55,18 @@ public class CloneReconciler extends MonoReconciler{
 		reconcilerLog.info("Changing incremental to " + incremental);
 		setIsIncrementalReconciler(incremental);
 	}
+	
+	/**
+	 * We require that the reconciler is not incremental in order to do the
+	 * initial process.
+	 * 
+	 * @see MonoReconciler#initialProcess()
+	 */
+	protected void initialProcess() {
+		if(!isIncrementalReconciler())
+			super.initialProcess();
+	 }
+
 
 	@Override
 	public void uninstall() {
