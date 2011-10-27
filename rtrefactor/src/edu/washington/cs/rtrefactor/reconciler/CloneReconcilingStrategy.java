@@ -21,6 +21,8 @@ import org.eclipse.jface.text.reconciler.IReconcilingStrategyExtension;
 import org.eclipse.jface.text.source.Annotation;
 import org.eclipse.jface.text.source.IAnnotationModel;
 import org.eclipse.jface.text.source.ISourceViewer;
+import org.eclipse.jface.util.IPropertyChangeListener;
+import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.ui.texteditor.ITextEditor;
 
 import edu.washington.cs.rtrefactor.Activator;
@@ -33,6 +35,15 @@ import edu.washington.cs.rtrefactor.detect.SourceLocation;
 import edu.washington.cs.rtrefactor.detect.SourceRegion;
 import edu.washington.cs.rtrefactor.preferences.PreferenceConstants;
 
+/**
+ * A reconciling strategy which can be incremental (or not)
+ * 
+ * It runs the clone detection on the dirty files, and annotates the 
+ * cloned code with CloneAnnotations. 
+ * 
+ * @author Travis Mandel
+ *
+ */
 public class CloneReconcilingStrategy implements IReconcilingStrategy,IReconcilingStrategyExtension{
 	
 	private IDocument fDocument;
@@ -44,17 +55,25 @@ public class CloneReconcilingStrategy implements IReconcilingStrategy,IReconcili
 	
 	private IActiveDetector detector = null;
 	
-	//TODO: Is this the best way to determine if the preference has changed?
-	/* The latest value of the detector preference*/
-	private String detectorPreference;
-	
 	public CloneReconcilingStrategy(ISourceViewer viewer, ITextEditor editor)
 	{
 		fViewer = viewer;
 		fAnnotationModel = fViewer.getAnnotationModel();
 		fEditor = editor;
-		/*This will initialize the detector*/
-		checkPreferences();
+		//Initial initialization
+		initializeDetector();
+		
+		//Add a listener so we know when the detector property changed
+		Activator.getDefault().getPreferenceStore().addPropertyChangeListener(
+				new IPropertyChangeListener() {
+
+			@Override
+			public void propertyChange(PropertyChangeEvent event) {
+				if (event.getProperty() == PreferenceConstants.P_CHOICE) {
+					initializeDetector();
+				}
+			}
+		});
 		
 	}
 	
@@ -62,7 +81,7 @@ public class CloneReconcilingStrategy implements IReconcilingStrategy,IReconcili
 	public void setDocument(IDocument document) {
 		fDocument = document;
 		
-		/*Get the File corresponding to the Document and store it in a field */
+		//Get the File corresponding to the Document and store it in a field 
 		IResource res = (IResource) fEditor.getEditorInput().getAdapter(IResource.class);
 		IPath fPath = ResourcesPlugin.getWorkspace().getRoot().getLocation();
 		fPath = fPath.append(res.getFullPath().makeAbsolute());
@@ -79,21 +98,19 @@ public class CloneReconcilingStrategy implements IReconcilingStrategy,IReconcili
 		doReconcile(null);
 	}
 	
-	/* Performs the clone detection.
-	 * dirtyRegion is null if we should reconcile the entire file
+	/** Performs the clone detection.
+	 * @param dirtyRegion The region that has changed since the last reconciler,
+	 * 		is null if we should reconcile the entire file
 	 */
 	private void doReconcile(DirtyRegion dirtyRegion)
 	{
-		//Make sure no important preferences changed
-		checkPreferences();
-		
-		
-		/* For now, only one file is dirty (the current one)*/
-		/* This is the same way java does parsing/building */
+			
+		// For now, only one file is dirty (the current one)
+		// This is the same way java does parsing/building 
 		Map<File, String> dirty = new HashMap<File, String>();
 		dirty.put(fFile, fDocument.get());
 		
-		/*Get the line,offset of the last character in the file*/
+		//Get the line,offset of the last character in the file
 		int lines = fDocument.getNumberOfLines();
 		int lastOff = 0;
 		try {
@@ -105,7 +122,7 @@ public class CloneReconcilingStrategy implements IReconcilingStrategy,IReconcili
 		
 		CloneReconciler.reconcilerLog.debug("Running clone detector");
 		
-		/*Perform either incremental or non-incremental reconcile*/
+		//Perform either incremental or non-incremental reconcile
 		SourceRegion active;
 		if(dirtyRegion != null)
 		{
@@ -117,10 +134,10 @@ public class CloneReconcilingStrategy implements IReconcilingStrategy,IReconcili
 					new SourceLocation(fFile, lines-1, lastOff));
 		}
 			
-		/*Clear the annotations that overlap with the target area*/
+		//Clear the annotations that overlap with the target area
 		removeAnnotations(convertSourceLocation(active.getStart()), convertSourceLocation(active.getEnd()));
 		
-		/*Run the detection*/
+		//Run the detection
 		Set<ClonePair> hs = null;
 		try {
 			hs = detector.detect(dirty, active);
@@ -131,7 +148,7 @@ public class CloneReconcilingStrategy implements IReconcilingStrategy,IReconcili
 		
 		CloneReconciler.reconcilerLog.debug("Detector returned " + hs.size() + " pairs");
 		
-		/*Mark the clones in the file*/
+		//Mark the clones in the file
 		for(ClonePair cp : hs)
 		{
 			boolean added = false;
@@ -149,7 +166,7 @@ public class CloneReconcilingStrategy implements IReconcilingStrategy,IReconcili
 				added = true;
 			}
 			
-			/* We should always add at least one annotation per pair*/
+			// We should always add at least one annotation per pair
 			assert added ;
 		}
 	}
@@ -167,7 +184,9 @@ public class CloneReconcilingStrategy implements IReconcilingStrategy,IReconcili
 	}
 	
 	//TODO: What other info is needed here?
-	/* Adds a clone annotation to the given source region*/
+	/** Adds a clone annotation to the given source region
+	 *  @param r The region indicating where the annotation should appear
+	 * */
 	private void addAnnotation(SourceRegion r)
 	{
 		CloneReconciler.reconcilerLog.debug("Adding annotation to source region");
@@ -176,8 +195,10 @@ public class CloneReconcilingStrategy implements IReconcilingStrategy,IReconcili
 		fAnnotationModel.addAnnotation(new CloneAnnotation(), new Position(off, len));
 	}
 	
-	/*
+	/**
 	 * Removes all annotations that overlap with the given offset range
+	 * @param start The offset into the current file at which the range starts
+	 * @param end The offset into the current file at which the rang eends
 	 */
 	private void removeAnnotations(int start, int end)
 	{
@@ -197,25 +218,15 @@ public class CloneReconcilingStrategy implements IReconcilingStrategy,IReconcili
 	}
 	
 	
-	/* Check to see if the detector preference changed.
-	 * If it did, switch detectors. 
-	 */
-	private void checkPreferences()
-	{
-		IPreferenceStore store = Activator.getDefault().getPreferenceStore();
-		String name = store.getString(PreferenceConstants.P_CHOICE);
-		if(!name.equals(detectorPreference))
-		{
-			detectorPreference = name;
-			initializeDetector();
-		}
-		
-		
-	}
 	
-	/* Initialize the detector based on the "detectorPreference" field */
+	/**
+	 *  Initialize the detector based on the "detectorPreference" field 
+	 *  */
 	private void initializeDetector()
 	{
+		IPreferenceStore store = Activator.getDefault().getPreferenceStore();
+		String detectorPreference = store.getString(PreferenceConstants.P_CHOICE);
+		CloneReconciler.reconcilerLog.debug("Changing detector to " + detectorPreference);
 		if (detectorPreference.equalsIgnoreCase(JccdDetector.NAME)){
 			detector = new JccdDetector();
 		}else if (detectorPreference.equalsIgnoreCase(CheckStyleDetector.NAME)){
@@ -228,9 +239,12 @@ public class CloneReconcilingStrategy implements IReconcilingStrategy,IReconcili
 	
 	//TODO: Maybe these conversion methods could go elsewhere?
 	
-	/* 
+	/**
 	 * Given a source location, return the corresponding character 
 	 * offset in the file
+	 * 
+	 * @param sl The source location to convert
+	 * @return the offset into the file
 	 */
 	private int convertSourceLocation(SourceLocation sl)
 	{
@@ -250,9 +264,12 @@ public class CloneReconcilingStrategy implements IReconcilingStrategy,IReconcili
 		return off;
 	}
 	
-	/*
+	/**
 	 * Given a character offset into the current document, returns a new 
 	 * SourceLocation representing the same location.
+	 * 
+	 * @param offset An offset into the current document
+	 * @return The corresponding SourceLocation
 	 */
 	private SourceLocation convertOffset(int offset)
 	{

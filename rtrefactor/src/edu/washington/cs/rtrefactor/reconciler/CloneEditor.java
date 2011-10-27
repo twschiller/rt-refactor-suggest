@@ -13,8 +13,10 @@ import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.jface.text.source.IVerticalRuler;
 import org.eclipse.swt.widgets.Composite;
 
-/* This editor is like a java editor, but extending with clone detection
+/** This editor is like a java editor, but extending with clone detection
  * functionality.
+ * 
+ * @author Travis Mandel
  */
 public class CloneEditor extends CompilationUnitEditor {
 
@@ -22,8 +24,11 @@ public class CloneEditor extends CompilationUnitEditor {
 		super();
 	}
 
-	/*We override this method to hook up the CloneViewerConfiguration,
+	/** 
+	 * We override this method to hook up the CloneViewerConfiguration,
 	 *  and to install the reconciler on the viewer.
+	 *  
+	 * @return a new CloneViewerConfiguration
 	 * @see org.eclipse.jdt.internal.ui.javaeditor.JavaEditor#createJavaSourceViewerConfiguration()
 	 */
 	protected JavaSourceViewerConfiguration createJavaSourceViewerConfiguration() {
@@ -49,7 +54,7 @@ public class CloneEditor extends CompilationUnitEditor {
 		return tc;
 	}
 	
-	/* This is overidden to return our modified viewer */
+	/** This is overidden to return our modified CloneSourceViewer */
 	protected ISourceViewer createJavaSourceViewer(Composite parent, IVerticalRuler verticalRuler, IOverviewRuler overviewRuler, boolean isOverviewRulerVisible, int styles, IPreferenceStore store) {
 		return new CloneSourceViewer(parent, verticalRuler, getOverviewRuler(), isOverviewRulerVisible(), styles, store);
 	}

@@ -5,53 +5,47 @@ import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.reconciler.DirtyRegion;
 import org.eclipse.jface.text.reconciler.IReconcilingStrategy;
 import org.eclipse.jface.text.reconciler.MonoReconciler;
+import org.eclipse.jface.util.IPropertyChangeListener;
+import org.eclipse.jface.util.PropertyChangeEvent;
 
 import edu.washington.cs.rtrefactor.Activator;
 import edu.washington.cs.rtrefactor.preferences.PreferenceConstants;
 
-/* This class is needed to check incremental preferences
- * before we reconcile.
+//TODO: Move this functionality elsewhere?
+/** This class is overidden to check incremental preferences.
+ * 
+ * @author Travis Mandel
  */
 public class CloneReconciler extends MonoReconciler{
 
 	public static Logger reconcilerLog = Logger.getLogger("reconciler");
 	
-	/*The latest value of the incremental preference*/
-	Boolean fIncrementalPreference = null; 
-
 	public CloneReconciler(IReconcilingStrategy strategy) {
 		super(strategy, true);
-		checkIncrementalPreference();
+		
+		updateIncrementalPreference();
+		
+		//Add a listener to update the incremental setting when it is changed
+		Activator.getDefault().getPreferenceStore().addPropertyChangeListener(
+				new IPropertyChangeListener() {
+
+			@Override
+			public void propertyChange(PropertyChangeEvent event) {
+				if (event.getProperty() == PreferenceConstants.P_INCREMENT) {
+					updateIncrementalPreference();
+				}
+			}
+		});
 	}
 
-	/*Overrides in order to check preferences*/ 
-	public void process(DirtyRegion dirtyRegion)
-	{
-		/*If they changed the preference, the dirtyRegion isn't valid
-		 * Unfortunately, there's no way to get the dirty region at this point
-		 * if incremental was turned on, so there will be a single reconcile
-		 * delay before the change takes effect.
-		 * */
-		if(checkIncrementalPreference())
-			super.process(null);
-		else
-			super.process(dirtyRegion);
-	}
 
-	/* Update setting if the incremental preference has changed
-	 * @return true if preference changed
+	/** Update the incremental setting based on the current preference
 	 */		
-	protected boolean checkIncrementalPreference() {
+	protected void updateIncrementalPreference() {
 		IPreferenceStore store = Activator.getDefault().getPreferenceStore();
 		Boolean incremental = store.getBoolean(PreferenceConstants.P_INCREMENT);
-		if(incremental != fIncrementalPreference)
-		{
-			reconcilerLog.info("Changing incremental to " + incremental);
-			fIncrementalPreference = incremental;
-			setIsIncrementalReconciler(fIncrementalPreference);
-			return true;
-		}
-		return false;
+		reconcilerLog.info("Changing incremental to " + incremental);
+		setIsIncrementalReconciler(incremental);
 	}
 
 }

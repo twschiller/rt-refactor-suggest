@@ -7,8 +7,11 @@ import org.eclipse.jface.text.source.IOverviewRuler;
 import org.eclipse.jface.text.source.IVerticalRuler;
 import org.eclipse.swt.widgets.Composite;
 
-/*
- * The only point of this class to is make get/set reconciler methods visible
+/**
+ * The only point of overriding this  class to is make get/set reconciler 
+ * methods visible, so that we can install a custom reconciler.
+ * 
+ * @author Travis Mandel
  */
 public class CloneSourceViewer extends JavaSourceViewer {
 	
@@ -22,26 +25,32 @@ public class CloneSourceViewer extends JavaSourceViewer {
 		fReconciler = null;
 	}
 	
-	/* This should override, but the other method is only package-level visible, so
-	 * depending on which package you are in different methods will be called.
+	/** This should override JavaSourceViewer.getReconciler(), but that
+	 * method is only package-level visible, so depending on which package 
+	 * you are in different methods will be called.
 	 * 
-	 * Returns the current reconciler
+	 * @return the current reconciler
 	 */
 	public IReconciler getReconciler() {
 		return fReconciler;
 	}
 	
 	
-	/* This should override, but the other method is only package-level visible, so
-	 * depending on which package you are in different methods will be called.
+	/** This should override JavaSourceViewer.setReconciler(), but that
+	 * method is only package-level visible, so depending on which package 
+	 * you are in different methods will be called.
 	 * 
-	 * We include an extra check to make sure the reconciler is a CLoneReconciler.
+	 * Also includes a check to ensure the reconciler is a CloneReconciler
+	 * 
+	 * @return the current reconciler
 	 */
 	public void setReconciler(IReconciler reconciler) {
 		if(reconciler instanceof CloneReconciler) {
 			fReconciler= reconciler;
 		} else {
-			System.out.println("BAD reconciler! " + reconciler);
+			//do nothing
+			CloneReconciler.reconcilerLog.error("Bad reconciler passed to " +
+					"SourceViewer " + reconciler);
 		}
 	}
 
