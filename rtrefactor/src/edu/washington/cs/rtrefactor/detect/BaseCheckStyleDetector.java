@@ -177,7 +177,7 @@ public abstract class BaseCheckStyleDetector<T extends AbstractFileSetCheck> imp
 				tmp.delete();
 				DetectorUtil.detectLog.debug("Deleted temporary file " + tmp.getAbsolutePath());
 			}catch(Exception ex){
-				DetectorUtil.detectLog.debug("Errpr deleting temporary file " + tmp.getAbsolutePath(), ex);
+				DetectorUtil.detectLog.debug("Error deleting temporary file " + tmp.getAbsolutePath(), ex);
 			}
 		}
 		
