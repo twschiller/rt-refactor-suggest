@@ -110,7 +110,9 @@ To support the developer actions enumerated in section~\ref{sec:intro},
 the tool will search the existing codebase for code
 that is similar to the region that is currently being developed or maintained
 (i.e. where the cursor is). The search is performed using the clone detectors
-described in section~\ref{sec:detectors}. 
+described in section~\ref{sec:detectors}. The clone detection is implemented as
+an Eclipse reconciler, which allows it to run in a background thread and only activate 
+when there is a small pause in typing.
 
 In order to be practical in an online
 setting with a large codebase, the detectors must be
@@ -139,7 +141,14 @@ All three detectors perform detection over the entire codebase, as
 opposed to searching for clones for a given query. The speed of JCCD
 and Checkstyle may not be pratical for real-time detection in large
 projects. Since both are open source, we can and will optimize the
-detection for use in our tool, if necessary. 
+detection for use in our tool, if necessary.  
+
+Such optimization could potentially involve exploiting knowledge of the 
+modified code region to drastically reduce the complexity of the search,
+ since instead of comparing all pairs of potential clones with $O(N^2)$, 
+we would only need $O(N)$ comparisons to detect the clones. Currently, 
+we only annotate clones located in the currently modified area, but
+that is implemented as a filter instead of an algorithmic change.
 
 We have been in contact with Li et al.~\cite{LiE2011} to apply program
 dependence graph (PDG) approaches to clone search, however at this
@@ -163,14 +172,16 @@ capture the value of the clone for method extraction or copying:
 
 If the score exceeds a threshold, the tool will present the 
 clone suggestions to the user, along with potential refactoring options.  
-In many cases it may suffice simply to show actions based on the "top hit", but in others 
-it may be helpful to show a larger ranking. The exact manner in which the tool
-presents the suggestion(s) to the developer is still undecided, but we want to make sure it is
-relatively intrusive so that programmers don't just ignore the
-information. 
-\todo{Is this explanation now sufficient, given the addition the introduction?}
-Popping up a dialog box is an option, as is highlighting
-the relevant block of code. We also plan to investigate, in place of a
+In many cases it may suffice simply to show actions based on the "top 
+hit", but in others it may be helpful to show a larger ranking.  The detected 
+areas in the current file will be displayed as Eclipse annotations, which take 
+the form of highlighting with a marker icon on the left vertical bar and a 
+colored marking on the right vertical bar.  When users click the left marker,
+the corresponding clone(s) and potential refactoring options will be shown, 
+similar to Eclipse's quickfix functionality for resolving errors and warnings.
+
+
+ We also plan to investigate, in place of a
 fixed threshold, simple machine learning strategies to ensure the
 false positives are reduced if the user frequently rejects the tool's
 suggestions.  This will take the form of a classifier using the
