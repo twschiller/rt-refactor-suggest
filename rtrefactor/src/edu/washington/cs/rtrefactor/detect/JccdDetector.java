@@ -184,6 +184,16 @@ public class JccdDetector implements IActiveDetector, IDetector{
 					qualityScore(p)));
 		}
 		
+		for (File underlier : dirty.keySet()){
+			File tmp = files.inverse().get(underlier);
+			try{
+				tmp.delete();
+				DetectorUtil.detectLog.debug("Deleted temporary file " + tmp.getAbsolutePath());
+			}catch(Exception ex){
+				DetectorUtil.detectLog.debug("Error deleting temporary file " + tmp.getAbsolutePath(), ex);
+			}
+		}
+		
 		DetectorUtil.detectLog.debug("End full clone detection with detector JCCD");
 		return result;
 	}
@@ -194,5 +204,13 @@ public class JccdDetector implements IActiveDetector, IDetector{
 	 */
 	public String getName(){
 		return NAME;
+	}
+	
+	@Override
+	/**
+	 * {@inheritDoc}
+	 */
+	public void destroy() {
+		// no cleanup is necessary
 	}
 }

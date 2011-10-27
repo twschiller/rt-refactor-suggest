@@ -20,14 +20,19 @@ public class CloneReconciler extends MonoReconciler{
 
 	public static Logger reconcilerLog = Logger.getLogger("reconciler");
 	
-	public CloneReconciler(IReconcilingStrategy strategy) {
+	CloneReconcilingStrategy strategy = null;
+	
+	public CloneReconciler(CloneReconcilingStrategy strategy) {
 		super(strategy, true);
 		
 		updateIncrementalPreference();
 		
+		this.strategy = strategy;
+		
 		//Add a listener to update the incremental setting when it is changed
 		Activator.getDefault().getPreferenceStore().addPropertyChangeListener(
 				new IPropertyChangeListener() {
+	
 
 			@Override
 			public void propertyChange(PropertyChangeEvent event) {
@@ -48,4 +53,9 @@ public class CloneReconciler extends MonoReconciler{
 		setIsIncrementalReconciler(incremental);
 	}
 
+	@Override
+	public void uninstall() {
+		strategy.destroyDetector();
+		super.uninstall();
+	}
 }
