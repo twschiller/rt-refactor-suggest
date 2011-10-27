@@ -224,6 +224,8 @@ public class CloneReconcilingStrategy implements IReconcilingStrategy,IReconcili
 	 *  */
 	private void initializeDetector()
 	{
+		destroyDetector();
+		
 		IPreferenceStore store = Activator.getDefault().getPreferenceStore();
 		String detectorPreference = store.getString(PreferenceConstants.P_CHOICE);
 		CloneReconciler.reconcilerLog.debug("Changing detector to " + detectorPreference);
@@ -236,6 +238,14 @@ public class CloneReconcilingStrategy implements IReconcilingStrategy,IReconcili
 		}
 	}
 	
+	/**
+	 * Perform cleanup on the active detector, if there is an active detector.
+	 */
+	public void destroyDetector(){
+		if (detector != null){
+			detector.destroy();			
+		}
+	}
 	
 	//TODO: Maybe these conversion methods could go elsewhere?
 	
@@ -288,7 +298,4 @@ public class CloneReconcilingStrategy implements IReconcilingStrategy,IReconcili
 		return new SourceLocation(fFile, line, newOffset);
 	}
 	
-	
-	
-
 }

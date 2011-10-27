@@ -90,4 +90,5 @@ public class CheckStyleDetector extends BaseCheckStyleDetector<StrictDuplicateCo
 			throw new RuntimeException("Internal error parsing CheckStyle message: " + e.getMessage());	
 		}
 	}
+
 }
