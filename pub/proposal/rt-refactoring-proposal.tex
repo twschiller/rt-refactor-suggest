@@ -276,38 +276,21 @@ requires a long-term study over weeks, months, or years.
 \section{Related Work}
 \label{sec:related}
 
-The vast majority of the code clone literature can be divided into two areas: (1)
-\emph{how} to detect code clones, and (2) how to best visualize the
-results of post-mortem tools, which operate over an entire system.
-The latter varies based upon usage, e.g., for detecting plagiarism
-versus development usage.
+The code clone literature can be divided into two areas: (1)
+\emph{post} hoc code clone detection, maintenace, and detection and
+(2) \emph{propter} hoc clone management. The techniques used in the
+former can vary widly based on subject (i.e., plain-text v. code) and
+purpose (software development v. plagarism) but typically utilize an
+ad hoc model of clones. In contrast, the latter literature focuses on
+the creation and maintenance of formal code clone models during the
+development process.
 
 Roy et al provide a survey of code clone detection
 techniques~\cite{Roy2009}. The rest of this section surveys the
 related work on recommender systems, clone refactoring,
  code clone interfaces, and \emph{real-time} code clone detection.
 
-\paragraph{Recommender Systems}
-
-Holmes and Murphy built the Strathcona tool for Eclipse which displays
-relevant API usage examples to a user based on the structural context
-of a query line(s) of code the user selects in the IDE
-\cite{Holmes2005}. Related systems also exist, but require the user to
-perform a formal query, or to write special comments in the code.
-
-\paragraph{Refactoring clones}
-
-There has been significant research in how to refactor code containing clones
-to improve code maintenance and readability.  Fanta and Rajlich propose a number of
-potential refactorings for clones including function insertion and function encapsulation,
-in part proposing certain clones be extracted into methods \cite{Fanta1999}.  They 
-present a C++ case study which demonstrates that code refactoring is an important 
-addition to clone detection.
-
-Higo et al present Aries, a tool which integrates various clone information to present 
-to the user \cite{Higo2008}.  It shows the cloned blocks of code and presents refactoring options such as method extraction , but it also displays various metrics, such as position in the class hierarchy, and number of external variables. These metrics are intended to help the programmer decide which refactoring, if any, is  appropriate. 
-
-\paragraph{Code Clone Interfaces}
+\paragraph{Post-hoc Clone Maintenance and Refactoring}
 
 Visual Studio Ultimate contains a code clone detection tool and
 interface; the tool can be run on a particular code fragment, or over
@@ -315,6 +298,36 @@ the entire solution~\cite{VSClones}.
 %Other commercial products and
 %academic artifacts exist which provide different interfaces /
 %visualizations.
+
+%TWS: 2 papers 10 years apart isn't really significant
+%There has been significant research in how to refactor code containing clones
+%to improve code maintenance and readability.  
+
+Fanta and Rajlich propose a number of
+potential refactorings for clones including function insertion and function encapsulation,
+in part proposing certain clones be extracted into methods \cite{Fanta1999}.  They 
+present a case study for a C++ project which demonstrates that code refactoring is an important 
+addition to clone detection.
+
+Higo et al. present Aries, a tool which integrates various clone
+information to present to the user \cite{Higo2008}.  The tool displays the
+cloned blocks of code and presents refactoring options such as method
+extraction; it augments the options with various metrics, including position in
+the class hierarchy, and number of external variables. These metrics
+are intended to help the programmer decide which refactoring, if any,
+is appropriate.
+
+Kawaguchis et al. present a  
+Microsoft Visual Studio interface for
+displaying code clones in real-time to support software
+\emph{maintenance} tasks~\cite{Kawaguchi2009,Yamashina2008}. Their
+\textsc{Shinobi} system uses the CCFinderX's preprocessor and the Suffix Array
+technique for indexing clones. Displayed clones are ranked via the sum
+of the ratio files committed at the same time and the ratio of files
+opened or edited at the same period in Visual Studio. \todo{How do
+  they get the latter piece of information?}
+
+\paragraph{Development-time Clone Management}
 
 From a user-interface stand-point, perhaps the work most similar to
 ours is de Wit et al.'s \textsc{CloneBoard} Eclipse plugin that tracks
@@ -338,17 +351,20 @@ supports simultaneously editing clones. However, in the author's
 trials, the success rate of this feature to correctly modify the
 clones was 80\%.
 
-Kawaguchis et al. present a  
-Microsoft Visual Studio interface for
-displaying code clones in real-time to support software
-\emph{maintenance} tasks~\cite{Kawaguchi2009,Yamashina2008}. Their
-\textsc{Shinobi} system uses the CCFinderX's preprocessor and the Suffix Array
-technique for indexing clones. Displayed clones are ranked via the sum
-of the ratio files committed at the same time and the ratio of files
-opened or edited at the same period in Visual Studio. \todo{How do
-  they get the latter piece of information?}
+\paragraph{Recommender Systems}
+
+Holmes and Murphy built the Strathcona tool for Eclipse which displays
+relevant API usage examples to a user based on the structural context
+of a query line(s) of code the user selects in the IDE
+\cite{Holmes2005}. Related systems also exist, but require the user to
+perform a formal query, or to write special comments in the code.
 
 \paragraph{Real-time Code Clone Search}
+
+Applying code clone analysis during development places speed demands
+on the detection algorithms. However, the need to only perform clone
+detection in a single direction provides many opportunities for
+speedup.
 
 Keivanloo et al. describe SeClone, a system for Internet code clone
 search that performs clone pair clustering based on a ontology base on
