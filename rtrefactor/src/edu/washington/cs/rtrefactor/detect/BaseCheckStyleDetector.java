@@ -159,8 +159,9 @@ public abstract class BaseCheckStyleDetector<T extends AbstractFileSetCheck> imp
 		// switch: view is result name -> Eclipse resource underlier
 		BiMap<File,File> files = DetectorUtil.collect(dirty).inverse();
 		
+		DetectorUtil.detectLog.debug("Checking " + files.keySet().size() + " files");
+		
 		checker.process(Lists.newArrayList(files.keySet()));
-		checker.destroy();
 		
 		HashSet<ClonePair> result = new HashSet<ClonePair>();
 		for (AuditEvent e : errs){
@@ -172,6 +173,13 @@ public abstract class BaseCheckStyleDetector<T extends AbstractFileSetCheck> imp
 		
 		DetectorUtil.detectLog.debug("End full clone detection with detector " + check.getClass().getName());
 		return result;
-	}	
-	
+	}
+
+	@Override
+	/**
+	 * {@inheritDoc}
+	 */
+	public void destroy() {
+		checker.destroy();
+	}
 }
