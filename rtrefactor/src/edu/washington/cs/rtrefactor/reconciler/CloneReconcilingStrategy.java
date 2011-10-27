@@ -216,6 +216,8 @@ public class CloneReconcilingStrategy implements IReconcilingStrategy,IReconcili
 	/* Initialize the detector based on the "detectorPreference" field */
 	private void initializeDetector()
 	{
+		destroyDetector();
+		
 		if (detectorPreference.equalsIgnoreCase(JccdDetector.NAME)){
 			detector = new JccdDetector();
 		}else if (detectorPreference.equalsIgnoreCase(CheckStyleDetector.NAME)){
@@ -225,6 +227,14 @@ public class CloneReconcilingStrategy implements IReconcilingStrategy,IReconcili
 		}
 	}
 	
+	/**
+	 * Perform cleanup on the active detector, if there is an active detector.
+	 */
+	public void destroyDetector(){
+		if (detector != null){
+			detector.destroy();			
+		}
+	}
 	
 	//TODO: Maybe these conversion methods could go elsewhere?
 	
@@ -271,7 +281,4 @@ public class CloneReconcilingStrategy implements IReconcilingStrategy,IReconcili
 		return new SourceLocation(fFile, line, newOffset);
 	}
 	
-	
-	
-
 }

@@ -28,4 +28,9 @@ public interface IActiveDetector {
 	 * @return the name of the detector
 	 */
 	String getName();
+	
+	/**
+	 * Perform cleanup on the detector
+	 */
+	void destroy();
 }

@@ -3,7 +3,6 @@ package edu.washington.cs.rtrefactor.reconciler;
 import org.apache.log4j.Logger;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.reconciler.DirtyRegion;
-import org.eclipse.jface.text.reconciler.IReconcilingStrategy;
 import org.eclipse.jface.text.reconciler.MonoReconciler;
 
 import edu.washington.cs.rtrefactor.Activator;
@@ -19,11 +18,14 @@ public class CloneReconciler extends MonoReconciler{
 	/*The latest value of the incremental preference*/
 	Boolean fIncrementalPreference = null; 
 
-	public CloneReconciler(IReconcilingStrategy strategy) {
+	CloneReconcilingStrategy strategy = null;
+	
+	public CloneReconciler(CloneReconcilingStrategy strategy){
 		super(strategy, true);
+		this.strategy = strategy;
 		checkIncrementalPreference();
 	}
-
+	
 	/*Overrides in order to check preferences*/ 
 	public void process(DirtyRegion dirtyRegion)
 	{
@@ -54,4 +56,9 @@ public class CloneReconciler extends MonoReconciler{
 		return false;
 	}
 
+	@Override
+	public void uninstall() {
+		strategy.destroyDetector();
+		super.uninstall();
+	}
 }

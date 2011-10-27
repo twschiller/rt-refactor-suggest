@@ -195,4 +195,12 @@ public class JccdDetector implements IActiveDetector, IDetector{
 	public String getName(){
 		return NAME;
 	}
+	
+	@Override
+	/**
+	 * {@inheritDoc}
+	 */
+	public void destroy() {
+		// no cleanup is necessary
+	}
 }

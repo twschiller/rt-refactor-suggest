@@ -12,7 +12,7 @@ import org.eclipse.swt.widgets.Composite;
  */
 public class CloneSourceViewer extends JavaSourceViewer {
 	
-	IReconciler fReconciler;
+	private IReconciler fReconciler;
 
 	public CloneSourceViewer(Composite parent, IVerticalRuler verticalRuler,
 			IOverviewRuler overviewRuler, boolean showAnnotationsOverview,
@@ -41,7 +41,7 @@ public class CloneSourceViewer extends JavaSourceViewer {
 		if(reconciler instanceof CloneReconciler) {
 			fReconciler= reconciler;
 		} else {
-			System.out.println("BAD reconciler! " + reconciler);
+			throw new IllegalArgumentException("Expecting clone reconciler");
 		}
 	}
 
