@@ -26,8 +26,8 @@ Code clone detection and analysis has historically been viewed as a
 maintenance problem. Recently, tools for managing clones during
 development have been introduced, however, these tools require
 users to maintain formal clone models.
-In this paper we propose a tool evaluation for eliminating the
-introduction of code clones during development, and leveraging code
+In this paper we propose a tool evaluation for (1) eliminating the
+introduction of code clones during development without maintaining formal clone models, and (2) leveraging code
 similarity to boost programmer productivity.
 
 The tool
@@ -90,11 +90,12 @@ that is a (partial) clone of the source under development:
   \item Replacing the code under development with a method call
   \item Extracting all, or part, of the system clone as a method;
     replacing the code under development with a call to the extracted
-    method
-  %% \item \todo{Making analogous changes to the system clones, a la
-  %%   ``simultaneous editing''~\cite{Miller2002}?}
+    method;
+  \item Aiding the user making analogous changes to the system clones
+    by opening the relevant sections of code, and potentially
+    supporting ``simultaneous editing''~\cite{Miller2002};
   \item Copying the system clone to the code under development,
-    substituting identifiers as needed
+    substituting identifiers as needed.
 \end{enumerate}
 
 All four actions reduce development cost due to rewriting and
@@ -111,7 +112,7 @@ even if the developer does not perform a copy-paste action or
 explicitly perform a clone search query.
 
 This paper proceeds as follows: section~\ref{sec:finding-clones}
-describes the user interace for the tool, along with the underlying
+describes the user interface for the tool, along with the underlying
 clone detectors. Section~\ref{sec:eval} proposes a controlled user
 study to evaluate the tool. Section~\ref{sec:related} discusses
 related work in clone detection, analysis, and refactoring. Finally,
@@ -160,7 +161,7 @@ The tool is currently packaged with three code clone detectors:
 
 All three detectors perform detection over the entire codebase, as
 opposed to searching for clones for a given query. The speed of JCCD
-and Checkstyle may not be pratical for real-time detection in large
+and Checkstyle may not be practical for real-time detection in large
 projects. Since both are open source, we can and will optimize the
 detection for use in our tool, if necessary.  
 
@@ -202,7 +203,7 @@ colored marking on the right vertical bar.  When users click the left marker,
 the corresponding clone(s) and potential refactoring options will be shown, 
 similar to Eclipse's quickfix functionality for resolving errors and warnings.
 
-Time permitting, we also plan to investigate, in place of a
+Time permitting, we also plan to investigate, in place of a 
 fixed threshold, simple machine learning strategies to ensure the
 false positives are reduced if the user frequently rejects the tool's
 suggestions.  This will take the form of a classifier using the
@@ -310,10 +311,10 @@ requires a long-term study over weeks, months, or years.
 \label{sec:related}
 
 The code clone literature can be divided into two areas: (1)
-\emph{post} hoc code clone detection, maintenace, and detection and
+\emph{post} hoc code clone detection, maintenance, and detection and
 (2) \emph{propter} hoc clone management. The techniques used in the
-former can vary widly based on subject (i.e., plain-text v. code) and
-purpose (software development v. plagarism) but typically utilize an
+former can vary wildly based on subject (i.e., plain-text v. code) and
+purpose (software development v. plagiarism) but typically utilize an
 ad hoc model of clones. In contrast, the latter literature focuses on
 the creation and maintenance of formal code clone models during the
 development process.
