@@ -109,10 +109,10 @@ require the developer to manage a formal model of the clone linkages;
 as the tool does not depend on explicitly tracked linkages, clones can
 be identified as they are being developed to inform developer actions,
 even if the developer does not perform a copy-paste action or
-explicitly perform a clone search query.  We believe this is beneficial
-because we hypothesize many clones are written without full knowledge 
-of existing functionality, so focusing only on copy-and-pasted clones
-can ignore many cases where functionality has been inadvertently 
+explicitly perform a clone search query.  We hypothesize many clones 
+are written because the developer is not aware of preexisting functionality,
+ so focusing only on copy-and-pasted clones
+misses cases where functionality has been inadvertently 
 duplicated.
 
 This paper proceeds as follows: section~\ref{sec:finding-clones}
@@ -316,7 +316,7 @@ requires a long-term study over weeks, months, or years.
 
 The code clone literature can be divided into two areas: (1)
 \emph{post} hoc code clone detection, maintenance, and detection and
-(2) \emph{propter} hoc clone management. The techniques used in the
+(2) \emph{development-time} clone management. The techniques used in the
 former can vary wildly based on subject (i.e., plain-text v. code) and
 purpose (software development v. plagiarism) but typically utilize an
 ad hoc model of clones. In contrast, the latter literature focuses on
@@ -336,10 +336,6 @@ the entire solution~\cite{VSClones}.
 %Other commercial products and
 %academic artifacts exist which provide different interfaces /
 %visualizations.
-
-%TWS: 2 papers 10 years apart isn't really significant
-%There has been significant research in how to refactor code containing clones
-%to improve code maintenance and readability.  
 
 Several post-hoc tools are similar to our work in that they attempt to not only
 detect clones, but also provide refactoring techniques to eliminate the clones.
@@ -432,10 +428,6 @@ maintenance problem.
 We believe the problems code clones pose are 
 more serious, namely that clones can cause disorganized code and
 longer development time.
-%TWS: We haven't substantiated the following claim anywhere:
-%We believe the problems code clones pose are 
-%more serious, especially those that are re-written instead of being a 
-%"copy and paste".  
 We have proposed a tool and evaluation for
 eliminating the introduction of code clones during development, and
 leveraging similar code to boost programmer productivity and improve
