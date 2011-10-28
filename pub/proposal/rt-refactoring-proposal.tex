@@ -231,9 +231,15 @@ a series of development and maintenance tasks for an existing Java
 code base. Subjects will be provided with a suite of unit tests covering the
 entire codebase (and their new development task) which must all pass
 before the task is considered complete.
-\todo{Characterize the tasks and code base} 
-\todo{How are we going to direct users toward creating or maintaining
-  clones?, or will the code base already have clones?}
+
+To direct the participants toward working with clones, the development
+task will involve replicating functionality that exists elsewhere in
+the system. Similarly, for the maintenance task, the participants will
+be asked to fix code that is cloned elsewhere in the system. In both
+cases, the instructions will not identify the cloned code so that the
+code clone must be found manually or with the aide of the tool.
+
+%\todo{Characterize the tasks and code base} 
 
 The control group will use the stock Eclipse development
 environment, the tool group will use the Eclipse development
@@ -389,14 +395,11 @@ clones was 80\%.
 
 \paragraph{Recommender Systems}
 
-%TSM: This is not clear enough.  Are they actually searching through
-% a library for similar code fragments, or is it some kind of
-% API fill-in?
-
 Holmes and Murphy built the Strathcona tool for Eclipse which displays
-relevant API usage examples to a user based on the structural context
-of a query line(s) of code the user selects in the IDE
-\cite{Holmes2005}. Related systems also exist, but require the user to
+relevant API usage examples when the developer performs a query by
+selecting a region of code in th IDE; the search is based on the
+structural content of the query line(s)~\cite{Holmes2005}. 
+Related systems also exist, but require the user to
 perform a formal query, or to write special comments in the code.
 
 \paragraph{Real-time Code Clone Search}
@@ -405,8 +408,6 @@ Applying code clone analysis during development places speed demands
 on the detection algorithms. However, the need to only perform clone
 detection in a single direction provides many opportunities for
 speedup.
-
-% TSM: Make more clear how these two are different
 
 Keivanloo et al. describe SeClone, a system for Internet code clone
 search that performs clone pair clustering based on a ontology base on
@@ -419,6 +420,11 @@ are clustered via file-level type information.
 Lee et al. introduce a method for instant structural code clone search
 over large repositories by utilizing an R*tree indexing structure over
 the characteristic vectors~\cite{Lee2010}.
+
+Both \cite{Keivanloo2011} and \cite{Lee2010} only address finding the
+clones quickly, and do not address locating possibly partial clones
+during development, or presenting actions to the developer based on
+the results.
 
 \section{Conclusion}
 \label{sec:conclusion}
