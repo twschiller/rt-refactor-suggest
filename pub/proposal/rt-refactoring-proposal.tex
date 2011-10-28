@@ -109,7 +109,11 @@ require the developer to manage a formal model of the clone linkages;
 as the tool does not depend on explicitly tracked linkages, clones can
 be identified as they are being developed to inform developer actions,
 even if the developer does not perform a copy-paste action or
-explicitly perform a clone search query.
+explicitly perform a clone search query.  We believe this is beneficial
+because we hypothesize many clones are written without full knowledge 
+of existing functionality, so focusing only on copy-and-pasted clones
+can ignore many cases where functionality has been inadvertently 
+duplicated.
 
 This paper proceeds as follows: section~\ref{sec:finding-clones}
 describes the user interface for the tool, along with the underlying
@@ -337,7 +341,9 @@ the entire solution~\cite{VSClones}.
 %There has been significant research in how to refactor code containing clones
 %to improve code maintenance and readability.  
 
-Fanta and Rajlich propose a number of
+Several post-hoc tools are similar to our work in that they attempt to not only
+detect clones, but also provide refactoring techniques to eliminate the clones.
+For example, Fanta and Rajlich propose a number of
 potential refactorings for clones including function insertion and function encapsulation,
 in part proposing certain clones be extracted into methods \cite{Fanta1999}.  They 
 present a case study for a C++ project which demonstrates that code refactoring is an important 
@@ -387,6 +393,10 @@ clones was 80\%.
 
 \paragraph{Recommender Systems}
 
+%TSM: This is not clear enough.  Are they actually searching through
+% a library for similar code fragments, or is it some kind of
+% API fill-in?
+
 Holmes and Murphy built the Strathcona tool for Eclipse which displays
 relevant API usage examples to a user based on the structural context
 of a query line(s) of code the user selects in the IDE
@@ -399,6 +409,8 @@ Applying code clone analysis during development places speed demands
 on the detection algorithms. However, the need to only perform clone
 detection in a single direction provides many opportunities for
 speedup.
+
+% TSM: Make more clear how these two are different
 
 Keivanloo et al. describe SeClone, a system for Internet code clone
 search that performs clone pair clustering based on a ontology base on
@@ -417,6 +429,9 @@ the characteristic vectors~\cite{Lee2010}.
 
 In the past, code clones detection and analysis has been viewed as a
 maintenance problem. 
+We believe the problems code clones pose are 
+more serious, namely that clones can cause disorganized code and
+longer development time.
 %TWS: We haven't substantiated the following claim anywhere:
 %We believe the problems code clones pose are 
 %more serious, especially those that are re-written instead of being a 
