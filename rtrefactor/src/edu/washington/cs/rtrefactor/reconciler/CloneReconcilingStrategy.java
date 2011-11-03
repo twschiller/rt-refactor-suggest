@@ -6,8 +6,10 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
+import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.preference.IPreferenceStore;
@@ -52,9 +54,9 @@ public class CloneReconcilingStrategy implements IReconcilingStrategy,IReconcili
 	private ISourceViewer fViewer;
 	private ITextEditor fEditor;
 	
-	
-	
 	private IActiveDetector detector = null;
+	
+	public static final String CLONE_MARKER = "rtrefactor.cloneMarker";
 	
 	public CloneReconcilingStrategy(ISourceViewer viewer, ITextEditor editor)
 	{
@@ -83,7 +85,7 @@ public class CloneReconcilingStrategy implements IReconcilingStrategy,IReconcili
 		fDocument = document;
 		
 		//Get the File corresponding to the Document and store it in a field 
-		IResource res = (IResource) fEditor.getEditorInput().getAdapter(IResource.class);
+		IResource res = getResource(); 
 		IPath fPath = ResourcesPlugin.getWorkspace().getRoot().getLocation();
 		fPath = fPath.append(res.getFullPath().makeAbsolute());
 		fFile= fPath.toFile();
@@ -197,7 +199,18 @@ public class CloneReconcilingStrategy implements IReconcilingStrategy,IReconcili
 		CloneReconciler.reconcilerLog.debug("Adding annotation to source region");
 		int off = convertSourceLocation(r.getStart());
 		int len = convertSourceLocation(r.getEnd()) - off;
-		fAnnotationModel.addAnnotation(new CloneAnnotation(), new Position(off, len));
+		IResource res = getResource();
+		
+		//TODO: Make this string constant
+		IMarker cloneMarker = null;
+		try {
+			cloneMarker = res.createMarker(CLONE_MARKER);
+			cloneMarker.setAttribute("cloneArea", "HERE!!!!");
+		} catch (CoreException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		fAnnotationModel.addAnnotation(new CloneAnnotation(cloneMarker), new Position(off, len));
 	}
 	
 	/**
@@ -220,6 +233,13 @@ public class CloneReconcilingStrategy implements IReconcilingStrategy,IReconcili
 				}
 			}
 		}
+		IResource res = getResource();
+		try {
+			res.deleteMarkers(CLONE_MARKER, true, IResource.DEPTH_INFINITE);
+		} catch (CoreException e) {
+			e.printStackTrace();
+		}
+		
 	}
 	
 	
@@ -301,6 +321,11 @@ public class CloneReconcilingStrategy implements IReconcilingStrategy,IReconcili
 			e.printStackTrace();
 		}
 		return new SourceLocation(fFile, line, newOffset);
+	}
+	
+	private IResource getResource()
+	{
+		return (IResource) fEditor.getEditorInput().getAdapter(IResource.class);
 	}
 	
 }
