@@ -86,11 +86,12 @@
    </extension>
    
    <extension
-         id="cloneMarker"
+         id="rtrefactor.cloneMarker"
          name="Clone Marker"
          point="org.eclipse.core.resources.markers">
-         <super type="org.eclipse.core.resources.textmarker"/>         
-     	 <persistent value="true"/>   
+         <super type="org.eclipse.core.resources.problemmarker"/>         
+     	 <persistent value="true"/> 
+     	 <attribute name="cloneArea"/>  
    </extension>
    
    <extension point="org.eclipse.ui.editors.annotationTypes">
@@ -122,4 +123,11 @@
         verticalRulerPreferenceKey="rtrefactor.verticalRuler"
         verticalRulerPreferenceValue="true"/>
   </extension>
+  
+  <extension point="org.eclipse.ui.ide.markerResolution">
+      <markerResolutionGenerator
+         markerType="rtrefactor.cloneMarker"
+         class="edu.washington.cs.rtrefactor.reconciler.CloneFixer"/>
+   </extension>
+  
 </plugin>
