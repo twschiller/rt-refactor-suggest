@@ -6,7 +6,7 @@ import org.eclipse.ui.IMarkerResolution;
 import org.eclipse.ui.IMarkerResolutionGenerator;
 
 public class CloneFixer implements IMarkerResolutionGenerator {
-
+	
     public IMarkerResolution[] getResolutions(IMarker mk) {
         System.out.println("marker res called!");
            String problem = "";
