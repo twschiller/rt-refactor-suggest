@@ -80,7 +80,7 @@
             default="true"
             extensions="java"
             icon="icons/sample.gif"
-            id="edu.washington.cs.rtrefactor.reconciler.CloneEditor"
+            id="org.eclipse.jdt.ui.CompilationUnitEditor"
             name="Java Clone Editor">
       </editor>
    </extension>
