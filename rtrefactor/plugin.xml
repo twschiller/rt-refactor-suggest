@@ -91,7 +91,11 @@
          point="org.eclipse.core.resources.markers">
          <super type="org.eclipse.core.resources.problemmarker"/>         
      	 <persistent value="true"/> 
-     	 <attribute name="cloneArea"/>  
+     	 <attribute name="cloneNumber"/>  
+     	 <attribute name="cloneFile"/>
+     	 <attribute name="cloneStartOffset"/>
+     	 <attribute name="cloneEndOffset"/> 
+     	 <attribute name="dirtyFileText"/>           
    </extension>
    
    <extension point="org.eclipse.ui.editors.annotationTypes">
@@ -108,7 +112,7 @@
         icon="icons/sample.gif"
         quickFixIcon="icons/marker.png"
         label="Clone Marking"
-        presentationLayer="0"
+        presentationLayer="1"
         includeOnPreferencePage="true"
         colorPreferenceKey="rtrefactor.highlight.color"
         colorPreferenceValue="255,0,255"
@@ -127,7 +131,7 @@
   <extension point="org.eclipse.ui.ide.markerResolution">
       <markerResolutionGenerator
          markerType="rtrefactor.cloneMarker"
-         class="edu.washington.cs.rtrefactor.reconciler.CloneFixer"/>
+         class="edu.washington.cs.rtrefactor.quickfix.CloneFixer"/>
    </extension>
   
 </plugin>
