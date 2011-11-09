@@ -10,7 +10,19 @@ import org.eclipse.jface.text.IDocument;
 
 import edu.washington.cs.rtrefactor.detect.SourceLocation;
 
+/**
+ * Some helpful utility methods for dealing with files and documents
+ *  
+ * @author Travis Mandel
+ *
+ */
 public class FileUtil {
+	/**
+	 * Given a File in the default charset, read it in to a String and return it.
+	 *  
+	 * @param path A path to a valid file in the default character set
+	 * @return a String containing the entire contents of the File
+	 */
 	public static String readFileToString(File path)
 	{
 		StringBuilder content = new StringBuilder();

@@ -2,9 +2,6 @@ package edu.washington.cs.rtrefactor.reconciler;
 
 import org.apache.log4j.Logger;
 import org.eclipse.jface.preference.IPreferenceStore;
-import org.eclipse.jface.text.reconciler.DirtyRegion;
-import org.eclipse.jface.text.reconciler.IReconcilingStrategy;
-import org.eclipse.jface.text.reconciler.IReconcilingStrategyExtension;
 import org.eclipse.jface.text.reconciler.MonoReconciler;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
