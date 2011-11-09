@@ -7,7 +7,6 @@ import org.eclipse.core.runtime.Platform;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
-import org.eclipse.jdt.internal.ui.javaeditor.CompilationUnitEditor;
 import org.eclipse.jdt.internal.ui.javaeditor.JavaSourceViewer;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.IWidgetTokenKeeper;
@@ -76,7 +75,9 @@ public class CloneSourceViewer extends JavaSourceViewer {
 		return fContentAssistant;
 	}
 
-	/*
+	/**
+	 * A method of the inaccessible class AdaptedSourceViewer which was copy & pasted
+	 * 
 	 * @see ITextOperationTarget#doOperation(int)
 	 */
 	public void doOperation(int operation) {
@@ -87,30 +88,31 @@ public class CloneSourceViewer extends JavaSourceViewer {
 		switch (operation) {
 		case CONTENTASSIST_PROPOSALS:
 			long time= CODE_ASSIST_DEBUG ? System.currentTimeMillis() : 0;
-			String  msg= fContentAssistant.showPossibleCompletions();
+			//String  msg= 
+			fContentAssistant.showPossibleCompletions();
 			if (CODE_ASSIST_DEBUG) {
 				long delta= System.currentTimeMillis() - time;
 				System.err.println("Code Assist (total): " + delta); //$NON-NLS-1$
 			}
-			// setStatusLineErrorMessage(msg);
-			///TODO: change to logger
-			System.out.println(msg);
+			//System.err.println(msg);
 			return;
 		case QUICK_ASSIST:
 			/*
 			 * XXX: We can get rid of this once the SourceViewer has a way to update the status line
 			 * https://bugs.eclipse.org/bugs/show_bug.cgi?id=787
 			 */
-			msg= fQuickAssistAssistant.showPossibleQuickAssists();
-			//TODO: change to logger
-			System.out.println(msg);
+			//msg= 
+			fQuickAssistAssistant.showPossibleQuickAssists();
+			//System.err.println(msg);
 			return;
 		}
 
 		super.doOperation(operation);
 	}
 
-	/*
+	/**
+	 * A method of the inaccessible class AdaptedSourceViewer which was copy & pasted
+	 *
 	 * @see IWidgetTokenOwner#requestWidgetToken(IWidgetTokenKeeper)
 	 */
 	public boolean requestWidgetToken(IWidgetTokenKeeper requester) {
@@ -119,7 +121,9 @@ public class CloneSourceViewer extends JavaSourceViewer {
 		return super.requestWidgetToken(requester);
 	}
 
-	/*
+	/**
+	 * A method of the inaccessible class AdaptedSourceViewer which was copy & pasted
+	 *
 	 * @see IWidgetTokenOwnerExtension#requestWidgetToken(IWidgetTokenKeeper, int)
 	 * @since 3.0
 	 */
@@ -129,7 +133,9 @@ public class CloneSourceViewer extends JavaSourceViewer {
 		return super.requestWidgetToken(requester, priority);
 	}
 
-	/*
+	/**
+	 * A method of the inaccessible class AdaptedSourceViewer which was copy & pasted
+	 *
 	 * @see org.eclipse.jface.text.source.SourceViewer#createFormattingContext()
 	 * @since 3.0
 	 */

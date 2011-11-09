@@ -18,6 +18,10 @@ package edu.washington.cs.rtrefactor.reconciler;
  /**
   * Formatting context for the comment formatter.
   *
+  * This was used in the inaccesible class AdaptedSourceViewer, and appears to have 
+  * been removed/replaced/moved in newer versions. Needed by CloneSourceViewer.
+  * 
+  * Copied and pasted by Travis Mandel 
   * @since 3.0
   */
  public class CommentFormattingContext extends FormattingContext {

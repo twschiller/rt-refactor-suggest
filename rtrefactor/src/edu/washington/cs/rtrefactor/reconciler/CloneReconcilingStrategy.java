@@ -1,9 +1,6 @@
 package edu.washington.cs.rtrefactor.reconciler;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -11,9 +8,7 @@ import java.util.Set;
 
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.BadLocationException;
@@ -60,8 +55,10 @@ public class CloneReconcilingStrategy implements IReconcilingStrategy,IReconcili
 	private ITextEditor fEditor;
 
 	private IActiveDetector detector = null;
-
+	
+	/** The clone marker type*/
 	public static final String CLONE_MARKER = "rtrefactor.cloneMarker";
+	
 
 	public CloneReconcilingStrategy(ISourceViewer viewer, ITextEditor editor)
 	{
@@ -105,7 +102,9 @@ public class CloneReconcilingStrategy implements IReconcilingStrategy,IReconcili
 		doReconcile(null);
 	}
 
-	/** Performs the clone detection.
+	/** 
+	 * Performs the clone detection.
+	 * 
 	 * @param dirtyRegion The region that has changed since the last reconciler,
 	 * 		is null if we should reconcile the entire file
 	 */
@@ -197,9 +196,14 @@ public class CloneReconcilingStrategy implements IReconcilingStrategy,IReconcili
 	}
 
 	//TODO: What other info is needed here?
-	/** Adds a clone annotation to the given source region
+	/** 
+	 * Adds a clone annotation to the given source region
+	 * 
 	 *  @param r The region indicating where the annotation should appear
-	 * */
+	 *  @param other The region containing the second (matched) clone, possibly
+	 *  	in a different file
+	 *  @param number The number/id assigned to the clone
+	 */
 	private void addAnnotation(SourceRegion r, SourceRegion other, int number)
 	{
 		CloneReconciler.reconcilerLog.debug("Adding annotation to source region");
@@ -235,11 +239,13 @@ public class CloneReconcilingStrategy implements IReconcilingStrategy,IReconcili
 		} catch (CoreException e) {
 			e.printStackTrace();
 		}
-		fAnnotationModel.addAnnotation(new CloneAnnotation(cloneMarker), new Position(off, len));
+		fAnnotationModel.addAnnotation(new CloneAnnotation(cloneMarker), 
+				new Position(off, len));
 	}
 
 	/**
 	 * Removes all annotations that overlap with the given offset range
+	 * 
 	 * @param start The offset into the current file at which the range starts
 	 * @param end The offset into the current file at which the rang eends
 	 */
@@ -297,26 +303,45 @@ public class CloneReconcilingStrategy implements IReconcilingStrategy,IReconcili
 		}
 	}
 
-	//TODO: Maybe these conversion methods could go elsewhere?
 
+	/** 
+	 * Helper method to call FileUtil.convertSourceLocation on the current
+	 * document
+	 * 
+	 * @see FileUtil.convertSourceLocation()
+	 */
 	private int convertSourceLocation(SourceLocation sl)
 	{
 		return FileUtil.convertSourceLocation(sl, fDocument);
 	}
-		
 	
-	
+	/** 
+	 * Helper method to call FileUtil.convertOffset on the current
+	 * document
+	 * 
+	 * @see FileUtil.convertOffset()
+	 */
 	private SourceLocation convertOffset(int offset)
 	{
 		return FileUtil.convertOffset(offset, fDocument, fFile);
 	}
 	
-
+	/** 
+	 * Helper method to get the Resource of the current document 
+	 * 
+	 * @return the currently open document
+	 */
 	private IResource getResource()
 	{
 		return (IResource) fEditor.getEditorInput().getAdapter(IResource.class);
 	}
-
+	
+	/** 
+	 * Helper method to convert a File into a Document 
+	 * 
+	 * @param f a File, assumed to be open in the editor
+	 * @return the corresponding document
+	 */
 	private Document fileToDocument(File f)
 	{
 		Document d = new Document(FileUtil.readFileToString(f));
