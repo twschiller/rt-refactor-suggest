@@ -9,6 +9,7 @@ import java.util.Set;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.jface.text.Document;
 import org.eposoft.jccd.data.ASourceUnit;
 import org.eposoft.jccd.data.JCCDFile;
 import org.eposoft.jccd.data.SimilarityGroupManager;
@@ -27,6 +28,7 @@ import com.google.common.collect.Sets;
 
 import edu.washington.cs.rtrefactor.Activator;
 import edu.washington.cs.rtrefactor.preferences.PreferenceUtil.Preference;
+import edu.washington.cs.rtrefactor.util.FileUtil;
 
 /**
  * A simple clone detector using the <a href="http://jccd.sourceforge.net/">JCCD clone detection pipeline</a>  
@@ -136,11 +138,16 @@ public class JccdDetector implements IActiveDetector, IDetector{
 		SourceUnitPosition minPos = APipeline.getFirstNodePosition(node);
 		SourceUnitPosition maxPos = APipeline.getLastNodePosition(node);	
 		
-		File underlying = files.get(getFile(node));
+		File surface = getFile(node);
+		File underlying = files.get(surface);
+		
+		Document underlierDoc = new Document(FileUtil.readFileToString(surface));
 		
 		return new SourceRegion(
-				new SourceLocation(underlying, minPos.getLine(), minPos.getCharacter()),
-				new SourceLocation(underlying, maxPos.getLine(), maxPos.getCharacter())
+				new SourceLocation(underlying, minPos.getLine(), 
+						minPos.getCharacter(), underlierDoc),
+				new SourceLocation(underlying, maxPos.getLine(), 
+						maxPos.getCharacter(), underlierDoc)
 				);
 	}
 	

@@ -15,9 +15,9 @@ import edu.washington.cs.rtrefactor.detect.SourceRegion;
  */
 public class ExtractMethodFix extends CloneFix {
 
-	public ExtractMethodFix(int cNumber, SourceRegion region, SourceRegion otherClone, String dirtyContent,
-			boolean isSameFile, int relevance) {
-		super(cNumber, region, otherClone, dirtyContent, isSameFile, relevance);
+	public ExtractMethodFix(int cNumber, SourceRegion otherClone, SourceRegion sourceClone,
+			String dirtyContent, boolean isSameFile, int relevance) {
+		super(cNumber, otherClone, sourceClone, dirtyContent, isSameFile, relevance);
 	}
 
 	public String getLabel() {
