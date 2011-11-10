@@ -15,9 +15,9 @@ import edu.washington.cs.rtrefactor.detect.SourceRegion;
  */
 public class InsertCallFix extends CloneFix {
 
-	public InsertCallFix(int cNumber, SourceRegion otherClone, String dirtyContent,
+	public InsertCallFix(int cNumber, SourceRegion region, SourceRegion otherClone, String dirtyContent,
 			boolean isSameFile, int relevance) {
-		super(cNumber, otherClone, dirtyContent, isSameFile, relevance);
+		super(cNumber, region, otherClone, dirtyContent, isSameFile, relevance);
 	}
 
 	public String getLabel() {

@@ -2,8 +2,13 @@ package edu.washington.cs.rtrefactor.quickfix;
 
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.jface.text.BadLocationException;
+import org.eclipse.jface.text.IDocument;
+import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.PlatformUI;
 
 import edu.washington.cs.rtrefactor.detect.SourceRegion;
+import edu.washington.cs.rtrefactor.reconciler.CloneEditor;
 
 /**
  * The quickfix which copies & pastes the clone
@@ -15,9 +20,9 @@ import edu.washington.cs.rtrefactor.detect.SourceRegion;
  */
 public class CopyPasteFix extends CloneFix {
 
-	public CopyPasteFix(int cNumber, SourceRegion otherClone, String dirtyContent,
+	public CopyPasteFix(int cNumber, SourceRegion region, SourceRegion otherClone, String dirtyContent,
 			boolean isSameFile, int relevance) {
-		super(cNumber, otherClone, dirtyContent, isSameFile, relevance);
+		super(cNumber, region, otherClone, dirtyContent, isSameFile, relevance);
 	}
 
 	public String getLabel() {
@@ -25,8 +30,18 @@ public class CopyPasteFix extends CloneFix {
 	}
 	
 	public void run(IMarker marker) {
-		MessageDialog.openInformation(null, "Copy & Paste Demo",
-				"This copy and paste quick-fix is not yet implemented");
+		//http://wiki.eclipse.org/FAQ_How_do_I_insert_text_in_the_active_text_editor%3F
+		
+		IEditorPart editor =  PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
+		IDocument doc = ((CloneEditor) editor).getDocumentProvider().getDocument(editor.getEditorInput());
+		
+		// TODO fill this in
+		try {
+			doc.replace(0, 0, "hellow world");
+		} catch (BadLocationException e) {
+			MessageDialog.openError(null, "Paste Clone", "An error occured when pasting the clone");
+		}
+		
 	}
 
 	@Override

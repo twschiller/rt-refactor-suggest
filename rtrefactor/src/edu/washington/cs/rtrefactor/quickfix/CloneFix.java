@@ -23,12 +23,13 @@ import edu.washington.cs.rtrefactor.util.FileUtil;
  */
 public abstract class CloneFix implements IMarkerResolution, IJavaCompletionProposal{
 
-	private int cloneNumber;
-	private SourceRegion otherRegion;
-	private String dirtyText;
-	private String otherContent;
-	private boolean sameFile;
-	private int relevance;
+	private final int cloneNumber;
+	private final SourceRegion region;
+	private final SourceRegion otherRegion;
+	private final String dirtyText;
+	private final String otherContent;
+	private final boolean sameFile;
+	private final int relevance;
 	
 	/**
 	 * Instantiates a clone quick fix
@@ -42,16 +43,14 @@ public abstract class CloneFix implements IMarkerResolution, IJavaCompletionProp
 	 * @param relevance A score from 10-100 indicating the relevance of this 
 	 * 			suggestion
 	 */
-	public CloneFix(int cNumber, SourceRegion otherClone, String dirtyContent, 
+	public CloneFix(int cNumber, SourceRegion region, SourceRegion otherClone, String dirtyContent, 
 			boolean isSameFile, int relevance) {
-		cloneNumber = cNumber;
-		otherRegion = otherClone;
-		dirtyText = dirtyContent;
-		sameFile= isSameFile;
-		if(!sameFile)
-			otherContent = FileUtil.readFileToString(otherRegion.getFile());
-		else
-			otherContent = dirtyText;
+		this.cloneNumber = cNumber;
+		this.region = region;
+		this.otherRegion = otherClone;
+		this.dirtyText = dirtyContent;
+		this.sameFile = isSameFile;
+		this.otherContent = sameFile ? dirtyText :  FileUtil.readFileToString(otherRegion.getFile());
 		this.relevance = relevance;
 	}
 
@@ -104,6 +103,10 @@ public abstract class CloneFix implements IMarkerResolution, IJavaCompletionProp
 	@Override
 	public int getRelevance() {
 		return relevance;
+	}
+	
+	protected SourceRegion getRegion(){
+		return region;
 	}
 	
 	protected int getCloneNumber() {
