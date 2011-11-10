@@ -9,6 +9,7 @@ import org.eclipse.ui.PlatformUI;
 
 import edu.washington.cs.rtrefactor.detect.SourceRegion;
 import edu.washington.cs.rtrefactor.reconciler.CloneEditor;
+import edu.washington.cs.rtrefactor.util.FileUtil;
 
 /**
  * The quickfix which copies & pastes the clone
@@ -35,9 +36,11 @@ public class CopyPasteFix extends CloneFix {
 		IEditorPart editor =  PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
 		IDocument doc = ((CloneEditor) editor).getDocumentProvider().getDocument(editor.getEditorInput());
 		
-		// TODO fill this in
+		int start = this.getSourceRegion().getStart().getGlobalOffset();
+		int len =  this.getSourceRegion().getEnd().getGlobalOffset() - start;
+		
 		try {
-			doc.replace(0, 0, "hellow world");
+			doc.replace(start, len, FileUtil.get(this.getOtherContents(), this.getOtherRegion()));
 		} catch (BadLocationException e) {
 			MessageDialog.openError(null, "Paste Clone", "An error occured when pasting the clone");
 		}

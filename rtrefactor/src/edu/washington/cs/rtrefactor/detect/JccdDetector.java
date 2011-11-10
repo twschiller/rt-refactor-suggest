@@ -141,7 +141,7 @@ public class JccdDetector implements IActiveDetector, IDetector{
 		File surface = getFile(node);
 		File underlying = files.get(surface);
 		
-		Document underlierDoc = new Document(FileUtil.readFileToString(surface));
+		Document underlierDoc = new Document(FileUtil.read(surface));
 		
 		return new SourceRegion(
 				new SourceLocation(underlying, minPos.getLine(), 

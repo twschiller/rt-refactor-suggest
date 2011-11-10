@@ -79,7 +79,7 @@ public class SimianDetector extends BaseCheckStyleDetector<SimianCheck> {
 		if (files.containsKey(abs)){
 			File underlier = files.get(abs);
 			
-			Document underlierDoc = new Document(FileUtil.readFileToString(abs));
+			Document underlierDoc = new Document(FileUtil.read(abs));
 			
 			return new SourceRegion(
 				new SourceLocation(underlier, e.getLine(), 0, underlierDoc),
@@ -99,7 +99,7 @@ public class SimianDetector extends BaseCheckStyleDetector<SimianCheck> {
 		if (files.containsKey(abs)){
 			File underlier = files.get(abs);
 			
-			Document underlierDoc = new Document(FileUtil.readFileToString(abs));
+			Document underlierDoc = new Document(FileUtil.read(abs));
 			
 			return new SourceRegion(
 					new SourceLocation(underlier, otherStart, 0, underlierDoc),

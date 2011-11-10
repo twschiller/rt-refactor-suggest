@@ -1,6 +1,7 @@
 package edu.washington.cs.rtrefactor.detect;
 
 import java.io.File;
+import java.nio.charset.Charset;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -8,6 +9,7 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.jface.text.Document;
 
 import com.google.common.collect.BiMap;
+import com.google.common.io.Files;
 import com.puppycrawl.tools.checkstyle.DefaultConfiguration;
 import com.puppycrawl.tools.checkstyle.api.AuditEvent;
 import com.puppycrawl.tools.checkstyle.api.CheckstyleException;
@@ -63,7 +65,7 @@ public class CheckStyleDetector extends BaseCheckStyleDetector<StrictDuplicateCo
 		File surface= super.absolutePath(new File(e.getFileName()));
 		File underlier = files.get(surface);
 		
-		Document underlierDoc = new Document(FileUtil.readFileToString(surface));
+		Document underlierDoc = new Document(FileUtil.read(surface));
 		return new SourceRegion(
 				new SourceLocation(underlier, e.getLine(), 0, underlierDoc),
 				new SourceLocation(underlier, e.getLine() + numLines(e,m), 0, underlierDoc));
@@ -76,7 +78,7 @@ public class CheckStyleDetector extends BaseCheckStyleDetector<StrictDuplicateCo
 		
 		File surface= super.absolutePath(src);
 		File underlier = files.get(surface);
-		Document underlierDoc = new Document(FileUtil.readFileToString(surface));
+		Document underlierDoc = new Document(FileUtil.read(surface));
 		
 		return new SourceRegion(
 				new SourceLocation(underlier, otherLine, 0, underlierDoc),
