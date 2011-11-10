@@ -136,12 +136,13 @@ public class CloneReconcilingStrategy implements IReconcilingStrategy,IReconcili
 					convertOffset(dirtyRegion.getOffset() + dirtyRegion.getLength()) );
 		}
 		else{
-			active = new SourceRegion(new SourceLocation(fFile, 0, 0), 
-					new SourceLocation(fFile, lines-1, lastOff));
+			active = new SourceRegion(new SourceLocation(fFile, 0, 0, fDocument), 
+					new SourceLocation(fFile, lines-1, lastOff, fDocument));
 		}
 
 		//Clear the annotations that overlap with the target area
-		removeAnnotations(convertSourceLocation(active.getStart()), convertSourceLocation(active.getEnd()));
+		removeAnnotations(active.getStart().getGlobalOffset(), 
+				active.getEnd().getGlobalOffset());
 
 		//Run the detection
 		Set<ClonePair> hs = null;
@@ -207,8 +208,8 @@ public class CloneReconcilingStrategy implements IReconcilingStrategy,IReconcili
 	private void addAnnotation(SourceRegion r, SourceRegion other, int number)
 	{
 		CloneReconciler.reconcilerLog.debug("Adding annotation to source region");
-		int off = convertSourceLocation(r.getStart());
-		int len = convertSourceLocation(r.getEnd()) - off;
+		int off = r.getStart().getGlobalOffset();
+		int len = r.getEnd().getGlobalOffset() - off;
 		
 		
 
@@ -218,23 +219,28 @@ public class CloneReconcilingStrategy implements IReconcilingStrategy,IReconcili
 		try {
 			cloneMarker = res.createMarker(CLONE_MARKER);
 			cloneMarker.setAttribute("cloneNumber", number);
+			
+			int offSource = other.getStart().getGlobalOffset();
+			int endSource = other.getEnd().getGlobalOffset() ;
+			cloneMarker.setAttribute("sourceStartOffset", offSource);
+			cloneMarker.setAttribute("sourceEndOffset", endSource);
+			
+			cloneMarker.setAttribute("cloneNumber", number);
 			cloneMarker.setAttribute("dirtyFileText", fDocument.get());
 			cloneMarker.setAttribute("cloneFile", other.getFile().toString());
 			
 			if(other.getFile().equals(fFile))
 			{
-				int off2 = convertSourceLocation(other.getStart());
-				int end2 = convertSourceLocation(other.getEnd()) ;
+				int off2 = other.getStart().getGlobalOffset();
+				int end2 = other.getEnd().getGlobalOffset() ;
 				
 				cloneMarker.setAttribute("cloneStartOffset", off2);
 				cloneMarker.setAttribute("cloneEndOffset", end2);
 			} else {
 				Document doc = fileToDocument(other.getFile());
-				int off2 = FileUtil.convertSourceLocation(other.getStart(), doc);
-				int end2 = FileUtil.convertSourceLocation(other.getEnd(), doc);
 				
-				cloneMarker.setAttribute("cloneStartOffset", off2);
-				cloneMarker.setAttribute("cloneEndOffset", end2);
+				cloneMarker.setAttribute("cloneStartOffset", other.getStart().getGlobalOffset());
+				cloneMarker.setAttribute("cloneEndOffset", other.getEnd().getGlobalOffset());
 			}
 		} catch (CoreException e) {
 			e.printStackTrace();
@@ -304,16 +310,6 @@ public class CloneReconcilingStrategy implements IReconcilingStrategy,IReconcili
 	}
 
 
-	/** 
-	 * Helper method to call FileUtil.convertSourceLocation on the current
-	 * document
-	 * 
-	 * @see FileUtil.convertSourceLocation()
-	 */
-	private int convertSourceLocation(SourceLocation sl)
-	{
-		return FileUtil.convertSourceLocation(sl, fDocument);
-	}
 	
 	/** 
 	 * Helper method to call FileUtil.convertOffset on the current
@@ -323,7 +319,7 @@ public class CloneReconcilingStrategy implements IReconcilingStrategy,IReconcili
 	 */
 	private SourceLocation convertOffset(int offset)
 	{
-		return FileUtil.convertOffset(offset, fDocument, fFile);
+		return new SourceLocation(fFile, offset, fDocument);
 	}
 	
 	/** 

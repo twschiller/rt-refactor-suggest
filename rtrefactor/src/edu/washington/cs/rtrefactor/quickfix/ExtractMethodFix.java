@@ -15,9 +15,9 @@ import edu.washington.cs.rtrefactor.detect.SourceRegion;
  */
 public class ExtractMethodFix extends CloneFix {
 
-	public ExtractMethodFix(int cNumber, SourceRegion otherClone, String dirtyContent,
-			boolean isSameFile, int relevance) {
-		super(cNumber, otherClone, dirtyContent, isSameFile, relevance);
+	public ExtractMethodFix(int cNumber, SourceRegion otherClone, SourceRegion sourceClone,
+			String dirtyContent, boolean isSameFile, int relevance) {
+		super(cNumber, otherClone, sourceClone, dirtyContent, isSameFile, relevance);
 	}
 
 	public String getLabel() {
@@ -37,7 +37,7 @@ public class ExtractMethodFix extends CloneFix {
 			+ super.getDescription();
 		else
 			return "Extracts this code to a method with the following clone (from "+ 
-			getOtherRegion().getFile().getName()+  "):<br/>" 
+			getOtherCloneRegion().getFile().getName()+  "):<br/>" 
 			+ super.getDescription();
 	}
 
