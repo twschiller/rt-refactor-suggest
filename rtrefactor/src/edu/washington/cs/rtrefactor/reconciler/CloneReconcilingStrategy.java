@@ -340,7 +340,7 @@ public class CloneReconcilingStrategy implements IReconcilingStrategy,IReconcili
 	 */
 	private Document fileToDocument(File f)
 	{
-		Document d = new Document(FileUtil.readFileToString(f));
+		Document d = new Document(FileUtil.read(f));
 		return d;
 	}
 
