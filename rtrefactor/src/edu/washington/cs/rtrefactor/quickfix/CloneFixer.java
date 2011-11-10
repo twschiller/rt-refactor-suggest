@@ -5,11 +5,13 @@ import java.util.Random;
 
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.jface.text.Document;
 import org.eclipse.ui.IMarkerResolution;
 import org.eclipse.ui.IMarkerResolutionGenerator;
 
 import edu.washington.cs.rtrefactor.detect.SourceLocation;
 import edu.washington.cs.rtrefactor.detect.SourceRegion;
+import edu.washington.cs.rtrefactor.util.FileUtil;
 
 /**
  *  Provides the quick fixes suggestions for refactoring clones to the Eclipse UI.
@@ -37,6 +39,8 @@ public class CloneFixer implements IMarkerResolutionGenerator {
 		String cloneFile = null;
 		int cloneStart = -1;
 		int cloneEnd = -1;
+		int sourceStart = -1;
+		int sourceEnd = -1;
 		String dirtyText = null;
 		
 		//Get the attributes from the marker (they were put here by the reconciler)
@@ -45,21 +49,31 @@ public class CloneFixer implements IMarkerResolutionGenerator {
 			cloneFile = (String)mk.getAttribute("cloneFile");
 			cloneStart = (Integer)mk.getAttribute("cloneStartOffset");
 			cloneEnd = (Integer)mk.getAttribute("cloneEndOffset");
+			sourceStart = (Integer)mk.getAttribute("sourceStartOffset");
+			sourceEnd = (Integer)mk.getAttribute("sourceEndOffset");
 			dirtyText = (String)mk.getAttribute("dirtyFileText");
 		} catch (CoreException e) {
 			e.printStackTrace();
 		}
-		
 		// Check if the clones come from the same file
 		File otherFile = new File(cloneFile);
 		File thisFile = mk.getResource().getRawLocation().makeAbsolute().toFile();
 		boolean sameFile = thisFile.equals(otherFile);
 		
-		//We don't care about lines for the time being, so these SourceLocations
-		// only hold the flat offset
+		Document thisDoc = new Document(dirtyText);
+		Document otherDoc;
+		if(sameFile)
+			otherDoc = thisDoc;
+		else
+			otherDoc = new Document(FileUtil.readFileToString(otherFile));
+		
 		SourceRegion otherClone = new SourceRegion(
-				new SourceLocation(otherFile, 0, cloneStart), 
-				new SourceLocation(otherFile, 0, cloneEnd));
+				new SourceLocation(otherFile, cloneStart, otherDoc), 
+				new SourceLocation(otherFile, cloneEnd, otherDoc));
+		
+		SourceRegion sourceClone = new SourceRegion(
+				new SourceLocation(thisFile, sourceStart, thisDoc), 
+				new SourceLocation(thisFile, sourceEnd, thisDoc));
 		
 		//TODO: We assign these for testing purposes only, use real scores
 		Random r= new Random();
@@ -68,10 +82,14 @@ public class CloneFixer implements IMarkerResolutionGenerator {
 		
 		//TODO:  If score too low, some may not be shown
 		return new IMarkerResolution[] {
-				new CopyPasteFix(cloneNum, otherClone, dirtyText, sameFile, relevance),
-				new ExtractMethodFix(cloneNum, otherClone, dirtyText, sameFile, relevance+1),
-				new InsertCallFix(cloneNum, otherClone, dirtyText, sameFile, relevance+2),
-				new JumpToFix(cloneNum, otherClone, dirtyText, sameFile, relevance+3),
+				new CopyPasteFix(cloneNum, otherClone, sourceClone, dirtyText, sameFile,
+						relevance),
+				new ExtractMethodFix(cloneNum, otherClone, sourceClone, dirtyText, 
+						sameFile, relevance+1),
+				new InsertCallFix(cloneNum, otherClone, sourceClone, dirtyText, sameFile, 
+						relevance+2),
+				new JumpToFix(cloneNum, otherClone, sourceClone, dirtyText, sameFile, 
+						relevance+3),
 				
 		};
 

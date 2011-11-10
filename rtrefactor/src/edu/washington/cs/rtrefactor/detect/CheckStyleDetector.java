@@ -5,6 +5,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.jface.text.Document;
 
 import com.google.common.collect.BiMap;
 import com.puppycrawl.tools.checkstyle.DefaultConfiguration;
@@ -13,6 +14,7 @@ import com.puppycrawl.tools.checkstyle.api.CheckstyleException;
 import com.puppycrawl.tools.checkstyle.checks.duplicates.StrictDuplicateCodeCheck;
 
 import edu.washington.cs.rtrefactor.preferences.PreferenceUtil.Preference;
+import edu.washington.cs.rtrefactor.util.FileUtil;
 
 /**
  * The CheckStyle "strict" code clone detection tool. 
@@ -58,11 +60,13 @@ public class CheckStyleDetector extends BaseCheckStyleDetector<StrictDuplicateCo
 	}
 	
 	private SourceRegion mkRegion(BiMap<File, File> files, AuditEvent e, Matcher m){
-		File underlier = files.get(super.absolutePath(new File(e.getFileName())));
+		File surface= super.absolutePath(new File(e.getFileName()));
+		File underlier = files.get(surface);
 		
+		Document underlierDoc = new Document(FileUtil.readFileToString(surface));
 		return new SourceRegion(
-				new SourceLocation(underlier, e.getLine(), 0),
-				new SourceLocation(underlier, e.getLine() + numLines(e,m), 0));
+				new SourceLocation(underlier, e.getLine(), 0, underlierDoc),
+				new SourceLocation(underlier, e.getLine() + numLines(e,m), 0, underlierDoc));
 	}
 	
 	private SourceRegion mkOtherRegion(BiMap<File, File> files, AuditEvent e, Matcher m){
@@ -70,11 +74,13 @@ public class CheckStyleDetector extends BaseCheckStyleDetector<StrictDuplicateCo
 		File src = new File(m.group(2));
 		int otherLine = Integer.parseInt(m.group(3).replace(",",""));
 		
-		File underlier = files.get(super.absolutePath(src));
+		File surface= super.absolutePath(src);
+		File underlier = files.get(surface);
+		Document underlierDoc = new Document(FileUtil.readFileToString(surface));
 		
 		return new SourceRegion(
-				new SourceLocation(underlier, otherLine, 0),
-				new SourceLocation(underlier, otherLine + numLines, 0));
+				new SourceLocation(underlier, otherLine, 0, underlierDoc),
+				new SourceLocation(underlier, otherLine + numLines, 0, underlierDoc));
 	}
 
 	@Override

@@ -95,7 +95,9 @@
      	 <attribute name="cloneFile"/>
      	 <attribute name="cloneStartOffset"/>
      	 <attribute name="cloneEndOffset"/> 
-     	 <attribute name="dirtyFileText"/>           
+     	 <attribute name="dirtyFileText"/>
+     	 <attribute name="sourceStartOffset"/>
+     	 <attribute name="sourceEndOffset"/>            
    </extension>
    
    <extension point="org.eclipse.ui.editors.annotationTypes">

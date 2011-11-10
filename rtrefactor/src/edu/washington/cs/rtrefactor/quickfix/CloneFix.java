@@ -24,7 +24,9 @@ import edu.washington.cs.rtrefactor.util.FileUtil;
 public abstract class CloneFix implements IMarkerResolution, IJavaCompletionProposal{
 
 	private int cloneNumber;
-	private SourceRegion otherRegion;
+	private SourceRegion otherCloneRegion;
+	private SourceRegion sourceCloneRegion;
+
 	private String dirtyText;
 	private String otherContent;
 	private boolean sameFile;
@@ -36,20 +38,22 @@ public abstract class CloneFix implements IMarkerResolution, IJavaCompletionProp
 	 * @param cNumber The clone pair number
 	 * @param otherClone The region containing the second clone (possibly in 
 	 * 		another file)
+	 * @param sourceClone TODO
 	 * @param dirtyContent The contents of the currently open file, containing 
 	 * 		the first clone
 	 * @param isSameFile Is the second clone in the same file as the first
 	 * @param relevance A score from 10-100 indicating the relevance of this 
 	 * 			suggestion
 	 */
-	public CloneFix(int cNumber, SourceRegion otherClone, String dirtyContent, 
-			boolean isSameFile, int relevance) {
+	public CloneFix(int cNumber, SourceRegion otherClone,
+			SourceRegion sourceClone, String dirtyContent, boolean isSameFile, int relevance) {
 		cloneNumber = cNumber;
-		otherRegion = otherClone;
+		otherCloneRegion = otherClone;
+		sourceCloneRegion = sourceClone;
 		dirtyText = dirtyContent;
 		sameFile= isSameFile;
 		if(!sameFile)
-			otherContent = FileUtil.readFileToString(otherRegion.getFile());
+			otherContent = FileUtil.readFileToString(otherCloneRegion.getFile());
 		else
 			otherContent = dirtyText;
 		this.relevance = relevance;
@@ -61,8 +65,8 @@ public abstract class CloneFix implements IMarkerResolution, IJavaCompletionProp
 	 */
 	public String getDescription() {
 		String otherClone;
-		otherClone = CloneFixer.getCloneString(otherRegion.getStart().getOffset(), 
-				otherRegion.getEnd().getOffset(), otherContent);
+		otherClone = CloneFixer.getCloneString(otherCloneRegion.getStart().getGlobalOffset(), 
+				otherCloneRegion.getEnd().getGlobalOffset(), otherContent);
 		return otherClone;
 	}
 
@@ -110,12 +114,15 @@ public abstract class CloneFix implements IMarkerResolution, IJavaCompletionProp
 		return cloneNumber;
 	}
 	
-	protected SourceRegion getOtherRegion() {
-		return otherRegion;
+	protected SourceRegion getOtherCloneRegion() {
+		return otherCloneRegion;
 	}
 
 	protected boolean isSameFile() {
 		return sameFile;
+	}
+	public SourceRegion getSourceCloneRegion() {
+		return sourceCloneRegion;
 	}
 
 

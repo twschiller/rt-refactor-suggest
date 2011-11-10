@@ -15,9 +15,9 @@ import edu.washington.cs.rtrefactor.detect.SourceRegion;
  */
 public class CopyPasteFix extends CloneFix {
 
-	public CopyPasteFix(int cNumber, SourceRegion otherClone, String dirtyContent,
-			boolean isSameFile, int relevance) {
-		super(cNumber, otherClone, dirtyContent, isSameFile, relevance);
+	public CopyPasteFix(int cNumber, SourceRegion otherClone, SourceRegion sourceClone,
+			String dirtyContent, boolean isSameFile, int relevance) {
+		super(cNumber, otherClone, sourceClone, dirtyContent, isSameFile, relevance);
 	}
 
 	public String getLabel() {
@@ -36,7 +36,7 @@ public class CopyPasteFix extends CloneFix {
 			+ super.getDescription();
 		else
 			return "Copy and pastes this clone from "+ 
-			getOtherRegion().getFile().getName()+  ":<br/>" 
+			getOtherCloneRegion().getFile().getName()+  ":<br/>" 
 			+ super.getDescription();
 	}
 
