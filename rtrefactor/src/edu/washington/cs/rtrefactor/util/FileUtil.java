@@ -46,52 +46,5 @@ public class FileUtil {
 		return content.toString();
 	}
 	
-	/**
-	 * Given a source location, return the corresponding character 
-	 * offset in the file
-	 * 
-	 * @param sl The source location to convert
-	 * @return the offset into the file
-	 */
-	public static int convertSourceLocation(SourceLocation sl, IDocument doc)
-	{
-		int off;
-		try {
-			if(sl.getLine() == 0)
-				off = 0;
-			else
-				off = doc.getLineOffset(sl.getLine()-1);
-		} catch (BadLocationException e) {
-			e.printStackTrace();
-			return 0;
-		}
-
-		off += sl.getOffset();
-
-		return off;
-	}
 	
-	/**
-	 * Given a character offset into the current document, returns a new 
-	 * SourceLocation representing the same location.
-	 * 
-	 * @param offset An offset into the current document
-	 * @return The corresponding SourceLocation
-	 */
-	public static SourceLocation convertOffset(int offset, IDocument doc, File file)
-	{
-		int line =0, newOffset =0;
-		try {
-			line = doc.getLineOfOffset(offset);
-			int lineOff;
-			if(line == 0)
-				lineOff = 0;
-			else
-				lineOff = doc.getLineOffset(line-1);
-			newOffset = offset - lineOff;
-		} catch (BadLocationException e) {
-			e.printStackTrace();
-		}
-		return new SourceLocation(file, line, newOffset);
-	}
 }

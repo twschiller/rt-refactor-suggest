@@ -28,10 +28,11 @@ import edu.washington.cs.rtrefactor.reconciler.CloneReconciler;
  */
 public class JumpToFix extends CloneFix {
 
-	public JumpToFix(int cNumber, SourceRegion region, SourceRegion otherClone, String dirtyContent,
-			boolean isSameFile, int relevance) {
-		super(cNumber, region, otherClone, dirtyContent, isSameFile, relevance);
+	public JumpToFix(int cNumber, SourceRegion otherClone, SourceRegion sourceClone,
+			String dirtyContent, boolean isSameFile, int relevance) {
+		super(cNumber, otherClone, sourceClone, dirtyContent, isSameFile, relevance);
 	}
+
 
 	public String getLabel() {
 		return "Jump to clone #" + getCloneNumber() + " (" + getRelevance() + ")";

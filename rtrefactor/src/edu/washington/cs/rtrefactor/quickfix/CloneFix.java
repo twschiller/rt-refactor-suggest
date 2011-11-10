@@ -24,8 +24,8 @@ import edu.washington.cs.rtrefactor.util.FileUtil;
 public abstract class CloneFix implements IMarkerResolution, IJavaCompletionProposal{
 
 	private final int cloneNumber;
-	private final SourceRegion region;
-	private final SourceRegion otherRegion;
+	private final SourceRegion sourceCloneRegion;
+	private final SourceRegion otherCloneRegion;
 	private final String dirtyText;
 	private final String otherContent;
 	private final boolean sameFile;
@@ -43,11 +43,11 @@ public abstract class CloneFix implements IMarkerResolution, IJavaCompletionProp
 	 * @param relevance A score from 10-100 indicating the relevance of this 
 	 * 			suggestion
 	 */
-	public CloneFix(int cNumber, SourceRegion region, SourceRegion otherClone, String dirtyContent, 
+	public CloneFix(int cNumber, SourceRegion sourceClone, SourceRegion otherClone, String dirtyContent, 
 			boolean isSameFile, int relevance) {
 		this.cloneNumber = cNumber;
-		this.region = region;
-		this.otherRegion = otherClone;
+		this.sourceCloneRegion = sourceClone;
+		this.otherCloneRegion = otherClone;
 		this.dirtyText = dirtyContent;
 		this.sameFile = isSameFile;
 		this.otherContent = sameFile ? dirtyText :  FileUtil.readFileToString(otherRegion.getFile());

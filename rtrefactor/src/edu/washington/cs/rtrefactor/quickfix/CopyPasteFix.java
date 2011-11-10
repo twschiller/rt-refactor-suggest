@@ -20,9 +20,9 @@ import edu.washington.cs.rtrefactor.reconciler.CloneEditor;
  */
 public class CopyPasteFix extends CloneFix {
 
-	public CopyPasteFix(int cNumber, SourceRegion region, SourceRegion otherClone, String dirtyContent,
-			boolean isSameFile, int relevance) {
-		super(cNumber, region, otherClone, dirtyContent, isSameFile, relevance);
+	public CopyPasteFix(int cNumber, SourceRegion otherClone, SourceRegion sourceClone,
+			String dirtyContent, boolean isSameFile, int relevance) {
+		super(cNumber, otherClone, sourceClone, dirtyContent, isSameFile, relevance);
 	}
 
 	public String getLabel() {

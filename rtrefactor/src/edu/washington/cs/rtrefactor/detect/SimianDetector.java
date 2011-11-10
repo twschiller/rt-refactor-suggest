@@ -5,6 +5,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.jface.text.Document;
 
 import com.google.common.collect.BiMap;
 import com.harukizaemon.simian.SimianCheck;
@@ -13,6 +14,7 @@ import com.puppycrawl.tools.checkstyle.api.AuditEvent;
 import com.puppycrawl.tools.checkstyle.api.CheckstyleException;
 
 import edu.washington.cs.rtrefactor.preferences.PreferenceUtil.Preference;
+import edu.washington.cs.rtrefactor.util.FileUtil;
 
 /**
  * The Simian code clone detection tool. For more information see 
@@ -76,10 +78,12 @@ public class SimianDetector extends BaseCheckStyleDetector<SimianCheck> {
 		
 		if (files.containsKey(abs)){
 			File underlier = files.get(abs);
-		
+			
+			Document underlierDoc = new Document(FileUtil.readFileToString(abs));
+			
 			return new SourceRegion(
-				new SourceLocation(underlier, e.getLine(), 0),
-				new SourceLocation(underlier, endLine + 1, 0));
+				new SourceLocation(underlier, e.getLine(), 0, underlierDoc),
+				new SourceLocation(underlier, endLine + 1, 0, underlierDoc));
 		}else{
 			throw new RuntimeException("internal error: temporary source file " + abs.getAbsolutePath() + " is not registered");
 		}
@@ -95,9 +99,11 @@ public class SimianDetector extends BaseCheckStyleDetector<SimianCheck> {
 		if (files.containsKey(abs)){
 			File underlier = files.get(abs);
 			
+			Document underlierDoc = new Document(FileUtil.readFileToString(abs));
+			
 			return new SourceRegion(
-					new SourceLocation(underlier, otherStart, 0),
-					new SourceLocation(underlier, otherEnd + 1, 0));			
+					new SourceLocation(underlier, otherStart, 0, underlierDoc),
+					new SourceLocation(underlier, otherEnd + 1, 0, underlierDoc));			
 		}else{
 			throw new RuntimeException("internal error: temporary source file " + abs.getAbsolutePath() + " is not registered");
 		}
