@@ -1,6 +1,7 @@
 package edu.washington.cs.rtrefactor.reconciler;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -122,7 +123,7 @@ public class CloneReconcilingStrategy implements IReconcilingStrategy,IReconcili
 		try {
 			lastOff = fDocument.getLineLength(lines-1);
 		} catch (BadLocationException e) {
-			e.printStackTrace();
+			CloneReconciler.reconcilerLog.error("Cannot Reconcile: Inconsistency in Document", e);
 			return;
 		}
 
@@ -130,6 +131,7 @@ public class CloneReconcilingStrategy implements IReconcilingStrategy,IReconcili
 
 		//Perform either incremental or non-incremental reconcile
 		SourceRegion active;
+		try {
 		if(dirtyRegion != null)
 		{
 			active = new SourceRegion(convertOffset(dirtyRegion.getOffset()), 
@@ -138,6 +140,10 @@ public class CloneReconcilingStrategy implements IReconcilingStrategy,IReconcili
 		else{
 			active = new SourceRegion(new SourceLocation(fFile, 0, 0, fDocument), 
 					new SourceLocation(fFile, lines-1, lastOff, fDocument));
+		}
+		} catch (BadLocationException e) {
+			CloneReconciler.reconcilerLog.error("Could not create active region to pass to clone detector", e);
+			return;
 		}
 
 		//Clear the annotations that overlap with the target area
@@ -243,7 +249,11 @@ public class CloneReconcilingStrategy implements IReconcilingStrategy,IReconcili
 				cloneMarker.setAttribute("cloneEndOffset", other.getEnd().getGlobalOffset());
 			}
 		} catch (CoreException e) {
-			e.printStackTrace();
+			CloneReconciler.reconcilerLog.error("Cannot add annotation to document, marker does not have required field", e);
+			return;
+		} catch (IOException e) {
+			CloneReconciler.reconcilerLog.error("Cannot add annotation to document, can't read other file", e);
+			return;
 		}
 		fAnnotationModel.addAnnotation(new CloneAnnotation(cloneMarker), 
 				new Position(off, len));
@@ -274,7 +284,7 @@ public class CloneReconcilingStrategy implements IReconcilingStrategy,IReconcili
 		try {
 			res.deleteMarkers(CLONE_MARKER, true, IResource.DEPTH_INFINITE);
 		} catch (CoreException e) {
-			e.printStackTrace();
+			CloneReconciler.reconcilerLog.error("Could not delete markers from a previous round", e);
 		}
 
 	}
@@ -314,10 +324,11 @@ public class CloneReconcilingStrategy implements IReconcilingStrategy,IReconcili
 	/** 
 	 * Helper method to call FileUtil.convertOffset on the current
 	 * document
+	 * @throws BadLocationException if offset is not a global offset into the file
 	 * 
 	 * @see FileUtil.convertOffset()
 	 */
-	private SourceLocation convertOffset(int offset)
+	private SourceLocation convertOffset(int offset) throws BadLocationException
 	{
 		return new SourceLocation(fFile, offset, fDocument);
 	}
@@ -337,8 +348,9 @@ public class CloneReconcilingStrategy implements IReconcilingStrategy,IReconcili
 	 * 
 	 * @param f a File, assumed to be open in the editor
 	 * @return the corresponding document
+	 * @throws IOException If file does not exist or is unreadable
 	 */
-	private Document fileToDocument(File f)
+	private Document fileToDocument(File f) throws IOException
 	{
 		Document d = new Document(FileUtil.read(f));
 		return d;

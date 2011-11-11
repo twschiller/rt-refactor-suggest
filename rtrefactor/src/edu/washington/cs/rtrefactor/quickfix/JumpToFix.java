@@ -1,5 +1,7 @@
 package edu.washington.cs.rtrefactor.quickfix;
 
+import java.io.IOException;
+
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -28,7 +30,7 @@ import edu.washington.cs.rtrefactor.reconciler.CloneReconciler;
 public class JumpToFix extends CloneFix {
 
 	public JumpToFix(int cNumber, SourceRegion sourceClone, SourceRegion otherClone,
-			String sourceContent, boolean isSameFile, int relevance) {
+			String sourceContent, boolean isSameFile, int relevance) throws IOException {
 		super(cNumber, sourceClone, otherClone, sourceContent, isSameFile, relevance);
 	}
 
@@ -84,13 +86,14 @@ public class JumpToFix extends CloneFix {
 
 	@Override
 	public String getDescription() {
-		if(isSameFile())
+		if(isSameFile()) {
 			return "Jumps to this clone in the same file: <br/>" 
 			+ super.getDescription();
-		else
+		} else {
 			return "Jumps to this clone from "+ 
 			getOtherRegion().getFile().getName()+  ":<br/>" 
 			+ super.getDescription();
+		}
 	}
 
 }

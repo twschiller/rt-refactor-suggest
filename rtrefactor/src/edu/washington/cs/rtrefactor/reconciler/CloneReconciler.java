@@ -60,8 +60,9 @@ public class CloneReconciler extends MonoReconciler{
 	 * @see MonoReconciler#initialProcess()
 	 */
 	protected void initialProcess() {
-		if(!isIncrementalReconciler())
+		if(!isIncrementalReconciler()) {
 			super.initialProcess();
+		}
 	 }
 
 

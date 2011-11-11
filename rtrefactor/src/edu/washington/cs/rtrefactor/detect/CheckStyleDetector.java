@@ -1,10 +1,12 @@
 package edu.washington.cs.rtrefactor.detect;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.Document;
 
 import com.google.common.collect.BiMap;
@@ -14,6 +16,7 @@ import com.puppycrawl.tools.checkstyle.api.CheckstyleException;
 import com.puppycrawl.tools.checkstyle.checks.duplicates.StrictDuplicateCodeCheck;
 
 import edu.washington.cs.rtrefactor.preferences.PreferenceUtil.Preference;
+import edu.washington.cs.rtrefactor.reconciler.CloneReconciler;
 import edu.washington.cs.rtrefactor.util.FileUtil;
 
 /**
@@ -59,7 +62,7 @@ public class CheckStyleDetector extends BaseCheckStyleDetector<StrictDuplicateCo
 		return Integer.parseInt(m.group(1).replace(",",""));
 	}
 	
-	private SourceRegion mkRegion(BiMap<File, File> files, AuditEvent e, Matcher m){
+	private SourceRegion mkRegion(BiMap<File, File> files, AuditEvent e, Matcher m) throws BadLocationException, IOException{
 		File surface= super.absolutePath(new File(e.getFileName()));
 		File underlier = files.get(surface);
 		
@@ -69,7 +72,7 @@ public class CheckStyleDetector extends BaseCheckStyleDetector<StrictDuplicateCo
 				new SourceLocation(underlier, e.getLine() + numLines(e,m), 0, underlierDoc));
 	}
 	
-	private SourceRegion mkOtherRegion(BiMap<File, File> files, AuditEvent e, Matcher m){
+	private SourceRegion mkOtherRegion(BiMap<File, File> files, AuditEvent e, Matcher m) throws BadLocationException, IOException{
 		int numLines = Integer.parseInt(m.group(1).replace(",",""));
 		File src = new File(m.group(2));
 		int otherLine = Integer.parseInt(m.group(3).replace(",",""));
@@ -91,7 +94,11 @@ public class CheckStyleDetector extends BaseCheckStyleDetector<StrictDuplicateCo
 		Matcher m = EN_REGEX.matcher(e.getMessage());
 		
 		if (m.matches()){
+			try {
 			return new ClonePair(mkRegion(files, e, m), mkOtherRegion(files, e, m), numLines(e,m));
+			} catch (Exception ex) {
+				throw new RuntimeException("Bad location parsed from CheckStyle message "+  ex.getMessage());
+			}
 		}else{
 			throw new RuntimeException("Internal error parsing CheckStyle message: " + e.getMessage());	
 		}
