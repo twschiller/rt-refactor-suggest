@@ -81,13 +81,13 @@ public class CloneFixer implements IMarkerResolutionGenerator {
 		
 		//TODO:  If score too low, some may not be shown
 		return new IMarkerResolution[] {
-			new CopyPasteFix(cloneNum, otherClone, sourceClone, dirtyText, sameFile,
+			new CopyPasteFix(cloneNum, sourceClone, otherClone, dirtyText, sameFile,
 					relevance),
-			new ExtractMethodFix(cloneNum, otherClone, sourceClone, dirtyText, 
+			new ExtractMethodFix(cloneNum, sourceClone, otherClone, dirtyText, 
 					sameFile, relevance+1),
-			new InsertCallFix(cloneNum, otherClone, sourceClone, dirtyText, sameFile, 
+			new InsertCallFix(cloneNum, sourceClone, otherClone, dirtyText, sameFile, 
 					relevance+2),
-			new JumpToFix(cloneNum, otherClone, sourceClone, dirtyText, sameFile, 
+			new JumpToFix(cloneNum, sourceClone, otherClone, dirtyText, sameFile, 
 					relevance+3),			
 			};
 
