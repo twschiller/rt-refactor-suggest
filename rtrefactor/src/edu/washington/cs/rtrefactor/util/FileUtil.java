@@ -1,6 +1,7 @@
 package edu.washington.cs.rtrefactor.util;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.charset.Charset;
 
 import com.google.common.base.Joiner;
@@ -20,15 +21,10 @@ public abstract class FileUtil {
 	 * with the "line.separator" property fetched from {@link System#getProperty(String)}.
 	 * @param file the file
 	 * @return the contents of the file
+	 * @throws IOException If file does not exist or is unreadable
 	 */
-	public static String read(File file){
-		// TODO this method should really have checked exceptions.
-		
-		try{
-			return Joiner.on(System.getProperty("line.separator")).join(Files.readLines(file, Charset.defaultCharset()));
-		}catch(Exception e){
-			throw new RuntimeException(e);
-		}
+	public static String read(File file) throws IOException{
+		return Joiner.on(System.getProperty("line.separator")).join(Files.readLines(file, Charset.defaultCharset()));
 	}
 	
 	/**

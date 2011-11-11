@@ -1,5 +1,7 @@
 package edu.washington.cs.rtrefactor.quickfix;
 
+import java.io.IOException;
+
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.jface.dialogs.MessageDialog;
 
@@ -16,7 +18,7 @@ import edu.washington.cs.rtrefactor.detect.SourceRegion;
 public class InsertCallFix extends CloneFix {
 
 	public InsertCallFix(int cNumber, SourceRegion otherClone, SourceRegion sourceClone,
-			String dirtyContent, boolean isSameFile, int relevance) {
+			String dirtyContent, boolean isSameFile, int relevance) throws IOException {
 		super(cNumber, otherClone, sourceClone, dirtyContent, isSameFile, relevance);
 	}
 
@@ -32,14 +34,15 @@ public class InsertCallFix extends CloneFix {
 	@Override
 	public String getDescription() {
 		//TODO: Show method name!
-		if(isSameFile())
+		if(isSameFile()) {
 			return "Replaces code with a call to a method in this file containing" +
 					" the following clone: <br/>" 
 			+ super.getDescription();
-		else
+		} else {
 			return "Replaces code with a call to a method in " + getOtherRegion().getFile().getName() + 
 					" containing the following clone:<br/>" 
 			+ super.getDescription();
+		}
 	}
 
 }

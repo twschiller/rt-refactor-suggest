@@ -1,5 +1,7 @@
 package edu.washington.cs.rtrefactor.quickfix;
 
+import java.io.IOException;
+
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.jface.dialogs.MessageDialog;
 
@@ -16,7 +18,7 @@ import edu.washington.cs.rtrefactor.detect.SourceRegion;
 public class ExtractMethodFix extends CloneFix {
 
 	public ExtractMethodFix(int cNumber, SourceRegion otherClone, SourceRegion sourceClone,
-			String dirtyContent, boolean isSameFile, int relevance) {
+			String dirtyContent, boolean isSameFile, int relevance) throws IOException {
 		super(cNumber, otherClone, sourceClone, dirtyContent, isSameFile, relevance);
 	}
 
@@ -31,14 +33,15 @@ public class ExtractMethodFix extends CloneFix {
 
 	@Override
 	public String getDescription() {
-		if(isSameFile())
+		if(isSameFile()) {
 			return "Extracts this code to a method with the following clone " +
 					"(from the same file): <br/>" 
 			+ super.getDescription();
-		else
+		} else {
 			return "Extracts this code to a method with the following clone (from "+ 
 			getOtherRegion().getFile().getName()+  "):<br/>" 
 			+ super.getDescription();
+		}
 	}
 
 }

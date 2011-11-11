@@ -20,7 +20,7 @@ public class SourceLocation implements Comparable<SourceLocation>{
 	private int line;
 	private int offset;
 	private int globalOffset;
-	
+
 	/**
 	 * Construct a record describing a location in a source file, given
 	 * the line and line specific offset.  
@@ -31,10 +31,12 @@ public class SourceLocation implements Comparable<SourceLocation>{
 	 * @param line the line number (>= 0)
 	 * @param offset the offset on the line (>= 0)
 	 * @param document the source document buffer (non-null)
+	 * @throws BadLocationException If line/offset is not a valid location 
+	 * 		in the document 
 	 */
-	public SourceLocation(File file, int line, int offset, IDocument document) {
+	public SourceLocation(File file, int line, int offset, IDocument document) throws BadLocationException {
 		super();
-		
+
 		if (file == null){
 			throw new NullPointerException("Attempt to create source location with no associated source file");
 		}else if (line < 0){
@@ -44,13 +46,13 @@ public class SourceLocation implements Comparable<SourceLocation>{
 		} else if (document == null){
 			throw new NullPointerException("Attempt to create source location with no associated source document");
 		}
-		
+
 		this.file = file;
 		this.line = line;
 		this.offset = offset;
 		convertLineOffset(document);
 	}
-	
+
 	/**
 	 * Construct a record describing a location in a source file, given the global 
 	 * 	offset into the file.
@@ -60,10 +62,12 @@ public class SourceLocation implements Comparable<SourceLocation>{
 	 * @param file the source file, or file underlying the buffer (non-null)
 	 * @param globalOffset the global offset in the file (>= 0)
 	 * @param document the source document buffer (non-null)
+	 * @throws BadLocationException If global offset is not a valid location in 
+	 * 		the document 
 	 */
-	public SourceLocation(File file, int globalOffset, IDocument document) {
+	public SourceLocation(File file, int globalOffset, IDocument document) throws BadLocationException {
 		super();
-		
+
 		if (file == null){
 			throw new NullPointerException("Attempt to create source location with no associated source file");
 		}else if (globalOffset < 0){
@@ -71,12 +75,12 @@ public class SourceLocation implements Comparable<SourceLocation>{
 		} else if (document == null){
 			throw new NullPointerException("Attempt to create source location with no associated source document");
 		}
-		
+
 		this.file = file;
 		this.globalOffset = globalOffset;
 		convertGlobalOffset(document);
 	}
-	
+
 	/**
 	 * get the source file, or the file underlying the buffer
 	 * @return the source file, or the file underlying the buffer
@@ -84,7 +88,7 @@ public class SourceLocation implements Comparable<SourceLocation>{
 	public File getFile() {
 		return file;
 	}
-	
+
 	/**
 	 * get the the line number
 	 * @return the line number
@@ -92,7 +96,7 @@ public class SourceLocation implements Comparable<SourceLocation>{
 	public int getLine() {
 		return line;
 	}
-	
+
 	/**
 	 * get the offset on the line
 	 * @return the offset on the line
@@ -101,7 +105,7 @@ public class SourceLocation implements Comparable<SourceLocation>{
 	public int getOffset() {
 		return offset;
 	}
-	
+
 	/**
 	 * get the offset in the file
 	 * @return the offset in the file
@@ -122,7 +126,7 @@ public class SourceLocation implements Comparable<SourceLocation>{
 		}else if(!file.equals(o.file)){
 			throw new IllegalArgumentException("Cannot compare source locations with different underlying files");
 		}
-		
+
 		if (line == o.line){
 			return new Integer(offset).compareTo(o.offset);
 		}else{
@@ -166,52 +170,44 @@ public class SourceLocation implements Comparable<SourceLocation>{
 			return false;
 		return true;
 	}
-	
-	
+
+
 	/**
 	 * Given a document, computed and stores this location's
 	 * global offset based on its line and line offset
 	 * 
 	 * @param doc The document which this SourceLocation is in
 	 */
-	private void convertLineOffset(IDocument doc)
+	private void convertLineOffset(IDocument doc) throws BadLocationException
 	{
 		int off = 0;
-		try {
-			if(line == 0)
-				off = 0;
-			else
-				off = doc.getLineOffset(line-1);
-		} catch (BadLocationException e) {
-			e.printStackTrace();
-			globalOffset = 0;
-			return;
+		if(line == 0) {
+			off = 0;
+		} else {
+			off = doc.getLineOffset(line-1);
 		}
 
 		off += offset;
 		globalOffset = off;
 	}
-	
+
 	/**
 	 * Given a document, compute this location's line and offset based on
 	 * its global offset
 	 * 
 	 * @param doc the document this SourceLocation is in
 	 */
-	private void convertGlobalOffset(IDocument doc)
+	private void convertGlobalOffset(IDocument doc) throws BadLocationException
 	{
 		int line =0, newOffset =0;
-		try {
-			line = doc.getLineOfOffset(globalOffset);
-			int lineOff;
-			if(line == 0)
-				lineOff = 0;
-			else
-				lineOff = doc.getLineOffset(line-1);
-			newOffset = globalOffset - lineOff;
-		} catch (BadLocationException e) {
-			e.printStackTrace();
+		line = doc.getLineOfOffset(globalOffset);
+		int lineOff;
+		if(line == 0) {
+			lineOff = 0;
+		} else {
+			lineOff = doc.getLineOffset(line-1);
 		}
+		newOffset = globalOffset - lineOff;
 		this.line = line;
 		this.offset = newOffset;
 	}

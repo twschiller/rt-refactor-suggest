@@ -1,5 +1,7 @@
 package edu.washington.cs.rtrefactor.quickfix;
 
+import java.io.IOException;
+
 import org.eclipse.jdt.ui.text.java.IJavaCompletionProposal;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.contentassist.IContextInformation;
@@ -39,9 +41,10 @@ public abstract class CloneFix implements IMarkerResolution, IJavaCompletionProp
 	 * @param isSameFile Is the second clone in the same file as the first
 	 * @param relevance A score from 10-100 indicating the relevance of this 
 	 * 			suggestion
+	 * @throws IOException if other.getFile() cannot be read
 	 */
 	public CloneFix(int cloneNumber, SourceRegion sourceClone, SourceRegion otherClone, String sourceContents, 
-			boolean isSameFile, int relevance) {
+			boolean isSameFile, int relevance) throws IOException {
 		if (relevance < 10 || relevance > 100){
 			throw new IllegalArgumentException("Illegal relevance value");
 		}
@@ -83,11 +86,20 @@ public abstract class CloneFix implements IMarkerResolution, IJavaCompletionProp
 	}
 	
 	@Override
+	/**
+	 * Returns a description of the proposal, to display 
+	 * 		to the user
+	 * @see getDescription()
+	 */
 	public String getAdditionalProposalInfo() {
 		return getDescription();
 	}
 	
 	@Override
+	/**
+	 * Returns a short label describing this quickfix
+	 * @see getLabel() 
+	 */
 	public String getDisplayString() {
 		return getLabel();
 	}
@@ -99,6 +111,10 @@ public abstract class CloneFix implements IMarkerResolution, IJavaCompletionProp
 	}
 	
 	@Override
+	/** 
+	 * Returns the relevance for this fix, which will dtermine ranking
+	 * @return relevance The relevance, between 0-100
+	 */
 	public int getRelevance() {
 		return relevance;
 	}

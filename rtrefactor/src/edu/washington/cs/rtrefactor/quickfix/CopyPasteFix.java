@@ -1,5 +1,7 @@
 package edu.washington.cs.rtrefactor.quickfix;
 
+import java.io.IOException;
+
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.text.BadLocationException;
@@ -22,7 +24,7 @@ import edu.washington.cs.rtrefactor.util.FileUtil;
 public class CopyPasteFix extends CloneFix {
 
 	public CopyPasteFix(int cNumber, SourceRegion otherClone, SourceRegion sourceClone,
-			String dirtyContent, boolean isSameFile, int relevance) {
+			String dirtyContent, boolean isSameFile, int relevance) throws IOException {
 		super(cNumber, otherClone, sourceClone, dirtyContent, isSameFile, relevance);
 	}
 
@@ -49,13 +51,14 @@ public class CopyPasteFix extends CloneFix {
 
 	@Override
 	public String getDescription() {
-		if(isSameFile())
+		if(isSameFile()) {
 			return "Copy and pastes this clone from the same file: <br/>" 
 			+ super.getDescription();
-		else
+		} else {
 			return "Copy and pastes this clone from "+ 
 			getOtherRegion().getFile().getName()+  ":<br/>" 
 			+ super.getDescription();
+		}
 	}
 
 }
