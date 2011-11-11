@@ -21,15 +21,17 @@ import edu.washington.cs.rtrefactor.util.FileUtil;
  */
 public class CopyPasteFix extends CloneFix {
 
-	public CopyPasteFix(int cNumber, SourceRegion otherClone, SourceRegion sourceClone,
-			String dirtyContent, boolean isSameFile, int relevance) {
-		super(cNumber, otherClone, sourceClone, dirtyContent, isSameFile, relevance);
+	public CopyPasteFix(int cNumber, SourceRegion sourceClone, SourceRegion otherClone,
+			String sourceContent, boolean isSameFile, int relevance) {
+		super(cNumber, sourceClone, otherClone, sourceContent, isSameFile, relevance);
 	}
 
+	@Override
 	public String getLabel() {
 		return "Copy and paste clone #" + getCloneNumber() + " (" + getRelevance() + ")";
 	}
 	
+	@Override
 	public void run(IMarker marker) {
 		//http://wiki.eclipse.org/FAQ_How_do_I_insert_text_in_the_active_text_editor%3F
 		

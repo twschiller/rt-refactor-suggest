@@ -1,7 +1,6 @@
 package edu.washington.cs.rtrefactor.detect;
 
 import java.io.File;
-import java.nio.charset.Charset;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -9,7 +8,6 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.jface.text.Document;
 
 import com.google.common.collect.BiMap;
-import com.google.common.io.Files;
 import com.puppycrawl.tools.checkstyle.DefaultConfiguration;
 import com.puppycrawl.tools.checkstyle.api.AuditEvent;
 import com.puppycrawl.tools.checkstyle.api.CheckstyleException;

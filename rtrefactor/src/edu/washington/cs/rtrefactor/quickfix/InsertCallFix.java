@@ -15,15 +15,17 @@ import edu.washington.cs.rtrefactor.detect.SourceRegion;
  */
 public class InsertCallFix extends CloneFix {
 
-	public InsertCallFix(int cNumber, SourceRegion otherClone, SourceRegion sourceClone,
-			String dirtyContent, boolean isSameFile, int relevance) {
-		super(cNumber, otherClone, sourceClone, dirtyContent, isSameFile, relevance);
+	public InsertCallFix(int cNumber, SourceRegion sourceClone, SourceRegion otherClone,
+			String sourceContent, boolean isSameFile, int relevance) {
+		super(cNumber, sourceClone, otherClone, sourceContent, isSameFile, relevance);
 	}
 
+	@Override
 	public String getLabel() {
 		return "Insert Call to clone #" + getCloneNumber() + " (" + getRelevance() + ")";
 	}
 	
+	@Override
 	public void run(IMarker marker) {
 		MessageDialog.openInformation(null, "Insert Call Demo",
 				"This insert call quick-fix is not yet implemented");

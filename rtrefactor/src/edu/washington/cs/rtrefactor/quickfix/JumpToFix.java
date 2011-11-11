@@ -8,11 +8,12 @@ import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.text.IDocument;
-import org.eclipse.jface.viewers.ISelectionProvider;
+import org.eclipse.jface.text.TextSelection;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.ide.IDE;
+import org.eclipse.ui.texteditor.ITextEditor;
 
 import edu.washington.cs.rtrefactor.detect.SourceRegion;
 import edu.washington.cs.rtrefactor.reconciler.CloneEditor;
@@ -21,23 +22,22 @@ import edu.washington.cs.rtrefactor.reconciler.CloneReconciler;
 /**
  * The quickfix which simply jumps to the second clone
  * 
- * Mostly unimplemented.
- * 
  * @author Travis Mandel
- *
+ * @author Todd Schiller
  */
 public class JumpToFix extends CloneFix {
 
-	public JumpToFix(int cNumber, SourceRegion otherClone, SourceRegion sourceClone,
-			String dirtyContent, boolean isSameFile, int relevance) {
-		super(cNumber, otherClone, sourceClone, dirtyContent, isSameFile, relevance);
+	public JumpToFix(int cNumber, SourceRegion sourceClone, SourceRegion otherClone,
+			String sourceContent, boolean isSameFile, int relevance) {
+		super(cNumber, sourceClone, otherClone, sourceContent, isSameFile, relevance);
 	}
 
-
+	@Override
 	public String getLabel() {
 		return "Jump to clone #" + getCloneNumber() + " (" + getRelevance() + ")";
 	}
 	
+	@Override
 	public void run(IMarker marker) {
 		int line =  this.getOtherRegion().getStart().getLine();
 		
@@ -45,13 +45,17 @@ public class JumpToFix extends CloneFix {
 		//http://wiki.eclipse.org/FAQ_How_do_I_open_an_editor_programmatically%3F
 		
 		if (isSameFile()){
+			int start = this.getSourceRegion().getStart().getGlobalOffset();
+			int len =  this.getSourceRegion().getEnd().getGlobalOffset() - start;
+			
 			//http://stackoverflow.com/questions/1619623/eclipse-plugin-how-to-get-current-text-editor-corsor-position
 			
 			IEditorPart editor =  PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
 			IDocument doc = ((CloneEditor) editor).getDocumentProvider().getDocument(editor.getEditorInput());
 			
-			MessageDialog.openInformation(null, "Jump To Clone",
-					"This jump to quick-fix is not yet for clones in the same file");
+			ITextEditor txt = ((ITextEditor) editor);
+			txt.getSelectionProvider().setSelection(new TextSelection(doc, start, len ));
+	
 		}else{
 			
 			IPath p = new Path(this.getOtherRegion().getFile().getAbsolutePath());
