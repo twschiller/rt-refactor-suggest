@@ -1,10 +1,12 @@
 package edu.washington.cs.rtrefactor.detect;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.Document;
 
 import com.google.common.collect.BiMap;
@@ -70,7 +72,7 @@ public class SimianDetector extends BaseCheckStyleDetector<SimianCheck> {
 		return NAME;
 	}
 
-	private SourceRegion mkRegion(BiMap<File, File> files, AuditEvent e, Matcher m){
+	private SourceRegion mkRegion(BiMap<File, File> files, AuditEvent e, Matcher m) throws BadLocationException, IOException{
 		int endLine = Integer.parseInt(m.group(2).replace(",",""));
 		
 		File abs = super.absolutePath(super.absolutePath(new File(e.getFileName())));
@@ -89,7 +91,7 @@ public class SimianDetector extends BaseCheckStyleDetector<SimianCheck> {
 		}
 	}
 	
-	private SourceRegion mkOtherRegion(BiMap<File, File> files, AuditEvent e, Matcher m){
+	private SourceRegion mkOtherRegion(BiMap<File, File> files, AuditEvent e, Matcher m) throws BadLocationException, IOException{
 		File src = new File(m.group(3));
 		int otherStart = Integer.parseInt(m.group(4).replace(",",""));
 		int otherEnd = Integer.parseInt(m.group(5).replace(",",""));
@@ -125,7 +127,13 @@ public class SimianDetector extends BaseCheckStyleDetector<SimianCheck> {
 		Matcher m = EN_REGEX.matcher(e.getMessage());
 		
 		if (m.matches()){
+			try {
 			return new ClonePair(mkRegion(files, e, m), mkOtherRegion(files, e, m), quality(e,m));
+			} catch (BadLocationException ex) {
+				throw new RuntimeException("Bad location in parsing Simian message " + ex.getMessage());
+			} catch (IOException ex) {
+				throw new RuntimeException("Problem reading file when parsing Simian message " + ex.getMessage());
+			}
 		}else{
 			throw new RuntimeException("Internal error parsing Simian message: " + e.getMessage());	
 		}
