@@ -10,7 +10,8 @@ import edu.washington.cs.rtrefactor.detect.SourceRegion;
 
 /**
  * Static helper methods for working with file
- * @author Travis Mandel, Todd Schiller
+ * @author Travis Mandel
+ * @author Todd Schiller
  */
 public abstract class FileUtil {
 
@@ -34,7 +35,7 @@ public abstract class FileUtil {
 	/**
 	 * Get the text within the region from a file
 	 * @param content the contents of a document or file
-	 * @param region the region in the content to retreive
+	 * @param region the region in the content to retrieve
 	 * @return the text within the region
 	 */
 	public static String get(String content, SourceRegion region){
