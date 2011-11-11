@@ -73,7 +73,6 @@ public class SourceLocation implements Comparable<SourceLocation>{
 		}
 		
 		this.file = file;
-		this.line = line;
 		this.globalOffset = globalOffset;
 		convertGlobalOffset(document);
 	}

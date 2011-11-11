@@ -60,8 +60,8 @@ public abstract class CloneFix implements IMarkerResolution, IJavaCompletionProp
 	 * @return A string displaying the clone
 	 */
 	public String getDescription() {
-		return CloneFixer.getCloneString(other.getStart().getOffset(), 
-				other.getEnd().getOffset(), otherContents);
+		return CloneFixer.getCloneString(other.getStart().getGlobalOffset(), 
+				other.getEnd().getGlobalOffset(), otherContents);
 	}
 
 	@Override
