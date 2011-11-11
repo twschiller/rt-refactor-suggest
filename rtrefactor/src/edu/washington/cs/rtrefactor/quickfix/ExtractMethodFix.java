@@ -17,15 +17,18 @@ import edu.washington.cs.rtrefactor.detect.SourceRegion;
  */
 public class ExtractMethodFix extends CloneFix {
 
-	public ExtractMethodFix(int cNumber, SourceRegion otherClone, SourceRegion sourceClone,
-			String dirtyContent, boolean isSameFile, int relevance) throws IOException {
-		super(cNumber, otherClone, sourceClone, dirtyContent, isSameFile, relevance);
+	public ExtractMethodFix(int cNumber, SourceRegion sourceClone, SourceRegion otherClone,
+			String sourceContent, boolean isSameFile, int relevance) throws IOException {
+		super(cNumber, sourceClone, otherClone, sourceContent, isSameFile, relevance);
 	}
 
+
+	@Override
 	public String getLabel() {
 		return "Extract method with clone #" + getCloneNumber() + " (" + getRelevance() + ")";
 	}
 	
+	@Override
 	public void run(IMarker marker) {
 		MessageDialog.openInformation(null, "Extract Method Demo",
 				"This extract method quick-fix is not yet implemented");
