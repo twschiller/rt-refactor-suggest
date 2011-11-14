@@ -29,9 +29,9 @@ import edu.washington.cs.rtrefactor.reconciler.CloneReconciler;
  */
 public class JumpToFix extends CloneFix {
 
-	public JumpToFix(int cNumber, SourceRegion sourceClone, SourceRegion otherClone,
+	public JumpToFix(int cloneNumber, SourceRegion sourceClone, SourceRegion otherClone,
 			String sourceContent, boolean isSameFile, int relevance) throws IOException {
-		super(cNumber, sourceClone, otherClone, sourceContent, isSameFile, relevance);
+		super(cloneNumber, sourceClone, otherClone, sourceContent, isSameFile, relevance);
 	}
 
 	@Override
@@ -47,8 +47,8 @@ public class JumpToFix extends CloneFix {
 		//http://wiki.eclipse.org/FAQ_How_do_I_open_an_editor_programmatically%3F
 		
 		if (isSameFile()){
-			int start = this.getSourceRegion().getStart().getGlobalOffset();
-			int len =  this.getSourceRegion().getEnd().getGlobalOffset() - start;
+			int start = this.getOtherRegion().getStart().getGlobalOffset();
+			int len = this.getOtherRegion().getLength();
 			
 			//http://stackoverflow.com/questions/1619623/eclipse-plugin-how-to-get-current-text-editor-corsor-position
 			
@@ -58,6 +58,7 @@ public class JumpToFix extends CloneFix {
 			ITextEditor txt = ((ITextEditor) editor);
 			txt.getSelectionProvider().setSelection(new TextSelection(doc, start, len ));
 	
+			CloneReconciler.reconcilerLog.debug("Jumped to clone at line " + line);
 		}else{
 			
 			IPath p = new Path(this.getOtherRegion().getFile().getAbsolutePath());

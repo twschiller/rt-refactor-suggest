@@ -11,6 +11,7 @@ import org.eclipse.ui.PlatformUI;
 
 import edu.washington.cs.rtrefactor.detect.SourceRegion;
 import edu.washington.cs.rtrefactor.reconciler.CloneEditor;
+import edu.washington.cs.rtrefactor.reconciler.CloneReconciler;
 import edu.washington.cs.rtrefactor.util.FileUtil;
 
 /**
@@ -23,9 +24,9 @@ import edu.washington.cs.rtrefactor.util.FileUtil;
  */
 public class CopyPasteFix extends CloneFix {
 
-	public CopyPasteFix(int cNumber, SourceRegion sourceClone, SourceRegion otherClone,
+	public CopyPasteFix(int cloneNumber, SourceRegion sourceClone, SourceRegion otherClone,
 			String sourceContent, boolean isSameFile, int relevance) throws IOException {
-		super(cNumber, sourceClone, otherClone, sourceContent, isSameFile, relevance);
+		super(cloneNumber, sourceClone, otherClone, sourceContent, isSameFile, relevance);
 	}
 
 	@Override
@@ -40,8 +41,13 @@ public class CopyPasteFix extends CloneFix {
 		IEditorPart editor =  PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
 		IDocument doc = ((CloneEditor) editor).getDocumentProvider().getDocument(editor.getEditorInput());
 		
+		CloneReconciler.reconcilerLog.debug(
+				"Copying clone from " + this.getOtherRegion().getFile().getName() + " (line: " + this.getOtherRegion().getStart().getLine() + ")" +
+				" to " + this.getSourceRegion().getFile().getName() + " (line: " + this.getSourceRegion().getStart().getLine() + ")"
+				);
+			
 		int start = this.getSourceRegion().getStart().getGlobalOffset();
-		int len =  this.getSourceRegion().getEnd().getGlobalOffset() - start;
+		int len = this.getSourceRegion().getLength();
 		
 		try {
 			doc.replace(start, len, FileUtil.get(this.getOtherContents(), this.getOtherRegion()));

@@ -46,7 +46,7 @@ public abstract class CloneFix implements IMarkerResolution, IJavaCompletionProp
 	public CloneFix(int cloneNumber, SourceRegion sourceClone, SourceRegion otherClone, String sourceContents, 
 			boolean isSameFile, int relevance) throws IOException {
 		if (relevance < 10 || relevance > 100){
-			throw new IllegalArgumentException("Illegal relevance value");
+			throw new IllegalArgumentException("Illegal relevance value " + relevance);
 		}
 		
 		this.cloneNumber = cloneNumber;
