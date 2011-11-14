@@ -36,6 +36,7 @@ import edu.washington.cs.rtrefactor.detect.SimianDetector;
 import edu.washington.cs.rtrefactor.detect.SourceLocation;
 import edu.washington.cs.rtrefactor.detect.SourceRegion;
 import edu.washington.cs.rtrefactor.preferences.PreferenceConstants;
+import edu.washington.cs.rtrefactor.quickfix.CloneFixer;
 import edu.washington.cs.rtrefactor.util.FileUtil;
 
 /**
@@ -111,44 +112,39 @@ public class CloneReconcilingStrategy implements IReconcilingStrategy,IReconcili
 	 */
 	private void doReconcile(DirtyRegion dirtyRegion)
 	{
-
+		// the buffer needs to be reloaded
+		if (fDocument.getLength() == 0){
+			return;
+		}
+		
 		// For now, only one file is dirty (the current one)
 		// This is the same way java does parsing/building 
 		Map<File, String> dirty = new HashMap<File, String>();
 		dirty.put(fFile, fDocument.get());
-
-		//Get the line,offset of the last character in the file
-		int lines = fDocument.getNumberOfLines();
-		int lastOff = 0;
-		try {
-			lastOff = fDocument.getLineLength(lines-1);
-		} catch (BadLocationException e) {
-			CloneReconciler.reconcilerLog.error("Cannot Reconcile: Inconsistency in Document", e);
-			return;
-		}
-
+		
 		CloneReconciler.reconcilerLog.debug("Running clone detector");
 
 		//Perform either incremental or non-incremental reconcile
 		SourceRegion active;
 		try {
-		if(dirtyRegion != null)
-		{
-			active = new SourceRegion(convertOffset(dirtyRegion.getOffset()), 
-					convertOffset(dirtyRegion.getOffset() + dirtyRegion.getLength()) );
-		}
-		else{
-			active = new SourceRegion(new SourceLocation(fFile, 0, 0, fDocument), 
-					new SourceLocation(fFile, lines-1, lastOff, fDocument));
-		}
+			if(dirtyRegion != null)
+			{
+				active = new SourceRegion(
+						convertOffset(dirtyRegion.getOffset()), 
+						convertOffset(dirtyRegion.getOffset() + dirtyRegion.getLength()) );
+			}
+			else{
+				active = new SourceRegion(
+						new SourceLocation(fFile, 0, fDocument), 
+						new SourceLocation(fFile, fDocument.getLength(), fDocument));
+			}
 		} catch (BadLocationException e) {
 			CloneReconciler.reconcilerLog.error("Could not create active region to pass to clone detector", e);
 			return;
 		}
 
 		//Clear the annotations that overlap with the target area
-		removeAnnotations(active.getStart().getGlobalOffset(), 
-				active.getEnd().getGlobalOffset());
+		removeAnnotations(active.getStart().getGlobalOffset(), active.getEnd().getGlobalOffset());
 
 		//Run the detection
 		Set<ClonePair> hs = null;
@@ -206,57 +202,38 @@ public class CloneReconcilingStrategy implements IReconcilingStrategy,IReconcili
 	/** 
 	 * Adds a clone annotation to the given source region
 	 * 
-	 *  @param r The region indicating where the annotation should appear
+	 *  @param source The region indicating where the annotation should appear
 	 *  @param other The region containing the second (matched) clone, possibly
 	 *  	in a different file
-	 *  @param number The number/id assigned to the clone
+	 *  @param cloneNumber The number/id assigned to the clone
 	 */
-	private void addAnnotation(SourceRegion r, SourceRegion other, int number)
+	private void addAnnotation(SourceRegion source, SourceRegion other, int cloneNumber)
 	{
 		CloneReconciler.reconcilerLog.debug("Adding annotation to source region");
-		int off = r.getStart().getGlobalOffset();
-		int len = r.getEnd().getGlobalOffset() - off;
 		
-		
-
 		IResource res = getResource();
 
-		IMarker cloneMarker = null;
+		IMarker cloneMarker;
 		try {
 			cloneMarker = res.createMarker(CLONE_MARKER);
-			cloneMarker.setAttribute("cloneNumber", number);
 			
-			int offSource = other.getStart().getGlobalOffset();
-			int endSource = other.getEnd().getGlobalOffset() ;
-			cloneMarker.setAttribute("sourceStartOffset", offSource);
-			cloneMarker.setAttribute("sourceEndOffset", endSource);
+			cloneMarker.setAttribute(CloneFixer.CLONE_NUMBER, cloneNumber);
 			
-			cloneMarker.setAttribute("cloneNumber", number);
-			cloneMarker.setAttribute("dirtyFileText", fDocument.get());
-			cloneMarker.setAttribute("cloneFile", other.getFile().toString());
+			cloneMarker.setAttribute(CloneFixer.SOURCE_START_OFFSET, source.getStart().getGlobalOffset());
+			cloneMarker.setAttribute(CloneFixer.SOURCE_END_OFFSET, source.getEnd().getGlobalOffset());
+			cloneMarker.setAttribute(CloneFixer.SOURCE_TEXT, fDocument.get());
 			
-			if(other.getFile().equals(fFile))
-			{
-				int off2 = other.getStart().getGlobalOffset();
-				int end2 = other.getEnd().getGlobalOffset() ;
-				
-				cloneMarker.setAttribute("cloneStartOffset", off2);
-				cloneMarker.setAttribute("cloneEndOffset", end2);
-			} else {
-				Document doc = fileToDocument(other.getFile());
-				
-				cloneMarker.setAttribute("cloneStartOffset", other.getStart().getGlobalOffset());
-				cloneMarker.setAttribute("cloneEndOffset", other.getEnd().getGlobalOffset());
-			}
+			cloneMarker.setAttribute(CloneFixer.OTHER_START_OFFSET, other.getStart().getGlobalOffset());
+			cloneMarker.setAttribute(CloneFixer.OTHER_END_OFFSET, other.getEnd().getGlobalOffset());
+			cloneMarker.setAttribute(CloneFixer.OTHER_FILE, other.getFile().getAbsolutePath());
 		} catch (CoreException e) {
 			CloneReconciler.reconcilerLog.error("Cannot add annotation to document, marker does not have required field", e);
 			return;
-		} catch (IOException e) {
-			CloneReconciler.reconcilerLog.error("Cannot add annotation to document, can't read other file", e);
-			return;
 		}
-		fAnnotationModel.addAnnotation(new CloneAnnotation(cloneMarker), 
-				new Position(off, len));
+		
+		fAnnotationModel.addAnnotation(
+				new CloneAnnotation(cloneMarker), 
+				new Position(source.getStart().getGlobalOffset(), source.getLength()));
 	}
 
 	/**
@@ -274,7 +251,7 @@ public class CloneReconcilingStrategy implements IReconcilingStrategy,IReconcili
 			if(an instanceof CloneAnnotation)
 			{
 				Position p = fAnnotationModel.getPosition(an);
-				if(p.offset >= start || p.length+p.offset < end)
+				if(p.offset >= start || p.length + p.offset < end)
 				{
 					fAnnotationModel.removeAnnotation(an);
 				}
