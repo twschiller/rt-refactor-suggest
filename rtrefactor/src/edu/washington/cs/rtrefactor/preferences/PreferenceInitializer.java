@@ -24,7 +24,8 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
 		IPreferenceStore store = Activator.getDefault().getPreferenceStore();
 		store.setDefault(PreferenceConstants.P_CHOICE, "JCCD");
 		store.setDefault(PreferenceConstants.P_INCREMENT, true);
-	
+		store.setDefault(PreferenceConstants.P_CONTEXT_LINES, 2);
+		
 		initializeDefaultPreferences(store, JccdDetector.PREFERENCES);
 		initializeDefaultPreferences(store, CheckStyleDetector.PREFERENCES);
 		initializeDefaultPreferences(store, SimianDetector.PREFERENCES);
