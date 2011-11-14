@@ -51,6 +51,10 @@ public class RtRefactorPreferencePage
 		addField(new BooleanFieldEditor(
 				PreferenceConstants.P_INCREMENT,
 			"Incremental Detection",  getFieldEditorParent()));
+		
+		addField(new IntegerFieldEditor(
+				PreferenceConstants.P_CONTEXT_LINES,
+			"# of Context Lines",  getFieldEditorParent()));
 	}
 
 	/* (non-Javadoc)

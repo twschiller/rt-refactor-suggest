@@ -6,13 +6,16 @@ import java.util.Random;
 
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.Document;
 import org.eclipse.ui.IMarkerResolution;
 import org.eclipse.ui.IMarkerResolutionGenerator;
 
+import edu.washington.cs.rtrefactor.Activator;
 import edu.washington.cs.rtrefactor.detect.SourceLocation;
 import edu.washington.cs.rtrefactor.detect.SourceRegion;
+import edu.washington.cs.rtrefactor.preferences.PreferenceConstants;
 import edu.washington.cs.rtrefactor.reconciler.CloneReconciler;
 import edu.washington.cs.rtrefactor.util.FileUtil;
 
@@ -37,9 +40,7 @@ public class CloneFixer implements IMarkerResolutionGenerator {
 	public static final String OTHER_START_OFFSET = "cloneStartOffset";
 	public static final String OTHER_END_OFFSET = "cloneEndOffset";
 	public static final String OTHER_FILE = "cloneFile";
-		
-	public static final int CONTEXT_LINES = 2;
-
+	
 	/**
 	 * Called to provide quick fixes for the given marker
 	 * 
@@ -144,7 +145,9 @@ public class CloneFixer implements IMarkerResolutionGenerator {
 	public static String getCloneString(int startOffOrig, int endOffOrig, 
 			String content)
 	{
-
+		IPreferenceStore store = Activator.getDefault().getPreferenceStore();
+		int contextLines = store.getInt(PreferenceConstants.P_CONTEXT_LINES);
+		
 		//  Trim the whitespace off the region described by the offsets.
 		int startOff = startOffOrig, endOff = endOffOrig;
 		while(startOff > 0 && Character.isWhitespace(content.charAt(startOff)))
@@ -161,7 +164,7 @@ public class CloneFixer implements IMarkerResolutionGenerator {
 		do {
 			rStart = content.lastIndexOf(newline, rStart-newline.length());
 			cLines++;
-		} while(rStart >= 0 && cLines < CONTEXT_LINES);
+		} while(rStart >= 0 && cLines < contextLines);
 		if(rStart< 0) {
 			rStart = 0;
 		}
@@ -173,7 +176,7 @@ public class CloneFixer implements IMarkerResolutionGenerator {
 		do{
 			rEnd = content.indexOf(newline, rEnd+newline.length());
 			cLines++;
-		} while(rEnd >= 0 && cLines < CONTEXT_LINES) ;
+		} while(rEnd >= 0 && cLines < contextLines) ;
 		if(rEnd < 0) {
 			rEnd = content.length()-1;
 		}
