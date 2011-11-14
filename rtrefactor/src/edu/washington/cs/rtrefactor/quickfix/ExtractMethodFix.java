@@ -2,8 +2,14 @@ package edu.washington.cs.rtrefactor.quickfix;
 
 import java.io.IOException;
 
+import org.eclipse.core.commands.ParameterizedCommand;
 import org.eclipse.core.resources.IMarker;
+import org.eclipse.jdt.ui.actions.IJavaEditorActionDefinitionIds;
 import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.ui.IWorkbench;
+import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.commands.ICommandService;
+import org.eclipse.ui.handlers.IHandlerService;
 
 import edu.washington.cs.rtrefactor.detect.SourceRegion;
 
@@ -30,8 +36,23 @@ public class ExtractMethodFix extends CloneFix {
 	
 	@Override
 	public void run(IMarker marker) {
-		MessageDialog.openInformation(null, "Extract Method Demo",
-				"This extract method quick-fix is not yet implemented");
+		// jump to the region and invoke the Extract Method menu command
+		
+		JumpToFix.jumpToRegion(this.getOtherRegion(), this.isSameFile());
+		
+		try{
+			IWorkbench workbench = PlatformUI.getWorkbench();
+			ICommandService cs = (ICommandService) workbench.getService(ICommandService.class);
+			
+			ParameterizedCommand command = cs.deserialize(IJavaEditorActionDefinitionIds.EXTRACT_METHOD);
+			
+			IHandlerService hs = (IHandlerService) workbench.getService(IHandlerService.class);
+			hs.executeCommand(command, null);
+		}catch(Exception e){
+			MessageDialog.openError(null, "Extract Method Demo", "Error opening the Extract Method dialog: " + e.getMessage());
+			return;
+		}
+		
 	}
 
 	@Override
