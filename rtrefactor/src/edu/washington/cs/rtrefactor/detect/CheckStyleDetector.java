@@ -16,7 +16,6 @@ import com.puppycrawl.tools.checkstyle.api.CheckstyleException;
 import com.puppycrawl.tools.checkstyle.checks.duplicates.StrictDuplicateCodeCheck;
 
 import edu.washington.cs.rtrefactor.preferences.PreferenceUtil.Preference;
-import edu.washington.cs.rtrefactor.reconciler.CloneReconciler;
 import edu.washington.cs.rtrefactor.util.FileUtil;
 
 /**
