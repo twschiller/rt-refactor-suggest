@@ -122,7 +122,7 @@ public class CloneFixer implements IMarkerResolutionGenerator {
 			return new IMarkerResolution[]{};
 		}
 
-		return Scorer.calculateResolutions(pairData).toArray(new IMarkerResolution[]{});
+		return Scorer.getInstance().calculateResolutions(pairData).toArray(new IMarkerResolution[]{});
 	}
 
 	/**
