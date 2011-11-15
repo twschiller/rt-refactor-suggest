@@ -1,7 +1,5 @@
 package edu.washington.cs.rtrefactor.quickfix;
 
-import java.io.IOException;
-
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jdt.core.IMethod;
@@ -12,22 +10,18 @@ import org.eclipse.ui.PlatformUI;
 
 import com.google.common.base.Joiner;
 
-import edu.washington.cs.rtrefactor.detect.SourceRegion;
 import edu.washington.cs.rtrefactor.reconciler.CloneEditor;
+import edu.washington.cs.rtrefactor.reconciler.ClonePairData;
 
 /**
- * The quickfix which inserts a call to the second clone's method
- * 
- * Mostly unimplemented.
- * 
+ * The quickfix which inserts a call to the system (other) clone
  * @author Travis Mandel
- *
+ * @author Todd Schiller
  */
 public class InsertCallFix extends CloneFix {
 
-	public InsertCallFix(int cloneNumber, SourceRegion sourceClone, SourceRegion otherClone,
-			String sourceContent, boolean isSameFile, int relevance) throws IOException {
-		super(cloneNumber, sourceClone, otherClone, sourceContent, isSameFile, relevance);
+	public InsertCallFix(ClonePairData pairData, int relevance){
+		super(pairData, relevance);
 	}
 
 	@Override

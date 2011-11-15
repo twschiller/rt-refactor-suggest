@@ -1,7 +1,5 @@
 package edu.washington.cs.rtrefactor.quickfix;
 
-import java.io.IOException;
-
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -19,19 +17,18 @@ import org.eclipse.ui.texteditor.ITextEditor;
 
 import edu.washington.cs.rtrefactor.detect.SourceRegion;
 import edu.washington.cs.rtrefactor.reconciler.CloneEditor;
+import edu.washington.cs.rtrefactor.reconciler.ClonePairData;
 import edu.washington.cs.rtrefactor.reconciler.CloneReconciler;
 
 /**
- * The quickfix which simply jumps to the second clone
- * 
+ * The quickfix which simply jumps to (and selects) the system (other) clone
  * @author Travis Mandel
  * @author Todd Schiller
  */
 public class JumpToFix extends CloneFix {
 
-	public JumpToFix(int cloneNumber, SourceRegion sourceClone, SourceRegion otherClone,
-			String sourceContent, boolean isSameFile, int relevance) throws IOException {
-		super(cloneNumber, sourceClone, otherClone, sourceContent, isSameFile, relevance);
+	public JumpToFix(ClonePairData pairData, int relevance){
+		super(pairData, relevance);
 	}
 
 	@Override

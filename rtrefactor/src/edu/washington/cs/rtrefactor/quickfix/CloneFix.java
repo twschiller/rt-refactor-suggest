@@ -1,7 +1,5 @@
 package edu.washington.cs.rtrefactor.quickfix;
 
-import java.io.IOException;
-
 import org.eclipse.jdt.ui.text.java.IJavaCompletionProposal;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.contentassist.IContextInformation;
@@ -10,7 +8,7 @@ import org.eclipse.swt.graphics.Point;
 import org.eclipse.ui.IMarkerResolution;
 
 import edu.washington.cs.rtrefactor.detect.SourceRegion;
-import edu.washington.cs.rtrefactor.util.FileUtil;
+import edu.washington.cs.rtrefactor.reconciler.ClonePairData;
 
 
 /**
@@ -18,43 +16,25 @@ import edu.washington.cs.rtrefactor.util.FileUtil;
  * 
  * Allows custom descriptions, images, and relevances (scores).
  * 
- * @author Travis Mandel, Todd Schiller
+ * @author Travis Mandel
+ * @author Todd Schiller
  *
  */
 public abstract class CloneFix implements IMarkerResolution, IJavaCompletionProposal{
 
-	private final int cloneNumber;
-	private final SourceRegion source;
-	private final SourceRegion other;
-	private final String sourceContents;
-	private final String otherContents;
-	private final boolean sameFile;
+	private final ClonePairData pairData;
 	private final int relevance;
 	
 	/**
 	 * Instantiates a clone clone quick fix
-	 * 
-	 * @param cloneNumber The clone pair number
-	 * @param sourceClone The region containing the source, i.e. active, clone
-	 * @param otherClone The region containing the system clone
-	 * @param sourceContents The contents of the <i>entire</i> document containing {@code sourceClone}
-	 * @param isSameFile Is the second clone in the same file as the first
-	 * @param relevance A score from 10-100 indicating the relevance of this 
-	 * 			suggestion
-	 * @throws IOException if other.getFile() cannot be read
+	 * @param pairData The clone pair data
+	 * @param relevance A score from 10-100 indicating the relevance of this suggestion
 	 */
-	public CloneFix(int cloneNumber, SourceRegion sourceClone, SourceRegion otherClone, String sourceContents, 
-			boolean isSameFile, int relevance) throws IOException {
+	public CloneFix(ClonePairData pairData, int relevance){
 		if (relevance < 10 || relevance > 100){
 			throw new IllegalArgumentException("Illegal relevance value " + relevance);
 		}
-		
-		this.cloneNumber = cloneNumber;
-		this.source = sourceClone;
-		this.other = otherClone;
-		this.sourceContents = sourceContents;
-		this.sameFile = isSameFile;
-		this.otherContents = sameFile ? sourceContents :  FileUtil.read(other.getFile());
+		this.pairData = pairData;
 		this.relevance = relevance;
 	}
 
@@ -63,8 +43,8 @@ public abstract class CloneFix implements IMarkerResolution, IJavaCompletionProp
 	 * @return A string displaying the clone
 	 */
 	public String getDescription() {
-		return CloneFixer.getCloneString(other.getStart().getGlobalOffset(), 
-				other.getEnd().getGlobalOffset(), otherContents);
+		return CloneFixer.getCloneString(pairData.getOtherRegion().getStart().getGlobalOffset(), 
+				pairData.getOtherRegion().getEnd().getGlobalOffset(), pairData.getOtherContents());
 	}
 
 	@Override
@@ -112,7 +92,7 @@ public abstract class CloneFix implements IMarkerResolution, IJavaCompletionProp
 	
 	@Override
 	/** 
-	 * Returns the relevance for this fix, which will dtermine ranking
+	 * Returns the relevance for this fix, which will determine ranking
 	 * @return relevance The relevance, between 0-100
 	 */
 	public int getRelevance() {
@@ -124,7 +104,7 @@ public abstract class CloneFix implements IMarkerResolution, IJavaCompletionProp
 	 * @return the number for the clone pair
 	 */
 	protected int getCloneNumber() {
-		return cloneNumber;
+		return pairData.getCloneNumber();
 	}
 	
 	/**
@@ -134,7 +114,7 @@ public abstract class CloneFix implements IMarkerResolution, IJavaCompletionProp
 	 * @return the contents of the source
 	 */
 	protected String getSourceContents(){
-		return sourceContents;
+		return pairData.getSourceContents();
 	}
 	
 	/**
@@ -143,7 +123,7 @@ public abstract class CloneFix implements IMarkerResolution, IJavaCompletionProp
 	 * @return the contents of the file containing the system clone
 	 */
 	protected String getOtherContents(){
-		return otherContents;
+		return pairData.getOtherContents();
 	}
 	
 	/**
@@ -152,7 +132,7 @@ public abstract class CloneFix implements IMarkerResolution, IJavaCompletionProp
 	 * @return source region for the active clone
 	 */
 	protected SourceRegion getSourceRegion(){
-		return source;
+		return pairData.getSourceRegion();
 	}
 	
 	/**
@@ -160,7 +140,7 @@ public abstract class CloneFix implements IMarkerResolution, IJavaCompletionProp
 	 * @return the system clone
 	 */
 	protected SourceRegion getOtherRegion() {
-		return other;
+		return pairData.getOtherRegion();
 	}
 
 	/**
@@ -170,6 +150,6 @@ public abstract class CloneFix implements IMarkerResolution, IJavaCompletionProp
 	 * @return true iff the clones reside in the same file
 	 */
 	protected boolean isSameFile() {
-		return sameFile;
+		return pairData.isSameFile();
 	}
 }

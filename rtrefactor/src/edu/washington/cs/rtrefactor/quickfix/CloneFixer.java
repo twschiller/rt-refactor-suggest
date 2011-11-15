@@ -2,7 +2,6 @@ package edu.washington.cs.rtrefactor.quickfix;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Random;
 
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.runtime.CoreException;
@@ -16,7 +15,9 @@ import edu.washington.cs.rtrefactor.Activator;
 import edu.washington.cs.rtrefactor.detect.SourceLocation;
 import edu.washington.cs.rtrefactor.detect.SourceRegion;
 import edu.washington.cs.rtrefactor.preferences.PreferenceConstants;
+import edu.washington.cs.rtrefactor.reconciler.ClonePairData;
 import edu.washington.cs.rtrefactor.reconciler.CloneReconciler;
+import edu.washington.cs.rtrefactor.scorer.Scorer;
 import edu.washington.cs.rtrefactor.util.FileUtil;
 
 /**
@@ -113,24 +114,15 @@ public class CloneFixer implements IMarkerResolutionGenerator {
 			return new IMarkerResolution[]{};
 		}
 		
-		//TODO: We assign these for testing purposes only, use real scores
-		Random r = new Random();
-		//Relevance must be between 10-100, so this is between 10-96
-		int relevance = r.nextInt(87) + 10;
-
+		ClonePairData pairData;
 		try {
-			//TODO:  If score too low, some may not be shown
-			return new IMarkerResolution[] {
-					new CopyPasteFix(cloneNumber, sourceClone, otherClone, sourceText, sameFile, relevance),
-					new ExtractMethodFix(cloneNumber, sourceClone, otherClone, sourceText, sameFile, relevance + 1),
-					new InsertCallFix(cloneNumber, sourceClone, otherClone, sourceText, sameFile, relevance + 2),
-					new JumpToFix(cloneNumber, sourceClone, otherClone, sourceText, sameFile, relevance + 3),			
-			};
+			pairData = new ClonePairData(cloneNumber, sourceClone, otherClone, sourceText, sameFile);
 		} catch (IOException e) {
 			CloneReconciler.reconcilerLog.error("Could not read file when creating clones", e);
 			return new IMarkerResolution[]{};
 		}
 
+		return Scorer.calculateResolutions(pairData).toArray(new IMarkerResolution[]{});
 	}
 
 	/**
