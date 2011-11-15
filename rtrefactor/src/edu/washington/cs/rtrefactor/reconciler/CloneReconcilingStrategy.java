@@ -1,7 +1,6 @@
 package edu.washington.cs.rtrefactor.reconciler;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -13,7 +12,6 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.BadLocationException;
-import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.Position;
@@ -37,7 +35,6 @@ import edu.washington.cs.rtrefactor.detect.SourceLocation;
 import edu.washington.cs.rtrefactor.detect.SourceRegion;
 import edu.washington.cs.rtrefactor.preferences.PreferenceConstants;
 import edu.washington.cs.rtrefactor.quickfix.CloneFixer;
-import edu.washington.cs.rtrefactor.util.FileUtil;
 
 /**
  * A reconciling strategy which can be incremental (or not)
@@ -318,19 +315,6 @@ public class CloneReconcilingStrategy implements IReconcilingStrategy,IReconcili
 	private IResource getResource()
 	{
 		return (IResource) fEditor.getEditorInput().getAdapter(IResource.class);
-	}
-	
-	/** 
-	 * Helper method to convert a File into a Document 
-	 * 
-	 * @param f a File, assumed to be open in the editor
-	 * @return the corresponding document
-	 * @throws IOException If file does not exist or is unreadable
-	 */
-	private Document fileToDocument(File f) throws IOException
-	{
-		Document d = new Document(FileUtil.read(f));
-		return d;
 	}
 
 }

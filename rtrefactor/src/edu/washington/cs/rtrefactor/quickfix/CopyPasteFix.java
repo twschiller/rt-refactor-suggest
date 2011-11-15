@@ -1,7 +1,5 @@
 package edu.washington.cs.rtrefactor.quickfix;
 
-import java.io.IOException;
-
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.text.BadLocationException;
@@ -9,24 +7,20 @@ import org.eclipse.jface.text.IDocument;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.PlatformUI;
 
-import edu.washington.cs.rtrefactor.detect.SourceRegion;
 import edu.washington.cs.rtrefactor.reconciler.CloneEditor;
+import edu.washington.cs.rtrefactor.reconciler.ClonePairData;
 import edu.washington.cs.rtrefactor.reconciler.CloneReconciler;
 import edu.washington.cs.rtrefactor.util.FileUtil;
 
 /**
- * The quickfix which copies & pastes the clone
- * 
- * Mostly unimplemented.
- * 
+ * The quickfix which copies & pastes the clone 
  * @author Travis Mandel
- *
+ * @author Todd Schiller
  */
 public class CopyPasteFix extends CloneFix {
 
-	public CopyPasteFix(int cloneNumber, SourceRegion sourceClone, SourceRegion otherClone,
-			String sourceContent, boolean isSameFile, int relevance) throws IOException {
-		super(cloneNumber, sourceClone, otherClone, sourceContent, isSameFile, relevance);
+	public CopyPasteFix(ClonePairData pairData, int relevance){
+		super(pairData, relevance);
 	}
 
 	@Override

@@ -1,7 +1,5 @@
 package edu.washington.cs.rtrefactor.quickfix;
 
-import java.io.IOException;
-
 import org.eclipse.core.commands.ParameterizedCommand;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.jdt.ui.actions.IJavaEditorActionDefinitionIds;
@@ -11,24 +9,20 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.commands.ICommandService;
 import org.eclipse.ui.handlers.IHandlerService;
 
-import edu.washington.cs.rtrefactor.detect.SourceRegion;
+import edu.washington.cs.rtrefactor.reconciler.ClonePairData;
 
 /**
- * The quickfix which extracts the clone pair to a method
- * 
- * Mostly unimplemented.
- * 
+ * The quickfix which invokes the "Extract Method" command on the
+ * system (other) side of the clone
  * @author Travis Mandel
- *
+ * @author Todd Schiller
  */
 public class ExtractMethodFix extends CloneFix {
 
-	public ExtractMethodFix(int cloneNumber, SourceRegion sourceClone, SourceRegion otherClone,
-			String sourceContent, boolean isSameFile, int relevance) throws IOException {
-		super(cloneNumber, sourceClone, otherClone, sourceContent, isSameFile, relevance);
+	public ExtractMethodFix(ClonePairData pairData, int relevance){
+		super(pairData, relevance);
 	}
-
-
+	
 	@Override
 	public String getLabel() {
 		return "Extract method with clone #" + getCloneNumber() + " (" + getRelevance() + ")";
