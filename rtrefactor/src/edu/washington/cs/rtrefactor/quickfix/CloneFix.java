@@ -103,7 +103,7 @@ public abstract class CloneFix implements IMarkerResolution, IJavaCompletionProp
 	 * get the number for the clone pair
 	 * @return the number for the clone pair
 	 */
-	protected int getCloneNumber() {
+	public int getCloneNumber() {
 		return pairData.getCloneNumber();
 	}
 	

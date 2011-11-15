@@ -1,5 +1,6 @@
 package edu.washington.cs.rtrefactor.scorer;
 
+import java.util.HashMap;
 import java.util.List;
 
 import org.apache.log4j.Logger;
@@ -8,8 +9,12 @@ import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.ui.IMarkerResolution;
 
+import com.google.common.base.Predicate;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 
+import edu.washington.cs.rtrefactor.quickfix.CloneFix;
 import edu.washington.cs.rtrefactor.quickfix.CopyPasteFix;
 import edu.washington.cs.rtrefactor.quickfix.ExtractMethodFix;
 import edu.washington.cs.rtrefactor.quickfix.FindMethod;
@@ -30,6 +35,57 @@ public class Scorer {
 	private static final int BASE_INSERTMETHODCALL_SCORE = 90;
 	private static final int BASE_EXTRACTMETHODCALL_SCORE = 85;
 	
+	private static final int DEFAULT_THRESHOLD = 20;
+	
+	/**
+	 * The singleton instance
+	 */
+	private static Scorer instance = null;
+	
+	/**
+	 * Clone Number -> Display Threshold
+	 */
+	private final HashMap<Integer, Integer> thresholds = Maps.newHashMap();
+	
+	/**
+	 * Clone Number -> Clone Fix
+	 */
+	private final HashMap<Integer, CloneFix> cache = Maps.newHashMap();
+	
+	/**
+	 * Private constructor.
+	 */
+	private Scorer(){
+	}
+	
+	/**
+	 * Access the singleton scorer instance
+	 * @return the singleton scorer instance
+	 */
+	public static Scorer getInstance(){
+		if (instance == null){
+			instance = new Scorer();
+		}
+		return instance;
+	}
+	
+	/**
+	 * Record a quick fix selection made by the user
+	 * @param fixes the fixes presented to the user
+	 * @param select the resolution selected by the user
+	 */
+	public void recordQuickFixSelection(List<IMarkerResolution> fixes, IMarkerResolution select){
+		// TODO add implementation
+	}
+	
+	/**
+	 * Record that the activation of the quick fix window
+	 * @param fixes the fixes presented to the user
+	 */
+	public void recordQuickFixActivation(List<IMarkerResolution> fixes){
+		// TODO add implementation
+	}
+	
 	/**
 	 * Generate the marker resolutions for the given code clone <code>pair</code>. Resolutions
 	 * are given scores based on the estimated difficulty / usefulness of performing the action.
@@ -39,20 +95,25 @@ public class Scorer {
 	 * @param pair the code clone pair
 	 * @return the marker resolutions
 	 */
-	public static List<IMarkerResolution> calculateResolutions(ClonePairData pair){
-		List<IMarkerResolution> rs = Lists.newArrayList();
+	public List<CloneFix> calculateResolutions(ClonePairData pair){
+		List<CloneFix> rs = Lists.newArrayList();
 		
 		rs.addAll(generateJumpToCloneFixes(pair));
 		rs.addAll(generateInsertMethodCallFixes(pair));
 		rs.addAll(generateExtractMethodFixes(pair));
 		rs.addAll(generatePasteCloneFixes(pair));
 		
-		return rs;
+		return Lists.newArrayList(Iterables.filter(rs, new Predicate<CloneFix>(){
+			@Override
+			public boolean apply(CloneFix fix) {
+				return fix.getRelevance() >= getThreshold(fix.getCloneNumber());
+			}
+		}));
 	}
 	
-	private static List<IMarkerResolution> generateJumpToCloneFixes(ClonePairData pair){
+	private List<CloneFix> generateJumpToCloneFixes(ClonePairData pair){
 		// TODO if the user is editing existing code (instead of writing new code), increase the score for "jump to clone"?
-		return Lists.<IMarkerResolution>newArrayList(new JumpToFix(pair, BASE_JUMPTOCLONE_SCORE));
+		return Lists.<CloneFix>newArrayList(new JumpToFix(pair, BASE_JUMPTOCLONE_SCORE));
 	}
 	
 	/**
@@ -61,7 +122,7 @@ public class Scorer {
 	 * @param pair the clone pair
 	 * @return scored insert method call fixes
 	 */
-	private static List<IMarkerResolution> generateInsertMethodCallFixes(ClonePairData pair){
+	private List<CloneFix> generateInsertMethodCallFixes(ClonePairData pair){
 		IMethod m;
 		try {
 			m = FindMethod.findMethod(pair.getOtherRegion());
@@ -87,14 +148,24 @@ public class Scorer {
 		
 		double score = (coverage * BASE_INSERTMETHODCALL_SCORE) - (10. * m.getNumberOfParameters());
 		
-		return Lists.<IMarkerResolution>newArrayList(new InsertCallFix(pair, (int) score));
+		return Lists.<CloneFix>newArrayList(new InsertCallFix(pair, (int) score));
 	}
 	
-	private static List<IMarkerResolution> generateExtractMethodFixes(ClonePairData pair){
-		return Lists.<IMarkerResolution>newArrayList(new ExtractMethodFix(pair, BASE_EXTRACTMETHODCALL_SCORE));
+	private List<CloneFix> generateExtractMethodFixes(ClonePairData pair){
+		return Lists.<CloneFix>newArrayList(new ExtractMethodFix(pair, BASE_EXTRACTMETHODCALL_SCORE));
 	}
 	
-	private static List<IMarkerResolution> generatePasteCloneFixes(ClonePairData pair){
-		return Lists.<IMarkerResolution>newArrayList(new CopyPasteFix(pair, BASE_PASTECLONE_SCORE));
+	private List<CloneFix> generatePasteCloneFixes(ClonePairData pair){
+		return Lists.<CloneFix>newArrayList(new CopyPasteFix(pair, BASE_PASTECLONE_SCORE));
+	}
+	
+	/**
+	 * Get the modified threshold for the given clone, or <code>DEFAULT_THRESHOLD</code> iff
+	 * no modified threshold exists
+	 * @param cloneNumber the unique identifier for the clone
+	 * @return the threshold for the clone
+	 */
+	private int getThreshold(int cloneNumber){
+		return thresholds.containsKey(cloneNumber) ? thresholds.get(cloneNumber) : DEFAULT_THRESHOLD;
 	}
 }
