@@ -48,6 +48,15 @@ public class CloneEditor extends CompilationUnitEditor {
 		super();
 	}
 	
+	/** 
+	 * Returns the clone reconciler associated with this editor
+	 * @return The current CloneReconciler
+	 */
+	public CloneReconciler getCloneReconciler()
+	{
+		return (CloneReconciler)((CloneSourceViewer)getSourceViewer()).getReconciler();
+	}
+	
 	//must be accessible
 	public ITypeRoot retrieveInputJavaElement() {
 		return getInputJavaElement();

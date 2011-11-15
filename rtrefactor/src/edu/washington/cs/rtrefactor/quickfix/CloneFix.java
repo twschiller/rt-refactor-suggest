@@ -7,9 +7,15 @@ import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.contentassist.IContextInformation;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
+import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IMarkerResolution;
+import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.PlatformUI;
 
 import edu.washington.cs.rtrefactor.detect.SourceRegion;
+import edu.washington.cs.rtrefactor.reconciler.CloneEditor;
+import edu.washington.cs.rtrefactor.reconciler.CloneReconciler;
 import edu.washington.cs.rtrefactor.util.FileUtil;
 
 
@@ -30,6 +36,7 @@ public abstract class CloneFix implements IMarkerResolution, IJavaCompletionProp
 	private final String otherContents;
 	private final boolean sameFile;
 	private final int relevance;
+	private boolean hasBeenActivated;
 	
 	/**
 	 * Instantiates a clone clone quick fix
@@ -108,6 +115,28 @@ public abstract class CloneFix implements IMarkerResolution, IJavaCompletionProp
 	public IContextInformation getContextInformation() {
 		// We don't need this feature
 		return null;
+	}
+	
+	/**
+	 * Notify the reconciler that the user clicked on a clone marker
+	 */
+	protected void notifyReconcilerClicked()
+	{
+		IEditorPart edit = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
+		assert (edit instanceof CloneEditor);
+		CloneReconciler cr = ((CloneEditor)edit).getCloneReconciler();
+		//TODO call some method of the reconciler (what args?)
+	}
+	
+	/**
+	 * Notify the reconciler that the user activated the fix
+	 */
+	protected void notifyReconcilerActivated()
+	{
+		IEditorPart edit = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
+		assert (edit instanceof CloneEditor);
+		CloneReconciler cr = ((CloneEditor)edit).getCloneReconciler();
+		//TODO call some method of the reconciler (what args?)
 	}
 	
 	@Override
