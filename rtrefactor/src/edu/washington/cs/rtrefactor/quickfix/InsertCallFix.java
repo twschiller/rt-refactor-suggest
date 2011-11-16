@@ -23,14 +23,27 @@ public class InsertCallFix extends CloneFix {
 	public InsertCallFix(ClonePairData pairData, int relevance){
 		super(pairData, relevance);
 	}
+	
+	public InsertCallFix(ClonePairData pairData, int relevance, CloneFixer parent){
+		super(pairData, relevance, parent);
+	}
 
 	@Override
+	/**
+	 * Requires a valid parent
+	 */
 	public String getLabel() {
+		getParent().notifyFixesActivated();
 		return "Insert Call to clone #" + getCloneNumber() + " (" + getRelevance() + ")";
 	}
 	
 	@Override
+	/**
+	 * Requires a valid parent
+	 */
 	public void run(IMarker marker) {
+		
+		getParent().notifyFixSelected(this);
 		
 		IMethod m;
 		try {

@@ -27,6 +27,9 @@ import edu.washington.cs.rtrefactor.util.FileUtil;
  *  multiple pairs. 
  *  
  *  This class gets called when the user clicks on our marker or presses Ctrl+1
+ *  (or the UI is trying to figure out what marker to display)
+ *  
+ *  getResolutions is only called once per instance
  *  
  * @author Travis Mandel
  *
@@ -42,13 +45,28 @@ public class CloneFixer implements IMarkerResolutionGenerator {
 	public static final String OTHER_END_OFFSET = "cloneEndOffset";
 	public static final String OTHER_FILE = "cloneFile";
 	
+	private IMarkerResolution[] lastFixes;
+	private boolean hasActivated;
+	
+	public CloneFixer()
+	{
+		lastFixes = null;
+		hasActivated = false;
+	}
+	
 	/**
 	 * Called to provide quick fixes for the given marker
+	 * \
+	 * Should only be called once per instance
 	 * 
 	 * @see IMarkerResolutionGenerator.getResolutions
 	 */
 	@Override
 	public IMarkerResolution[] getResolutions(IMarker marker) {
+		//Called twice, should not happen
+		if(lastFixes != null)
+			throw new RuntimeException("Single CloneFixer instance called twice!");
+		
 		File sourceFile = marker.getResource().getRawLocation().makeAbsolute().toFile();
 		
 		int cloneNumber = -1;
@@ -122,7 +140,8 @@ public class CloneFixer implements IMarkerResolutionGenerator {
 			return new IMarkerResolution[]{};
 		}
 
-		return Scorer.getInstance().calculateResolutions(pairData).toArray(new IMarkerResolution[]{});
+		lastFixes =  Scorer.getInstance().calculateResolutions(pairData, this).toArray(new IMarkerResolution[]{});
+		return lastFixes;
 	}
 
 	/**
@@ -188,6 +207,34 @@ public class CloneFixer implements IMarkerResolutionGenerator {
 
 		return ret;
 	}
-
-
+	
+	/**
+	 * Notify the scorer that this fix group was activated.
+	 * 
+	 * We need this method because only the individual fixes get the callback that they
+	 * have been activated, we need to only notify the scorer once.
+	 */
+	public void notifyFixesActivated() {
+		if(lastFixes == null) {
+			CloneReconciler.reconcilerLog.error("User clicked marker but CloneFixer has not sucessfully generated fixes!");
+			return;
+		}
+		if(!hasActivated) {
+			Scorer.getInstance().recordQuickFixActivation(lastFixes);
+			hasActivated = true;
+		}
+	}
+	
+	/**
+	 * Notify the scorer that the given fix has been selected by the user
+	 * 
+	 * @param fix The selected CloneFix
+	 */
+	public void notifyFixSelected(CloneFix fix) {
+		if(lastFixes == null) {
+			CloneReconciler.reconcilerLog.error("User selected fix but CloneFixer has not sucessfully generated fixes!");
+			return;
+		}
+		Scorer.getInstance().recordQuickFixSelection (lastFixes, fix);
+	}
 }

@@ -16,14 +16,18 @@ import edu.washington.cs.rtrefactor.reconciler.ClonePairData;
  * 
  * Allows custom descriptions, images, and relevances (scores).
  * 
+ * NOTE: getLabel() and run() should NOT be called if this fix has no parent.
+ * 
  * @author Travis Mandel
  * @author Todd Schiller
  *
  */
 public abstract class CloneFix implements IMarkerResolution, IJavaCompletionProposal{
 
+
 	private final ClonePairData pairData;
 	private final int relevance;
+	private final CloneFixer parent;
 	
 	/**
 	 * Instantiates a clone clone quick fix
@@ -36,6 +40,22 @@ public abstract class CloneFix implements IMarkerResolution, IJavaCompletionProp
 		}
 		this.pairData = pairData;
 		this.relevance = relevance;
+		this.parent = null;
+	}
+	
+	/**
+	 * Instantiates a clone clone quick fix
+	 * @param pairData The clone pair data
+	 * @param relevance A score from 10-100 indicating the relevance of this suggestion
+	 * @param parent The parent CloneFixer
+	 */
+	public CloneFix(ClonePairData pairData, int relevance, CloneFixer parent){
+		if (relevance < 10 || relevance > 100){
+			throw new IllegalArgumentException("Illegal relevance value " + relevance);
+		}
+		this.pairData = pairData;
+		this.relevance = relevance;
+		this.parent = parent;
 	}
 
 	/**
@@ -151,5 +171,13 @@ public abstract class CloneFix implements IMarkerResolution, IJavaCompletionProp
 	 */
 	protected boolean isSameFile() {
 		return pairData.isSameFile();
+	}
+	
+	/**
+	 * Returns the parent, or null if there is none
+	 * @return the parent, or null if there is none
+	 */
+	protected CloneFixer getParent() {
+		return parent;
 	}
 }

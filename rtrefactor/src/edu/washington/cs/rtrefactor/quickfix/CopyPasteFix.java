@@ -22,14 +22,27 @@ public class CopyPasteFix extends CloneFix {
 	public CopyPasteFix(ClonePairData pairData, int relevance){
 		super(pairData, relevance);
 	}
+	
+	public CopyPasteFix(ClonePairData pairData, int relevance, CloneFixer parent){
+		super(pairData, relevance, parent);
+	}
 
 	@Override
+	/**
+	 * Requires a valid parent
+	 */
 	public String getLabel() {
+		getParent().notifyFixesActivated();
 		return "Copy and paste clone #" + getCloneNumber() + " (" + getRelevance() + ")";
 	}
 	
 	@Override
+	/**
+	 * Requires a valid parent
+	 */
 	public void run(IMarker marker) {
+		getParent().notifyFixSelected(this);
+		
 		//http://wiki.eclipse.org/FAQ_How_do_I_insert_text_in_the_active_text_editor%3F
 		
 		IEditorPart editor =  PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();

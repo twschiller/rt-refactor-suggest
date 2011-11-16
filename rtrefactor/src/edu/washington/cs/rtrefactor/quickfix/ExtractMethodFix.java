@@ -23,13 +23,26 @@ public class ExtractMethodFix extends CloneFix {
 		super(pairData, relevance);
 	}
 	
+	public ExtractMethodFix(ClonePairData pairData, int relevance, CloneFixer parent){
+		super(pairData, relevance, parent);
+	}
+	
 	@Override
+	/**
+	 * Requires a valid parent
+	 */
 	public String getLabel() {
+		getParent().notifyFixesActivated();
 		return "Extract method with clone #" + getCloneNumber() + " (" + getRelevance() + ")";
 	}
 	
 	@Override
+	/**
+	 * Requires a valid parent
+	 */
 	public void run(IMarker marker) {
+		getParent().notifyFixSelected(this);
+		
 		// jump to the region and invoke the Extract Method menu command
 		
 		JumpToFix.jumpToRegion(this.getOtherRegion(), this.isSameFile());
