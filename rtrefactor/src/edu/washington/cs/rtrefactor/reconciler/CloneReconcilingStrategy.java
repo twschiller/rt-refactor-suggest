@@ -3,6 +3,8 @@ package edu.washington.cs.rtrefactor.reconciler;
 import java.io.File;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -47,6 +49,9 @@ import edu.washington.cs.rtrefactor.quickfix.CloneFixer;
  */
 public class CloneReconcilingStrategy implements IReconcilingStrategy,IReconcilingStrategyExtension{
 
+	private static int currentCloneNumber = 1;
+	
+	
 	private IDocument fDocument;
 	private File fFile;
 	private IAnnotationModel fAnnotationModel;
@@ -141,7 +146,9 @@ public class CloneReconcilingStrategy implements IReconcilingStrategy,IReconcili
 		}
 
 		//Clear the annotations that overlap with the target area
-		removeAnnotations(active.getStart().getGlobalOffset(), active.getEnd().getGlobalOffset());
+		//Retrieve data about each deletion
+		List<DeletedAnnotationData> removedAnnotations= removeAnnotations(active.getStart().getGlobalOffset(), 
+									active.getEnd().getGlobalOffset());
 
 		//Run the detection
 		Set<ClonePair> hs = null;
@@ -155,13 +162,35 @@ public class CloneReconcilingStrategy implements IReconcilingStrategy,IReconcili
 		CloneReconciler.reconcilerLog.debug("Detector returned " + hs.size() + " pairs");
 
 		//Mark the clones in the file
-		int cloneNumber = 1;
 		for(ClonePair cp : hs)
 		{
+			
+			int cloneNumber = -1;
+			boolean found = false;
+			//Check if this clone pair is equivalent to an old one, if so, reuse the old number
+			for(DeletedAnnotationData oldAnnotation : removedAnnotations)
+			{
+				if(marksClone(oldAnnotation, cp))
+				{
+					cloneNumber = oldAnnotation.getCloneNumber();
+					found = true;
+					CloneReconciler.reconcilerLog.debug("Re-marking old clone pair, number " + 
+							cloneNumber);
+					break;
+				}
+			}
+			
+			//If it's a new pair, assign it a new number
+			if(!found)
+			{
+				cloneNumber = currentCloneNumber;
+				currentCloneNumber++;
+				CloneReconciler.reconcilerLog.debug("Marking new clone pair with number "+cloneNumber 
+						+" in files: " + cp.getFirst().getFile().getName() + " " + 
+						cp.getSecond().getFile().getName());
+			} 
+			
 			boolean added = false;
-
-			CloneReconciler.reconcilerLog.debug("Marking clone pair: " + cp.getFirst().getFile().getName() + " " + cp.getSecond().getFile().getName());
-
 			if(cp.getFirst().getFile().equals(fFile))
 			{
 				addAnnotation(cp.getFirst(), cp.getSecond(), cloneNumber);
@@ -173,10 +202,36 @@ public class CloneReconcilingStrategy implements IReconcilingStrategy,IReconcili
 				added = true;
 			}
 
-			cloneNumber++;
 			// We should always add at least one annotation per pair
 			assert added ;
 		}
+	}
+	
+	/**
+	 * Returns true iff the either region of the clone pair is pointed to by the clone marker
+	 *  
+	 *  For now, checks if region is wholly subsumed by the pair (to account for expanding clones).
+	 *  
+	 *  Because it uses data collected from annotation, robust to text inserted between detection
+	 *  phases.
+	 *  
+	 * @param marker A clone marker on the current document
+	 * @param pair A detected clone pair
+	 * @return true iff the first region of the clone pair is pointed to by the clone marker
+	 */
+	private boolean marksClone(DeletedAnnotationData oldAnnotation, ClonePair pair) {
+		int oldStart = oldAnnotation.getPos().offset;
+		int oldEnd = oldStart + oldAnnotation.getPos().length;
+		for(int c=0; c<2; c++)
+		{
+			SourceRegion newRegion = (c==0) ? pair.getFirst() : pair.getSecond();
+			if(oldStart >= newRegion.getStart().getGlobalOffset()
+					&& oldEnd <= newRegion.getEnd().getGlobalOffset()) {
+				return true;
+			}
+		}
+		
+		return false;
 	}
 
 	@Override
@@ -237,10 +292,12 @@ public class CloneReconcilingStrategy implements IReconcilingStrategy,IReconcili
 	 * Removes all annotations that overlap with the given offset range
 	 * 
 	 * @param start The offset into the current file at which the range starts
-	 * @param end The offset into the current file at which the rang eends
+	 * @param end The offset into the current file at which the rang ends
+	 * @return an array of clone markers that we deleted from the document
 	 */
-	private void removeAnnotations(int start, int end)
+	private List<DeletedAnnotationData> removeAnnotations(int start, int end)
 	{
+		List<DeletedAnnotationData> removedAnnotations = new LinkedList<DeletedAnnotationData>();
 		Iterator<Annotation> it = fAnnotationModel.getAnnotationIterator();
 		while(it.hasNext())
 		{
@@ -250,6 +307,14 @@ public class CloneReconcilingStrategy implements IReconcilingStrategy,IReconcili
 				Position p = fAnnotationModel.getPosition(an);
 				if(p.offset >= start || p.length + p.offset < end)
 				{
+					int cloneNumber = -1;
+					try {
+						cloneNumber = (Integer) ((CloneAnnotation) an).getMarker().getAttribute(CloneFixer.CLONE_NUMBER);
+					} catch (CoreException e) {
+						throw new RuntimeException("Marker attached to clone annotation has no clone number!" + 
+									e.getMessage());
+					}
+					removedAnnotations.add(new DeletedAnnotationData(p, cloneNumber));
 					fAnnotationModel.removeAnnotation(an);
 				}
 			}
@@ -260,6 +325,7 @@ public class CloneReconcilingStrategy implements IReconcilingStrategy,IReconcili
 		} catch (CoreException e) {
 			CloneReconciler.reconcilerLog.error("Could not delete markers from a previous round", e);
 		}
+		return removedAnnotations;
 
 	}
 
