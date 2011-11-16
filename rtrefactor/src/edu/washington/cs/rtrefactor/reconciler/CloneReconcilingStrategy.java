@@ -1,6 +1,7 @@
 package edu.washington.cs.rtrefactor.reconciler;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -37,6 +38,7 @@ import edu.washington.cs.rtrefactor.detect.SourceLocation;
 import edu.washington.cs.rtrefactor.detect.SourceRegion;
 import edu.washington.cs.rtrefactor.preferences.PreferenceConstants;
 import edu.washington.cs.rtrefactor.quickfix.CloneFixer;
+import edu.washington.cs.rtrefactor.scorer.Scorer;
 
 /**
  * A reconciling strategy which can be incremental (or not)
@@ -165,6 +167,7 @@ public class CloneReconcilingStrategy implements IReconcilingStrategy,IReconcili
 		for(ClonePair cp : hs)
 		{
 			
+			
 			int cloneNumber = -1;
 			boolean found = false;
 			//Check if this clone pair is equivalent to an old one, if so, reuse the old number
@@ -189,6 +192,16 @@ public class CloneReconcilingStrategy implements IReconcilingStrategy,IReconcili
 						+" in files: " + cp.getFirst().getFile().getName() + " " + 
 						cp.getSecond().getFile().getName());
 			} 
+			
+			//Check: Are there any fixes for this clone?  If not, don't show
+			ClonePairData cpData;
+			try {
+				cpData = cp.toClonePairData(fFile, cloneNumber, fDocument.get());
+			} catch (IOException e) {
+				throw new RuntimeException("Can't read file indicated by clone detector " + e.getMessage());
+			}
+			if(Scorer.getInstance().calculateResolutions(cpData).size() <= 0)
+				continue;
 			
 			boolean added = false;
 			if(cp.getFirst().getFile().equals(fFile))

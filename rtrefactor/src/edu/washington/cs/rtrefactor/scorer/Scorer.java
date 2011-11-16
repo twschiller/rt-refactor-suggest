@@ -15,6 +15,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
 import edu.washington.cs.rtrefactor.quickfix.CloneFix;
+import edu.washington.cs.rtrefactor.quickfix.CloneFixer;
 import edu.washington.cs.rtrefactor.quickfix.CopyPasteFix;
 import edu.washington.cs.rtrefactor.quickfix.ExtractMethodFix;
 import edu.washington.cs.rtrefactor.quickfix.FindMethod;
@@ -74,16 +75,31 @@ public class Scorer {
 	 * @param fixes the fixes presented to the user
 	 * @param select the resolution selected by the user
 	 */
-	public void recordQuickFixSelection(List<IMarkerResolution> fixes, IMarkerResolution select){
+	public void recordQuickFixSelection(IMarkerResolution[] fixes, IMarkerResolution select){
 		// TODO add implementation
+		scoreLog.debug("Fix of type " +((CloneFix)select).getClass().getCanonicalName() +
+				" on clone " + ((CloneFix)select).getCloneNumber() + " was activated!");
 	}
 	
 	/**
 	 * Record that the activation of the quick fix window
 	 * @param fixes the fixes presented to the user
 	 */
-	public void recordQuickFixActivation(List<IMarkerResolution> fixes){
+	public void recordQuickFixActivation(IMarkerResolution[] fixes){
 		// TODO add implementation
+		scoreLog.debug("Notified of " + fixes.length + " fixes " + fixes);
+	}
+	
+	/**
+	 * @see calculateResolutions(ClonePairData pair, CloneFixer parent)
+	 * 
+	 * Generate fixes with no parent.
+	 * 
+	 * @param pair the code clone pair
+	 * @return
+	 */
+	public List<CloneFix> calculateResolutions(ClonePairData pair) {
+		return calculateResolutions(pair, null);
 	}
 	
 	/**
@@ -93,15 +109,16 @@ public class Scorer {
 	 * Multiple resolutions of the same type may be produced if the clone overlaps multiple methods.
 	 * 
 	 * @param pair the code clone pair
+	 * @param parent the parent Clonefixer (can be null)
 	 * @return the marker resolutions
 	 */
-	public List<CloneFix> calculateResolutions(ClonePairData pair){
+	public List<CloneFix> calculateResolutions(ClonePairData pair, CloneFixer parent){
 		List<CloneFix> rs = Lists.newArrayList();
 		
-		rs.addAll(generateJumpToCloneFixes(pair));
-		rs.addAll(generateInsertMethodCallFixes(pair));
-		rs.addAll(generateExtractMethodFixes(pair));
-		rs.addAll(generatePasteCloneFixes(pair));
+		rs.addAll(generateJumpToCloneFixes(pair, parent));
+		rs.addAll(generateInsertMethodCallFixes(pair, parent));
+		rs.addAll(generateExtractMethodFixes(pair, parent));
+		rs.addAll(generatePasteCloneFixes(pair, parent));
 		
 		return Lists.newArrayList(Iterables.filter(rs, new Predicate<CloneFix>(){
 			@Override
@@ -111,18 +128,22 @@ public class Scorer {
 		}));
 	}
 	
-	private List<CloneFix> generateJumpToCloneFixes(ClonePairData pair){
+	private List<CloneFix> generateJumpToCloneFixes(ClonePairData pair, CloneFixer parent){
 		// TODO if the user is editing existing code (instead of writing new code), increase the score for "jump to clone"?
-		return Lists.<CloneFix>newArrayList(new JumpToFix(pair, BASE_JUMPTOCLONE_SCORE));
+		if(parent == null) {
+			return Lists.<CloneFix>newArrayList(new JumpToFix(pair, BASE_JUMPTOCLONE_SCORE));
+		}else  {
+			return Lists.<CloneFix>newArrayList(new JumpToFix(pair, BASE_JUMPTOCLONE_SCORE, parent));
+			
+		}	
 	}
-	
 	/**
 	 * Generate Insert Method Call fixes, score according to the following criteria:
 	 * (1) the base score (2) the number of arguments, and (3) the percent of the method covered by the clone.
 	 * @param pair the clone pair
 	 * @return scored insert method call fixes
 	 */
-	private List<CloneFix> generateInsertMethodCallFixes(ClonePairData pair){
+	private List<CloneFix> generateInsertMethodCallFixes(ClonePairData pair, CloneFixer parent){
 		IMethod m;
 		try {
 			m = FindMethod.findMethod(pair.getOtherRegion());
@@ -148,15 +169,29 @@ public class Scorer {
 		
 		double score = (coverage * BASE_INSERTMETHODCALL_SCORE) - (10. * m.getNumberOfParameters());
 		
-		return Lists.<CloneFix>newArrayList(new InsertCallFix(pair, (int) score));
+		if(parent == null) {
+			return Lists.<CloneFix>newArrayList(new InsertCallFix(pair, (int) score));
+		} else {
+			return Lists.<CloneFix>newArrayList(new InsertCallFix(pair, (int) score, parent));
+		}
 	}
 	
-	private List<CloneFix> generateExtractMethodFixes(ClonePairData pair){
-		return Lists.<CloneFix>newArrayList(new ExtractMethodFix(pair, BASE_EXTRACTMETHODCALL_SCORE));
+	private List<CloneFix> generateExtractMethodFixes(ClonePairData pair, CloneFixer parent){
+		if(parent == null) {
+			return Lists.<CloneFix>newArrayList(new ExtractMethodFix(pair, BASE_EXTRACTMETHODCALL_SCORE));
+		} else {
+			return Lists.<CloneFix>newArrayList(new ExtractMethodFix(pair, BASE_EXTRACTMETHODCALL_SCORE, parent));
+
+		}
 	}
 	
-	private List<CloneFix> generatePasteCloneFixes(ClonePairData pair){
-		return Lists.<CloneFix>newArrayList(new CopyPasteFix(pair, BASE_PASTECLONE_SCORE));
+	private List<CloneFix> generatePasteCloneFixes(ClonePairData pair, CloneFixer parent){
+		if(parent == null) {
+			return Lists.<CloneFix>newArrayList(new CopyPasteFix(pair, BASE_PASTECLONE_SCORE));
+		} else {
+			return Lists.<CloneFix>newArrayList(new CopyPasteFix(pair, BASE_PASTECLONE_SCORE, parent));
+			
+		}
 	}
 	
 	/**

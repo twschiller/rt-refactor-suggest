@@ -1,5 +1,10 @@
 package edu.washington.cs.rtrefactor.detect;
 
+import java.io.File;
+import java.io.IOException;
+
+import edu.washington.cs.rtrefactor.reconciler.ClonePairData;
+
 /**
  * A record describing a clone pair; the "order" of the cloned regions is insignificant
  * and is <b>not</b> guaranteed to be maintained
@@ -93,5 +98,30 @@ public class ClonePair {
 		} else if (!second.equals(other.second))
 			return false;
 		return true;
+	}
+	
+	/**
+	 * Returns a ClonePairData object representing this ClonePair
+	 *  
+	 * @param sourceFile  The name of the current working file
+	 * @param cloneNumber The unique clone number assigned to this pair
+	 * @param sourceContents The entire contents of the current working file
+	 * @return  a ClonePairData object representing this ClonePair
+	 * @throws IOException if the other (non-source) file in this clone can't be read
+	 */
+	public ClonePairData toClonePairData(File sourceFile, int cloneNumber, String sourceContents) throws IOException {
+		SourceRegion sourceClone, otherClone;
+		if(first.getFile().equals(sourceFile))
+		{
+			sourceClone =first;
+			otherClone = second;
+		} else {
+			sourceClone =second;
+			otherClone = first;
+		}
+		boolean sameFile = first.getFile().equals(second.getFile());
+		 
+		
+		return new ClonePairData(cloneNumber, sourceClone, otherClone, sourceContents, sameFile);
 	}
 }

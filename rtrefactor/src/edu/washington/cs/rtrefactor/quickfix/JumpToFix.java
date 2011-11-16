@@ -30,9 +30,17 @@ public class JumpToFix extends CloneFix {
 	public JumpToFix(ClonePairData pairData, int relevance){
 		super(pairData, relevance);
 	}
+	
+	public JumpToFix(ClonePairData pairData, int relevance, CloneFixer parent){
+		super(pairData, relevance, parent);
+	}
 
 	@Override
+	/**
+	 * Requires a valid parent
+	 */
 	public String getLabel() {
+		getParent().notifyFixesActivated();
 		return "Jump to clone #" + getCloneNumber() + " (" + getRelevance() + ")";
 	}
 	
@@ -92,7 +100,13 @@ public class JumpToFix extends CloneFix {
 	}
 	
 	@Override
+	/**
+	 * Requires a valid parent
+	 */
 	public void run(IMarker marker) {
+		
+		getParent().notifyFixSelected(this);
+		
 		jumpToRegion(super.getOtherRegion(), super.isSameFile());
 	}
 
