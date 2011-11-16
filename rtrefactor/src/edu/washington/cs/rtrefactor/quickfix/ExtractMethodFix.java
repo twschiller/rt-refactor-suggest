@@ -1,28 +1,28 @@
 package edu.washington.cs.rtrefactor.quickfix;
 
-import java.io.IOException;
-
+import org.eclipse.core.commands.ParameterizedCommand;
 import org.eclipse.core.resources.IMarker;
+import org.eclipse.jdt.ui.actions.IJavaEditorActionDefinitionIds;
 import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.ui.IWorkbench;
+import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.commands.ICommandService;
+import org.eclipse.ui.handlers.IHandlerService;
 
-import edu.washington.cs.rtrefactor.detect.SourceRegion;
+import edu.washington.cs.rtrefactor.reconciler.ClonePairData;
 
 /**
- * The quickfix which extracts the clone pair to a method
- * 
- * Mostly unimplemented.
- * 
+ * The quickfix which invokes the "Extract Method" command on the
+ * system (other) side of the clone
  * @author Travis Mandel
- *
+ * @author Todd Schiller
  */
 public class ExtractMethodFix extends CloneFix {
 
-	public ExtractMethodFix(int cNumber, SourceRegion sourceClone, SourceRegion otherClone,
-			String sourceContent, boolean isSameFile, int relevance) throws IOException {
-		super(cNumber, sourceClone, otherClone, sourceContent, isSameFile, relevance);
+	public ExtractMethodFix(ClonePairData pairData, int relevance){
+		super(pairData, relevance);
 	}
-
-
+	
 	@Override
 	public String getLabel() {
 		return "Extract method with clone #" + getCloneNumber() + " (" + getRelevance() + ")";
@@ -30,8 +30,23 @@ public class ExtractMethodFix extends CloneFix {
 	
 	@Override
 	public void run(IMarker marker) {
-		MessageDialog.openInformation(null, "Extract Method Demo",
-				"This extract method quick-fix is not yet implemented");
+		// jump to the region and invoke the Extract Method menu command
+		
+		JumpToFix.jumpToRegion(this.getOtherRegion(), this.isSameFile());
+		
+		try{
+			IWorkbench workbench = PlatformUI.getWorkbench();
+			ICommandService cs = (ICommandService) workbench.getService(ICommandService.class);
+			
+			ParameterizedCommand command = cs.deserialize(IJavaEditorActionDefinitionIds.EXTRACT_METHOD);
+			
+			IHandlerService hs = (IHandlerService) workbench.getService(IHandlerService.class);
+			hs.executeCommand(command, null);
+		}catch(Exception e){
+			MessageDialog.openError(null, "Extract Method Demo", "Error opening the Extract Method dialog: " + e.getMessage());
+			return;
+		}
+		
 	}
 
 	@Override

@@ -12,27 +12,19 @@ public class SourceRegion implements Comparable<SourceRegion>{
 	private SourceLocation end;
 	
 	/**
-	 * Construct a source region consisting of a single point
-	 * @param location the location
-	 */
-	public SourceRegion(SourceLocation location){
-		super();
-		
-		this.start = location;
-		this.end = location;
-	}
-	
-	/**
 	 * Construct a source region
 	 * @param start the start of the region
 	 * @param end the end of the region
 	 * @throws IllegalArgumentException iff the files associated with the locations are not {@link File##equals(Object)}
+	 * 		or the end location occurs before or at the start location
 	 */
 	public SourceRegion(SourceLocation start, SourceLocation end) {
 		super();
 		
 		if (!start.getFile().equals(end.getFile())){
 			throw new IllegalArgumentException("Source location file mismatch");
+		}else if (start.getGlobalOffset() >= end.getGlobalOffset()){
+			throw new IllegalArgumentException("Source region must be non-empty");
 		}
 		
 		this.start = start;
@@ -45,6 +37,15 @@ public class SourceRegion implements Comparable<SourceRegion>{
 	 */
 	public File getFile(){
 		return start.getFile();
+	}
+	
+	/**
+	 * Get the length of the source region, as determined by the difference in the
+	 * global offset of the end point and start point
+	 * @return the length of the source region
+	 */
+	public int getLength(){
+		return end.getGlobalOffset() - start.getGlobalOffset();
 	}
 	
 	/**

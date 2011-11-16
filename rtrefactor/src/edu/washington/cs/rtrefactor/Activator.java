@@ -2,6 +2,7 @@ package edu.washington.cs.rtrefactor;
 
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.IStartup;
+import org.eclipse.ui.commands.ICommandService;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
 
@@ -40,6 +41,9 @@ public class Activator extends AbstractUIPlugin implements IStartup{
 		//this method is called when Eclipse starts
 		//refer to the documentation for the limitations
 	
+		ICommandService service = (ICommandService) Activator.getDefault().getWorkbench().getService(ICommandService.class);
+		
+		service.addExecutionListener(new EclipseActionLogger());
 	}
 	
 	/**

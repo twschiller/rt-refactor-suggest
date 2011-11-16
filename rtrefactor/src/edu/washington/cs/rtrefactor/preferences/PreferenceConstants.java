@@ -7,5 +7,6 @@ public class PreferenceConstants {
 
 	public static final String P_CHOICE = "cloneDetector";
 	public static final String P_INCREMENT = "doIncrement";
+	public static final String P_CONTEXT_LINES = "contextLines";
 
 }
