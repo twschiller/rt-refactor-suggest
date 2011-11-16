@@ -2,18 +2,22 @@ package edu.washington.cs.rtrefactor.quickfix;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Random;
 
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.Document;
 import org.eclipse.ui.IMarkerResolution;
 import org.eclipse.ui.IMarkerResolutionGenerator;
 
+import edu.washington.cs.rtrefactor.Activator;
 import edu.washington.cs.rtrefactor.detect.SourceLocation;
 import edu.washington.cs.rtrefactor.detect.SourceRegion;
+import edu.washington.cs.rtrefactor.preferences.PreferenceConstants;
+import edu.washington.cs.rtrefactor.reconciler.ClonePairData;
 import edu.washington.cs.rtrefactor.reconciler.CloneReconciler;
+import edu.washington.cs.rtrefactor.scorer.Scorer;
 import edu.washington.cs.rtrefactor.util.FileUtil;
 
 /**
@@ -28,88 +32,97 @@ import edu.washington.cs.rtrefactor.util.FileUtil;
  *
  */
 public class CloneFixer implements IMarkerResolutionGenerator {
-
-	public static final int CONTEXT_LINES = 2;
-
+	public static final String CLONE_NUMBER = "cloneNumber";
+	
+	public static final String SOURCE_START_OFFSET = "sourceStartOffset";
+	public static final String SOURCE_END_OFFSET = "sourceEndOffset";
+	public static final String SOURCE_TEXT = "dirtyFileText";
+	
+	public static final String OTHER_START_OFFSET = "cloneStartOffset";
+	public static final String OTHER_END_OFFSET = "cloneEndOffset";
+	public static final String OTHER_FILE = "cloneFile";
+	
 	/**
 	 * Called to provide quick fixes for the given marker
 	 * 
 	 * @see IMarkerResolutionGenerator.getResolutions
 	 */
 	@Override
-	public IMarkerResolution[] getResolutions(IMarker mk) {
-		int cloneNum = -1;
-		String cloneFile = null;
-		int cloneStart = -1;
-		int cloneEnd = -1;
+	public IMarkerResolution[] getResolutions(IMarker marker) {
+		File sourceFile = marker.getResource().getRawLocation().makeAbsolute().toFile();
+		
+		int cloneNumber = -1;
+		
 		int sourceStart = -1;
 		int sourceEnd = -1;
-		String dirtyText = null;
-
+		String sourceText = null;
+		
+		int otherStart = -1;
+		int otherEnd = -1;
+		File otherFile = null;
+		
 		//Get the attributes from the marker (they were put here by the reconciler)
 		try {
-			cloneNum = (Integer)mk.getAttribute("cloneNumber");
-			cloneFile = (String)mk.getAttribute("cloneFile");
-			cloneStart = (Integer)mk.getAttribute("cloneStartOffset");
-			cloneEnd = (Integer)mk.getAttribute("cloneEndOffset");
-			dirtyText = (String)mk.getAttribute("dirtyFileText");
-			sourceStart = (Integer)mk.getAttribute("sourceStartOffset");
-			sourceEnd = (Integer)mk.getAttribute("sourceEndOffset");
+			cloneNumber = (Integer)marker.getAttribute(CLONE_NUMBER);
+		
+			sourceStart = (Integer)marker.getAttribute(SOURCE_START_OFFSET);
+			sourceEnd = (Integer)marker.getAttribute(SOURCE_END_OFFSET);
+			sourceText = (String)marker.getAttribute(SOURCE_TEXT);
+			
+			assert sourceStart != sourceEnd;
+			
+			otherStart = (Integer)marker.getAttribute(OTHER_START_OFFSET);
+			otherEnd = (Integer)marker.getAttribute(OTHER_END_OFFSET);
+			otherFile = new File((String)marker.getAttribute(OTHER_FILE));
+			
+			assert otherStart != otherEnd;
+		
 		} catch (CoreException e) {
 			CloneReconciler.reconcilerLog.error("Error fetching clone marker attributes", e);
 			return new IMarkerResolution[]{};
 		}
 
 		// Check if the clones come from the same file
-		File otherFile = new File(cloneFile);
-		File thisFile = mk.getResource().getRawLocation().makeAbsolute().toFile();
-		boolean sameFile = thisFile.equals(otherFile);
+		boolean sameFile = sourceFile.equals(otherFile);
 
-		Document thisDoc = new Document(dirtyText);
+		Document sourceDoc = new Document(sourceText);
 		Document otherDoc;
 		try {
-			otherDoc = sameFile ? thisDoc :  new Document(FileUtil.read(otherFile));
+			otherDoc = sameFile ? sourceDoc : new Document(FileUtil.read(otherFile));
 		} catch (IOException e1) {
 			CloneReconciler.reconcilerLog.error("Problem reading file indicated by marker", e1);
 			return new IMarkerResolution[]{};
 		}
 
-		SourceRegion otherClone, sourceClone;
+		SourceRegion sourceClone;
 		try {
-			otherClone = new SourceRegion(
-					new SourceLocation(otherFile, cloneStart, otherDoc), 
-					new SourceLocation(otherFile, cloneEnd, otherDoc));
-
 			sourceClone = new SourceRegion(
-					new SourceLocation(thisFile, sourceStart, thisDoc), 
-					new SourceLocation(thisFile, sourceEnd, thisDoc));
+					new SourceLocation(sourceFile, sourceStart, sourceDoc), 
+					new SourceLocation(sourceFile, sourceEnd, sourceDoc));
 		} catch (BadLocationException e) {
-			CloneReconciler.reconcilerLog.error("Invalid clone location returned from marker", e);
+			CloneReconciler.reconcilerLog.error("Bad clone location for source clone in file " + sourceFile.getName(), e);
 			return new IMarkerResolution[]{};
 		}
-
-		//TODO: We assign these for testing purposes only, use real scores
-		Random r= new Random();
-		//Relevance must be between 10-100, so this is between 10-96
-		int relevance = r.nextInt(87) + 10;
-
+		
+		SourceRegion otherClone;
+		try{
+			otherClone = new SourceRegion(
+					new SourceLocation(otherFile, otherStart, otherDoc), 
+					new SourceLocation(otherFile, otherEnd, otherDoc));
+		}catch (BadLocationException e) {
+			CloneReconciler.reconcilerLog.error("Bad clone location for system (other) clone in file " + otherFile.getName(), e);
+			return new IMarkerResolution[]{};
+		}
+		
+		ClonePairData pairData;
 		try {
-		//TODO:  If score too low, some may not be shown
-		return new IMarkerResolution[] {
-			new CopyPasteFix(cloneNum, sourceClone, otherClone, dirtyText, sameFile,
-						relevance),
-			new ExtractMethodFix(cloneNum, sourceClone, otherClone, dirtyText, 
-						sameFile, relevance+1),
-			new InsertCallFix(cloneNum, sourceClone, otherClone, dirtyText, sameFile, 
-						relevance+2),
-			new JumpToFix(cloneNum, sourceClone, otherClone, dirtyText, sameFile, 
-						relevance+3),			
-		};
+			pairData = new ClonePairData(cloneNumber, sourceClone, otherClone, sourceText, sameFile);
 		} catch (IOException e) {
 			CloneReconciler.reconcilerLog.error("Could not read file when creating clones", e);
 			return new IMarkerResolution[]{};
 		}
 
+		return Scorer.getInstance().calculateResolutions(pairData).toArray(new IMarkerResolution[]{});
 	}
 
 	/**
@@ -124,7 +137,9 @@ public class CloneFixer implements IMarkerResolutionGenerator {
 	public static String getCloneString(int startOffOrig, int endOffOrig, 
 			String content)
 	{
-
+		IPreferenceStore store = Activator.getDefault().getPreferenceStore();
+		int contextLines = store.getInt(PreferenceConstants.P_CONTEXT_LINES);
+		
 		//  Trim the whitespace off the region described by the offsets.
 		int startOff = startOffOrig, endOff = endOffOrig;
 		while(startOff > 0 && Character.isWhitespace(content.charAt(startOff)))
@@ -141,7 +156,7 @@ public class CloneFixer implements IMarkerResolutionGenerator {
 		do {
 			rStart = content.lastIndexOf(newline, rStart-newline.length());
 			cLines++;
-		} while(rStart >= 0 && cLines < CONTEXT_LINES);
+		} while(rStart >= 0 && cLines < contextLines);
 		if(rStart< 0) {
 			rStart = 0;
 		}
@@ -153,7 +168,7 @@ public class CloneFixer implements IMarkerResolutionGenerator {
 		do{
 			rEnd = content.indexOf(newline, rEnd+newline.length());
 			cLines++;
-		} while(rEnd >= 0 && cLines < CONTEXT_LINES) ;
+		} while(rEnd >= 0 && cLines < contextLines) ;
 		if(rEnd < 0) {
 			rEnd = content.length()-1;
 		}

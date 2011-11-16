@@ -1,7 +1,5 @@
 package edu.washington.cs.rtrefactor.quickfix;
 
-import java.io.IOException;
-
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -19,19 +17,18 @@ import org.eclipse.ui.texteditor.ITextEditor;
 
 import edu.washington.cs.rtrefactor.detect.SourceRegion;
 import edu.washington.cs.rtrefactor.reconciler.CloneEditor;
+import edu.washington.cs.rtrefactor.reconciler.ClonePairData;
 import edu.washington.cs.rtrefactor.reconciler.CloneReconciler;
 
 /**
- * The quickfix which simply jumps to the second clone
- * 
+ * The quickfix which simply jumps to (and selects) the system (other) clone
  * @author Travis Mandel
  * @author Todd Schiller
  */
 public class JumpToFix extends CloneFix {
 
-	public JumpToFix(int cNumber, SourceRegion sourceClone, SourceRegion otherClone,
-			String sourceContent, boolean isSameFile, int relevance) throws IOException {
-		super(cNumber, sourceClone, otherClone, sourceContent, isSameFile, relevance);
+	public JumpToFix(ClonePairData pairData, int relevance){
+		super(pairData, relevance);
 	}
 
 	@Override
@@ -39,17 +36,22 @@ public class JumpToFix extends CloneFix {
 		return "Jump to clone #" + getCloneNumber() + " (" + getRelevance() + ")";
 	}
 	
-	@Override
-	public void run(IMarker marker) {
-		int line =  this.getOtherRegion().getStart().getLine();
+
+	/**
+	 * Jump to the region and select it, opening a new buffer iff <code>isSameFile == false</code>
+	 * @param region the region to jump to
+	 * @param isSameFile true iff the region is in the active buffer
+	 */
+	protected static void jumpToRegion(SourceRegion region, boolean isSameFile){
+	
+		int start = region.getStart().getGlobalOffset();
+		int line =  region.getStart().getLine();
+		int len = region.getLength();
 		
 		//http://wiki.eclipse.org/FAQ_How_do_I_open_an_editor_on_a_file_in_the_workspace%3F
 		//http://wiki.eclipse.org/FAQ_How_do_I_open_an_editor_programmatically%3F
 		
-		if (isSameFile()){
-			int start = this.getSourceRegion().getStart().getGlobalOffset();
-			int len =  this.getSourceRegion().getEnd().getGlobalOffset() - start;
-			
+		if (isSameFile){
 			//http://stackoverflow.com/questions/1619623/eclipse-plugin-how-to-get-current-text-editor-corsor-position
 			
 			IEditorPart editor =  PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
@@ -58,9 +60,10 @@ public class JumpToFix extends CloneFix {
 			ITextEditor txt = ((ITextEditor) editor);
 			txt.getSelectionProvider().setSelection(new TextSelection(doc, start, len ));
 	
+			CloneReconciler.reconcilerLog.debug("Jumped to clone at line " + line);
 		}else{
 			
-			IPath p = new Path(this.getOtherRegion().getFile().getAbsolutePath());
+			IPath p = new Path(region.getFile().getAbsolutePath());
 			IFile f = ResourcesPlugin.getWorkspace().getRoot().getFileForLocation(p);
 			
 			//http://wiki.eclipse.org/FAQ_How_do_I_find_the_active_workbench_page%3F
@@ -68,9 +71,14 @@ public class JumpToFix extends CloneFix {
 			
 			try{
 				IMarker m = f.createMarker(IMarker.TEXT);
-				marker.setAttribute(IMarker.LINE_NUMBER, line);
-				IDE.openEditor(page, m);
+				m.setAttribute(IMarker.LINE_NUMBER, line);
+				IEditorPart editor = IDE.openEditor(page, m);
 				m.delete();
+				
+				ITextEditor txt = ((ITextEditor) editor);
+				IDocument doc = ((CloneEditor) editor).getDocumentProvider().getDocument(editor.getEditorInput());
+				
+				txt.getSelectionProvider().setSelection(new TextSelection(doc, start, len ));
 				
 				CloneReconciler.reconcilerLog.debug("Jumped to clone at line " + line + " in file " + f.getName());
 				
@@ -80,8 +88,12 @@ public class JumpToFix extends CloneFix {
 				
 				CloneReconciler.reconcilerLog.error("Error jumping to clone in file " + f.getName(), e);
 			}
-		
 		}
+	}
+	
+	@Override
+	public void run(IMarker marker) {
+		jumpToRegion(super.getOtherRegion(), super.isSameFile());
 	}
 
 	@Override
