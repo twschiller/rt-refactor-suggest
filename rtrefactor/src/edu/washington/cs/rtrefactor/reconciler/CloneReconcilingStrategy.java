@@ -13,6 +13,7 @@ import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
@@ -53,7 +54,7 @@ public class CloneReconcilingStrategy implements IReconcilingStrategy,IReconcili
 
 	private static int currentCloneNumber = 1;
 	
-	
+	private int numAnnotations;
 	private IDocument fDocument;
 	private File fFile;
 	private IAnnotationModel fAnnotationModel;
@@ -71,6 +72,7 @@ public class CloneReconcilingStrategy implements IReconcilingStrategy,IReconcili
 		fViewer = viewer;
 		fAnnotationModel = fViewer.getAnnotationModel();
 		fEditor = editor;
+		numAnnotations = 0;
 		//Initial initialization
 		initializeDetector();
 
@@ -116,6 +118,8 @@ public class CloneReconcilingStrategy implements IReconcilingStrategy,IReconcili
 	 */
 	private void doReconcile(DirtyRegion dirtyRegion)
 	{
+		
+				
 		// the buffer needs to be reloaded
 		if (fDocument.getLength() == 0){
 			return;
@@ -162,7 +166,7 @@ public class CloneReconcilingStrategy implements IReconcilingStrategy,IReconcili
 		} 
 
 		CloneReconciler.reconcilerLog.debug("Detector returned " + hs.size() + " pairs");
-
+		
 		//Mark the clones in the file
 		for(ClonePair cp : hs)
 		{
@@ -214,6 +218,7 @@ public class CloneReconcilingStrategy implements IReconcilingStrategy,IReconcili
 				addAnnotation(cp.getSecond(), cp.getFirst(), cloneNumber);
 				added = true;
 			}
+			numAnnotations++;
 
 			// We should always add at least one annotation per pair
 			assert added ;
@@ -271,6 +276,7 @@ public class CloneReconcilingStrategy implements IReconcilingStrategy,IReconcili
 	 *  @param other The region containing the second (matched) clone, possibly
 	 *  	in a different file
 	 *  @param cloneNumber The number/id assigned to the clone
+	 *  @param annotationNumber the document-specific annotation number
 	 */
 	private void addAnnotation(SourceRegion source, SourceRegion other, int cloneNumber)
 	{
@@ -297,7 +303,7 @@ public class CloneReconcilingStrategy implements IReconcilingStrategy,IReconcili
 		}
 		
 		fAnnotationModel.addAnnotation(
-				new CloneAnnotation(cloneMarker), 
+				new CloneAnnotation(cloneMarker, numAnnotations), 
 				new Position(source.getStart().getGlobalOffset(), source.getLength()));
 	}
 
