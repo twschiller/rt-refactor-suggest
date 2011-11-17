@@ -1,7 +1,7 @@
 package edu.washington.cs.rtrefactor.scorer;
 
-import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.CoreException;
@@ -10,9 +10,11 @@ import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.ui.IMarkerResolution;
 
 import com.google.common.base.Predicate;
+import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
+import com.google.common.collect.Multiset;
+import com.google.common.collect.Sets;
 
 import edu.washington.cs.rtrefactor.quickfix.CloneFix;
 import edu.washington.cs.rtrefactor.quickfix.CloneFixer;
@@ -31,27 +33,36 @@ public class Scorer {
 
 	protected static Logger scoreLog = Logger.getLogger("scorer");
 	
-	private static final int BASE_JUMPTOCLONE_SCORE = 50;
-	private static final int BASE_PASTECLONE_SCORE = 20;
-	private static final int BASE_INSERTMETHODCALL_SCORE = 90;
-	private static final int BASE_EXTRACTMETHODCALL_SCORE = 85;
+	// ADAPTIVE SCORE-ING SYSTEM
+	// 
+	// The THRESHOLD stays constant, the scores for a particular
+	// action are adjusted according to the following formula:
+	//
+	// Y = (X_{clone} * B_{action} + C_{action}) * (1-DECAY)^N_{CLONE}
+	//
+	// , where   X_{clone} is the action score (e.g., the similarity)
+	//           B_{action} is a an action-specific scaling factor (preference)
+	//           N_{clone} the number of times the clone has been viewed
+	//			 C_{action} is fixed constant for the action (normative information)
 	
-	private static final int DEFAULT_THRESHOLD = 20;
+	private static int JUMP = 0;
+	private static int PASTE = 1;
+	private static int INSERT = 2;
+	private static int EXTRACT = 2;
+	
+	private static double DECAY = 0.15;
+	
+	private double C_ACTION[] = new double[] { 50., 20., 90., 85. };
+	private double B_ACTION[] = new double[] { 1.0, 1.0, 1.0, 1.0 };
+	
+	private static final int THRESHOLD = 40;
+	
+	Multiset<Integer> activationCnt = HashMultiset.create();
 	
 	/**
 	 * The singleton instance
 	 */
 	private static Scorer instance = null;
-	
-	/**
-	 * Clone Number -> Display Threshold
-	 */
-	private final HashMap<Integer, Integer> thresholds = Maps.newHashMap();
-	
-	/**
-	 * Clone Number -> Clone Fix
-	 */
-	private final HashMap<Integer, CloneFix> cache = Maps.newHashMap();
 	
 	/**
 	 * Private constructor.
@@ -76,9 +87,41 @@ public class Scorer {
 	 * @param select the resolution selected by the user
 	 */
 	public void recordQuickFixSelection(IMarkerResolution[] fixes, IMarkerResolution select){
-		// TODO add implementation
-		scoreLog.debug("Fix of type " +((CloneFix)select).getClass().getCanonicalName() +
-				" on clone " + ((CloneFix)select).getCloneNumber() + " was activated!");
+		// Scale the action preference B to reward actions with lower scores more; don't
+		// penalize the other actions
+		//
+		// B_{action} = B_{action} * (1 + (100 - SCORE) / THRESHOLD)
+		
+		if (select instanceof CloneFix){
+			CloneFix f = (CloneFix) select;
+			
+			Integer fix = null;
+			if (select instanceof JumpToFix){
+				fix = JUMP;
+			}else if (select instanceof CopyPasteFix){
+				fix = PASTE;
+			}else if (select instanceof ExtractMethodFix){
+				fix = EXTRACT;
+			}else if (select instanceof InsertCallFix){
+				fix = INSERT;
+			}
+			
+			int relevance = f.getRelevance();
+			
+			int max = Integer.MIN_VALUE;
+			for (CloneFix x : (CloneFix[]) fixes){
+				max = Math.max(max, x.getRelevance());
+			}
+			
+			double old = B_ACTION[fix];
+			B_ACTION[fix] = B_ACTION[fix] * (1 + (100. - relevance) / THRESHOLD);
+			
+			scoreLog.debug("Fix " + f.getClass().getCanonicalName() + " selected with score " + relevance + 
+					" (max score: " + max + ")");
+			
+			scoreLog.debug("Adjusted preference " + B_ACTION[fix] + " (old: " + old + ")");
+			
+		}
 	}
 	
 	/**
@@ -86,17 +129,24 @@ public class Scorer {
 	 * @param fixes the fixes presented to the user
 	 */
 	public void recordQuickFixActivation(IMarkerResolution[] fixes){
-		// TODO add implementation
-		scoreLog.debug("Notified of " + fixes.length + " fixes " + fixes);
+		Set<Integer> cs = Sets.newHashSet();
+		for (IMarkerResolution fix : fixes){
+			cs.add(((CloneFix) fix).getCloneNumber());
+		}
+		
+		scoreLog.debug("QuickFix activated with " + fixes.length + " fixes.");
+		
+		for (Integer c : cs){
+			activationCnt.add(c);
+			scoreLog.debug("Clone #" + c + " has been activated " + activationCnt.count(c) + " time(s)");
+		}
 	}
 	
 	/**
-	 * @see calculateResolutions(ClonePairData pair, CloneFixer parent)
-	 * 
-	 * Generate fixes with no parent.
-	 * 
+	 * Generate the marker resolutions for the given code clone <code>pair</code>.
 	 * @param pair the code clone pair
-	 * @return
+	 * @see {@link Scorer#calculateResolutions(ClonePairData, CloneFixer)}
+	 * @return the marker resolutions
 	 */
 	public List<CloneFix> calculateResolutions(ClonePairData pair) {
 		return calculateResolutions(pair, null);
@@ -113,6 +163,8 @@ public class Scorer {
 	 * @return the marker resolutions
 	 */
 	public List<CloneFix> calculateResolutions(ClonePairData pair, CloneFixer parent){
+		scoreLog.debug("Calculating resolutions for clone pair " + pair.getCloneNumber());
+		
 		List<CloneFix> rs = Lists.newArrayList();
 		
 		rs.addAll(generateJumpToCloneFixes(pair, parent));
@@ -123,19 +175,20 @@ public class Scorer {
 		return Lists.newArrayList(Iterables.filter(rs, new Predicate<CloneFix>(){
 			@Override
 			public boolean apply(CloneFix fix) {
-				return fix.getRelevance() >= getThreshold(fix.getCloneNumber());
+				if (fix.getRelevance() < THRESHOLD){
+					scoreLog.debug("Filtered fix " + fix.getClass().getName() + " (score: " + fix.getRelevance() + ") with threshold " + THRESHOLD);
+					return false;
+				}else{
+					return true;
+				}
 			}
 		}));
 	}
 	
 	private List<CloneFix> generateJumpToCloneFixes(ClonePairData pair, CloneFixer parent){
 		// TODO if the user is editing existing code (instead of writing new code), increase the score for "jump to clone"?
-		if(parent == null) {
-			return Lists.<CloneFix>newArrayList(new JumpToFix(pair, BASE_JUMPTOCLONE_SCORE));
-		}else  {
-			return Lists.<CloneFix>newArrayList(new JumpToFix(pair, BASE_JUMPTOCLONE_SCORE, parent));
-			
-		}	
+		double score = calc(pair.getSimilarity(), JUMP, pair.getCloneNumber());
+		return Lists.<CloneFix>newArrayList(new JumpToFix(pair, truncate(score)));
 	}
 	/**
 	 * Generate Insert Method Call fixes, score according to the following criteria:
@@ -165,42 +218,36 @@ public class Scorer {
 		}
 		
 		// TODO this is actually wrong. need to inspect each character in the other region to see if it is part of the method
-		double coverage = Math.min(pair.getOtherRegion().getLength() / (double) methodSource.length(), 100.);
+		double coverage = Math.min(pair.getOtherRegion().getLength() / (double) methodSource.length(), 1.);
 		
-		double score = (coverage * BASE_INSERTMETHODCALL_SCORE) - (10. * m.getNumberOfParameters());
+		double base = coverage * pair.getSimilarity() * Math.pow(0.95, m.getNumberOfParameters());
+		double score = calc(base, INSERT, pair.getCloneNumber());
 		
-		if(parent == null) {
-			return Lists.<CloneFix>newArrayList(new InsertCallFix(pair, (int) score));
-		} else {
-			return Lists.<CloneFix>newArrayList(new InsertCallFix(pair, (int) score, parent));
-		}
+		return Lists.<CloneFix>newArrayList(new InsertCallFix(pair, truncate(score), parent));
 	}
 	
 	private List<CloneFix> generateExtractMethodFixes(ClonePairData pair, CloneFixer parent){
-		if(parent == null) {
-			return Lists.<CloneFix>newArrayList(new ExtractMethodFix(pair, BASE_EXTRACTMETHODCALL_SCORE));
-		} else {
-			return Lists.<CloneFix>newArrayList(new ExtractMethodFix(pair, BASE_EXTRACTMETHODCALL_SCORE, parent));
-
-		}
+		double score = calc(pair.getSimilarity(), EXTRACT, pair.getCloneNumber());
+		return Lists.<CloneFix>newArrayList(new ExtractMethodFix(pair, truncate(score), parent));
 	}
 	
 	private List<CloneFix> generatePasteCloneFixes(ClonePairData pair, CloneFixer parent){
-		if(parent == null) {
-			return Lists.<CloneFix>newArrayList(new CopyPasteFix(pair, BASE_PASTECLONE_SCORE));
-		} else {
-			return Lists.<CloneFix>newArrayList(new CopyPasteFix(pair, BASE_PASTECLONE_SCORE, parent));
-			
-		}
+		double score = calc(pair.getSimilarity(), PASTE, pair.getCloneNumber());
+		return Lists.<CloneFix>newArrayList(new CopyPasteFix(pair, truncate(score), parent));
 	}
 	
-	/**
-	 * Get the modified threshold for the given clone, or <code>DEFAULT_THRESHOLD</code> iff
-	 * no modified threshold exists
-	 * @param cloneNumber the unique identifier for the clone
-	 * @return the threshold for the clone
-	 */
-	private int getThreshold(int cloneNumber){
-		return thresholds.containsKey(cloneNumber) ? thresholds.get(cloneNumber) : DEFAULT_THRESHOLD;
+	private int truncate(double x){
+		return Math.max(10, Math.min((int) x, 100));
 	}
+	
+	private double calc(double base, int action, int cloneNumber){
+		return (base * B_ACTION[JUMP] + C_ACTION[JUMP]) * getCloneAdjustment(cloneNumber);
+	}
+	
+	private double getCloneAdjustment(int cloneNumber){
+		double adj = activationCnt.contains(cloneNumber) ? Math.pow((1 - DECAY), activationCnt.count(cloneNumber)) : 1.0;
+		//scoreLog.debug("Adjustment for clone " + cloneNumber + ": "+ adj);
+		return adj;
+	}
+	
 }

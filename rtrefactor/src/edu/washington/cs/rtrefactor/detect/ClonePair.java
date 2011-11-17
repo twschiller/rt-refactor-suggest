@@ -106,22 +106,21 @@ public class ClonePair {
 	 * @param sourceFile  The name of the current working file
 	 * @param cloneNumber The unique clone number assigned to this pair
 	 * @param sourceContents The entire contents of the current working file
-	 * @return  a ClonePairData object representing this ClonePair
+	 * @return a ClonePairData object representing this ClonePair
 	 * @throws IOException if the other (non-source) file in this clone can't be read
 	 */
 	public ClonePairData toClonePairData(File sourceFile, int cloneNumber, String sourceContents) throws IOException {
 		SourceRegion sourceClone, otherClone;
 		if(first.getFile().equals(sourceFile))
 		{
-			sourceClone =first;
-			otherClone = second;
+			sourceClone = first;
+			otherClone  = second;
 		} else {
-			sourceClone =second;
-			otherClone = first;
+			sourceClone = second;
+			otherClone  = first;
 		}
 		boolean sameFile = first.getFile().equals(second.getFile());
-		 
-		
-		return new ClonePairData(cloneNumber, sourceClone, otherClone, sourceContents, sameFile);
+
+		return new ClonePairData(cloneNumber, sourceClone, otherClone, sourceContents, sameFile, score);
 	}
 }

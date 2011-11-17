@@ -17,6 +17,7 @@ public class ClonePairData {
 	private final String sourceContents;
 	private final String otherContents;
 	private final boolean sameFile;
+	private final double similarity;
 	
 	/**
 	 * Construct an augmented clone pair record
@@ -25,10 +26,11 @@ public class ClonePairData {
 	 * @param otherClone The region containing the system clone
 	 * @param sourceContents The contents of the <i>entire</i> document containing {@code sourceClone}
 	 * @param isSameFile Is the second clone in the same file as the first
+	 * @param similarity The similarity between the clones
 	 * @throws IOException iff <code>other.getFile()</code> cannot be read
 	 */
 	public ClonePairData(int cloneNumber, SourceRegion sourceClone,
-			SourceRegion otherClone, String sourceContents, boolean sameFile) throws IOException {
+			SourceRegion otherClone, String sourceContents, boolean sameFile, double similarity) throws IOException {
 		super();
 		this.cloneNumber = cloneNumber;
 		this.sourceClone = sourceClone;
@@ -36,6 +38,15 @@ public class ClonePairData {
 		this.sourceContents = sourceContents;
 		this.otherContents = sameFile ? sourceContents :  FileUtil.read(otherClone.getFile());
 		this.sameFile = sameFile;
+		this.similarity = similarity;
+	}
+
+	/**
+	 * Get the similarity, not guaranteed to be consistent across clone detectors
+	 * @return the similarity
+	 */
+	public double getSimilarity() {
+		return similarity;
 	}
 
 	/**

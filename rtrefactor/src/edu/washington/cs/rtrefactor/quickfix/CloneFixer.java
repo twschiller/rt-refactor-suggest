@@ -36,6 +36,7 @@ import edu.washington.cs.rtrefactor.util.FileUtil;
  */
 public class CloneFixer implements IMarkerResolutionGenerator {
 	public static final String CLONE_NUMBER = "cloneNumber";
+	public static final String CLONE_SIMILARITY = "similarity";
 	
 	public static final String SOURCE_START_OFFSET = "sourceStartOffset";
 	public static final String SOURCE_END_OFFSET = "sourceEndOffset";
@@ -79,6 +80,8 @@ public class CloneFixer implements IMarkerResolutionGenerator {
 		int otherEnd = -1;
 		File otherFile = null;
 		
+		double similarity = -1.0;
+		
 		//Get the attributes from the marker (they were put here by the reconciler)
 		try {
 			cloneNumber = (Integer)marker.getAttribute(CLONE_NUMBER);
@@ -94,6 +97,8 @@ public class CloneFixer implements IMarkerResolutionGenerator {
 			otherFile = new File((String)marker.getAttribute(OTHER_FILE));
 			
 			assert otherStart != otherEnd;
+		
+			similarity = Double.parseDouble((String)marker.getAttribute(CLONE_SIMILARITY));
 		
 		} catch (CoreException e) {
 			CloneReconciler.reconcilerLog.error("Error fetching clone marker attributes", e);
@@ -134,7 +139,7 @@ public class CloneFixer implements IMarkerResolutionGenerator {
 		
 		ClonePairData pairData;
 		try {
-			pairData = new ClonePairData(cloneNumber, sourceClone, otherClone, sourceText, sameFile);
+			pairData = new ClonePairData(cloneNumber, sourceClone, otherClone, sourceText, sameFile, similarity);
 		} catch (IOException e) {
 			CloneReconciler.reconcilerLog.error("Could not read file when creating clones", e);
 			return new IMarkerResolution[]{};

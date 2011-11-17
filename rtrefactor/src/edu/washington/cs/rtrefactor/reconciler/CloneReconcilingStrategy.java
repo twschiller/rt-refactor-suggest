@@ -200,18 +200,19 @@ public class CloneReconcilingStrategy implements IReconcilingStrategy,IReconcili
 			} catch (IOException e) {
 				throw new RuntimeException("Can't read file indicated by clone detector " + e.getMessage());
 			}
-			if(Scorer.getInstance().calculateResolutions(cpData).size() <= 0)
+			if(Scorer.getInstance().calculateResolutions(cpData).size() <= 0){
 				continue;
+			}
 			
 			boolean added = false;
 			if(cp.getFirst().getFile().equals(fFile))
 			{
-				addAnnotation(cp.getFirst(), cp.getSecond(), cloneNumber);
+				addAnnotation(cp.getFirst(), cp.getSecond(), cloneNumber, cp.getScore());
 				added = true;
 			}
 			if(cp.getSecond().getFile().equals(fFile))
 			{
-				addAnnotation(cp.getSecond(), cp.getFirst(), cloneNumber);
+				addAnnotation(cp.getSecond(), cp.getFirst(), cloneNumber, cp.getScore());
 				added = true;
 			}
 
@@ -271,8 +272,9 @@ public class CloneReconcilingStrategy implements IReconcilingStrategy,IReconcili
 	 *  @param other The region containing the second (matched) clone, possibly
 	 *  	in a different file
 	 *  @param cloneNumber The number/id assigned to the clone
+	 *  @param similarity the similarity between the clones, measured by the detector
 	 */
-	private void addAnnotation(SourceRegion source, SourceRegion other, int cloneNumber)
+	private void addAnnotation(SourceRegion source, SourceRegion other, int cloneNumber, double similarity)
 	{
 		CloneReconciler.reconcilerLog.debug("Adding annotation to source region");
 		
@@ -291,6 +293,8 @@ public class CloneReconcilingStrategy implements IReconcilingStrategy,IReconcili
 			cloneMarker.setAttribute(CloneFixer.OTHER_START_OFFSET, other.getStart().getGlobalOffset());
 			cloneMarker.setAttribute(CloneFixer.OTHER_END_OFFSET, other.getEnd().getGlobalOffset());
 			cloneMarker.setAttribute(CloneFixer.OTHER_FILE, other.getFile().getAbsolutePath());
+			
+			cloneMarker.setAttribute(CloneFixer.CLONE_SIMILARITY, Double.toString(similarity));
 		} catch (CoreException e) {
 			CloneReconciler.reconcilerLog.error("Cannot add annotation to document, marker does not have required field", e);
 			return;
