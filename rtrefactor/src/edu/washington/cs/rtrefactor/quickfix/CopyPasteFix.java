@@ -19,10 +19,6 @@ import edu.washington.cs.rtrefactor.util.FileUtil;
  */
 public class CopyPasteFix extends CloneFix {
 
-	public CopyPasteFix(ClonePairData pairData, int relevance){
-		super(pairData, relevance);
-	}
-	
 	public CopyPasteFix(ClonePairData pairData, int relevance, CloneFixer parent){
 		super(pairData, relevance, parent);
 	}

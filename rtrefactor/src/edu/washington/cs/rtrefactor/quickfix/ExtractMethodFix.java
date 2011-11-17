@@ -18,10 +18,6 @@ import edu.washington.cs.rtrefactor.reconciler.ClonePairData;
  * @author Todd Schiller
  */
 public class ExtractMethodFix extends CloneFix {
-
-	public ExtractMethodFix(ClonePairData pairData, int relevance){
-		super(pairData, relevance);
-	}
 	
 	public ExtractMethodFix(ClonePairData pairData, int relevance, CloneFixer parent){
 		super(pairData, relevance, parent);

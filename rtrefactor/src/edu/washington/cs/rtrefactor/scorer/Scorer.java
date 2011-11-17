@@ -188,7 +188,7 @@ public class Scorer {
 	private List<CloneFix> generateJumpToCloneFixes(ClonePairData pair, CloneFixer parent){
 		// TODO if the user is editing existing code (instead of writing new code), increase the score for "jump to clone"?
 		double score = calc(pair.getSimilarity(), JUMP, pair.getCloneNumber());
-		return Lists.<CloneFix>newArrayList(new JumpToFix(pair, truncate(score)));
+		return Lists.<CloneFix>newArrayList(new JumpToFix(pair, truncate(score), parent));
 	}
 	/**
 	 * Generate Insert Method Call fixes, score according to the following criteria:

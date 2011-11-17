@@ -26,10 +26,6 @@ import edu.washington.cs.rtrefactor.reconciler.CloneReconciler;
  * @author Todd Schiller
  */
 public class JumpToFix extends CloneFix {
-
-	public JumpToFix(ClonePairData pairData, int relevance){
-		super(pairData, relevance);
-	}
 	
 	public JumpToFix(ClonePairData pairData, int relevance, CloneFixer parent){
 		super(pairData, relevance, parent);
