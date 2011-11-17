@@ -8,10 +8,13 @@ import org.eclipse.ui.texteditor.MarkerAnnotation;
 
 public class CloneAnnotation extends MarkerAnnotation {
 	/** The clone annotation type. */
-	public static final String CLONE_ANNOTATION = "rtrefactor.cloneAnnotation"; 
+	public static final String[] CLONE_ANNOTATIONS = 
+		{"rtrefactor.cloneAnnotation","rtrefactor.cloneAnnotation2",
+			"rtrefactor.cloneAnnotation3"} ; 
 	
-	public CloneAnnotation(IMarker marker) {
-		super(CLONE_ANNOTATION, marker);
+	public CloneAnnotation(IMarker marker, int annotationNumber) {
+		super(CLONE_ANNOTATIONS[annotationNumber % CLONE_ANNOTATIONS.length], marker);
+		
 	}
 
 }
