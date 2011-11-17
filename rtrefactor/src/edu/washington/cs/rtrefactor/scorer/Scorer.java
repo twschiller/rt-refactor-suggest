@@ -93,6 +93,8 @@ public class Scorer {
 		// B_{action} = B_{action} * (1 + (100 - SCORE) / THRESHOLD)
 		
 		if (select instanceof CloneFix){
+			scoreLog.debug(select.getClass().getName());
+			
 			CloneFix f = (CloneFix) select;
 			
 			Integer fix = null;
@@ -109,8 +111,8 @@ public class Scorer {
 			int relevance = f.getRelevance();
 			
 			int max = Integer.MIN_VALUE;
-			for (CloneFix x : (CloneFix[]) fixes){
-				max = Math.max(max, x.getRelevance());
+			for (IMarkerResolution x : fixes){
+				max = Math.max(max, ((CloneFix) x).getRelevance());
 			}
 			
 			double old = B_ACTION[fix];
