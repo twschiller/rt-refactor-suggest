@@ -29,25 +29,12 @@ public abstract class CloneFix implements IMarkerResolution, IJavaCompletionProp
 	private final int relevance;
 	private final CloneFixer parent;
 	
-	/**
-	 * Instantiates a clone clone quick fix
-	 * @param pairData The clone pair data
-	 * @param relevance A score from 10-100 indicating the relevance of this suggestion
-	 */
-	public CloneFix(ClonePairData pairData, int relevance){
-		if (relevance < 10 || relevance > 100){
-			throw new IllegalArgumentException("Illegal relevance value " + relevance);
-		}
-		this.pairData = pairData;
-		this.relevance = relevance;
-		this.parent = null;
-	}
 	
 	/**
 	 * Instantiates a clone clone quick fix
 	 * @param pairData The clone pair data
 	 * @param relevance A score from 10-100 indicating the relevance of this suggestion
-	 * @param parent The parent CloneFixer
+	 * @param parent The parent CloneFixer (can be null)
 	 */
 	public CloneFix(ClonePairData pairData, int relevance, CloneFixer parent){
 		if (relevance < 10 || relevance > 100){
