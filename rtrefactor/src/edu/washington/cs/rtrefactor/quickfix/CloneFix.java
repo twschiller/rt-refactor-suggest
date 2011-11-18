@@ -7,6 +7,7 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.ui.IMarkerResolution;
 
+import edu.washington.cs.rtrefactor.Activator;
 import edu.washington.cs.rtrefactor.detect.SourceRegion;
 import edu.washington.cs.rtrefactor.reconciler.ClonePairData;
 
@@ -56,8 +57,11 @@ public abstract class CloneFix implements IMarkerResolution, IJavaCompletionProp
 
 	@Override
 	public Image getImage() {
-		//TODO: Insert cool graphics here
-		return null;
+		//Cycle through the image choices, all clones of the same number should 
+		// 	have the same image
+		int imageNum = getCloneNumber() %Activator.IMAGE_IDS.length;
+		String imageId = Activator.IMAGE_IDS[imageNum];
+		return Activator.getDefault().getImageRegistry().get(imageId);
 	}
 
 	

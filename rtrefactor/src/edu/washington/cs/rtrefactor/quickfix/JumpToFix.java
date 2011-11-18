@@ -37,7 +37,12 @@ public class JumpToFix extends CloneFix {
 	 */
 	public String getLabel() {
 		getParent().notifyFixesActivated();
-		return "Jump to clone #" + getCloneNumber() + " (" + getRelevance() + ")";
+		if(isSameFile()) {
+			return "Jump to local clone";
+		} else {
+			return "Jump to clone from "+ 
+			getOtherRegion().getFile().getName();
+		}
 	}
 	
 

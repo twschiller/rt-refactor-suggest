@@ -1,9 +1,17 @@
 package edu.washington.cs.rtrefactor;
 
+import java.net.URL;
+
+import org.eclipse.core.runtime.FileLocator;
+import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.Path;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.jface.resource.ImageRegistry;
 import org.eclipse.ui.IStartup;
 import org.eclipse.ui.commands.ICommandService;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
+import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 
 /**
@@ -13,7 +21,11 @@ public class Activator extends AbstractUIPlugin implements IStartup{
 
 	// The plug-in ID
 	public static final String PLUGIN_ID = "edu.washington.cs.rtrefactor"; //$NON-NLS-1$
-
+	
+	public static final String[] IMAGE_IDS = {"rtrefactor.fix.image1", 
+		"rtrefactor.fix.image2", "rtrefactor.fix.image3",
+		"rtrefactor.fix.image4", "rtrefactor.fix.image5", "rtrefactor.fix.image6",
+		"rtrefactor.fix.image7", "rtrefactor.fix.image8"};
 	// The shared instance
 	private static Activator plugin;
 	
@@ -73,4 +85,16 @@ public class Activator extends AbstractUIPlugin implements IStartup{
 	public static ImageDescriptor getImageDescriptor(String path) {
 		return imageDescriptorFromPlugin(PLUGIN_ID, path);
 	}
+	
+	@Override
+	 protected void initializeImageRegistry(ImageRegistry registry) {
+         Bundle bundle = Platform.getBundle(PLUGIN_ID);
+         for(int i=0; i<IMAGE_IDS.length; i++)
+         {
+        	 IPath path = new Path("icons/CloneFix"+(i+1)+".png");
+        	 URL url = FileLocator.find(bundle, path, null);
+        	 ImageDescriptor desc = ImageDescriptor.createFromURL(url);
+        	 registry.put(IMAGE_IDS[i], desc);
+         }
+      }
 }

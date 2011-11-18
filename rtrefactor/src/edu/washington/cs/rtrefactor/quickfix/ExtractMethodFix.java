@@ -29,7 +29,12 @@ public class ExtractMethodFix extends CloneFix {
 	 */
 	public String getLabel() {
 		getParent().notifyFixesActivated();
-		return "Extract method with clone #" + getCloneNumber() + " (" + getRelevance() + ")";
+		if(isSameFile()) {
+			return "Extract method with local clone";
+		} else {
+			return "Extract method with clone from "+ 
+			getOtherRegion().getFile().getName();
+		}
 	}
 	
 	@Override
