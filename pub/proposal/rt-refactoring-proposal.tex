@@ -377,35 +377,46 @@ requires a long-term study over weeks, months, or years.
 \label{sec:related}
 
 The code clone literature can be divided into two areas: (1)
-\emph{post} hoc code clone detection, maintenance, and detection and
-(2) \emph{development-time} clone management. The techniques used in the
-former can vary wildly based on subject (i.e., plain-text v. code) and
-purpose (software development v. plagiarism) but typically utilize an
-ad hoc model of clones. In contrast, the latter literature focuses on
+\emph{post} hoc code clone detection and
+(2) \emph{development-time} clone management. By post-hoc we mean the scenario in which
+detection is manually invoked to find all clones across an entire codebase, typically with the assumption that the codebase compiles and has already passed some level of testing.  In constrast, we use development-time to refer to the scenario in which detection automatically occurs as the user modifies code, typically without requirements about the compilability of the code.  The techniques used in the
+post-hoc detection can vary greatly  based on the authors' definition of what 
+level of similarity defines a "clone", but typically utilize an
+ad hoc model of clones. In contrast, the development-time literature focuses on
 the creation and maintenance of formal code clone models during the
 development process.
 
-Roy et al provide a survey of code clone detection
-techniques~\cite{Roy2009}. The rest of this section surveys the
-related work on recommender systems, clone refactoring,
- code clone interfaces, and \emph{real-time} code clone detection.
+Roy et al provide a survey of post-hoc code clone detection
+techniques~\cite{Roy2009}, and compares them by testing 
+each on clones with varying levels of similarity. We do not wish 
+to repeat the survey here, so we refer the reader to ~\cite{Roy2009}.
+The rest of this section surveys the
+related work on clone maintenance and refactoring, recommender systems,
+development-time clone management, and \emph{development-time} code clone detection.
 
 \paragraph{Post-hoc Clone Maintenance and Refactoring}
 
-Visual Studio Ultimate contains a code clone detection tool and
-interface; the tool can be run on a particular code fragment, or over
-the entire solution~\cite{VSClones}. 
+%TSM: I'm no longer certain why this belongs -- why just randomly pull out one of the 
+% many post-hoc techniques?
+%Visual Studio Ultimate contains a code clone detection tool andi
+%interface; the tool can be run on a particular code fragment, or over
+%the entire solution~\cite{VSClones}. 
 %Other commercial products and
 %academic artifacts exist which provide different interfaces /
 %visualizations.
 
-Several post-hoc tools are similar to our work in that they attempt to not only
-detect clones, but also provide refactoring techniques to eliminate the clones.
+Several tools are similar to our work in that they attempt to not only
+detect clones, but also provide refactoring techniques to eliminate the clones.  However,
+they are post-hoc, so in constrast to our technique
+ the detection and refactoring proposals are only presented once the 
+programmer manually runs detection on a compiling codebase.
+
 For example, Fanta and Rajlich propose a number of
-potential refactorings for clones including function insertion and function encapsulation,
-in part proposing certain clones be extracted into methods \cite{Fanta1999}.  They 
+potential refactorings for clones including function insertion, function encapsulation,
+and method extraction \cite{Fanta1999}.  They 
 present a case study for a C++ project which demonstrates that code refactoring is an important 
-addition to clone detection.
+addition to clone detection. However, they do describe any way to rank or score the refactorings,
+the programmer is required to choose based on code knowledge
 
 Higo et al. present Aries, a tool which integrates various clone
 information to present to the user \cite{Higo2008}.  The tool displays the
@@ -413,7 +424,9 @@ cloned blocks of code and presents refactoring options such as method
 extraction; it augments the options with various metrics, including position in
 the class hierarchy, and number of external variables. These metrics
 are intended to help the programmer decide which refactoring, if any,
-is appropriate.
+is appropriate. They do not, however, consider how to automcatically 
+propose the most helpful refactoring(s) based on these metrics, in constract 
+to our adaptive scoring system.
 
 Kawaguchis et al. present a  
 Microsoft Visual Studio interface for
@@ -422,7 +435,9 @@ displaying code clones in real-time to support software
 \textsc{Shinobi} system uses the CCFinderX's preprocessor and the Suffix Array
 technique for indexing clones. Displayed clones are ranked via the sum
 of the ratio files committed at the same time and the ratio of files
-opened or edited at the same period in Visual Studio. 
+opened or edited at the same period in Visual Studio. Note that, unlike our tool,
+ this sytem only \emph{displays} detected clones in real-time, detection is still
+ a manual post-processing step.
 %\todo{How do they get the latter piece of information?}
 
 \paragraph{Development-time Clone Management}
@@ -442,7 +457,8 @@ developer explicitly manages the clone linkages.
 Duala-Ekoko et al. present \textsc{CloneTracker}, an Eclipse plugin
 for managing code clones that abstracts groups of clones via clone
 region descriptors (CRDs) to track clones across software
-versions~\cite{Duala-Ekoko2007}. The tool requires users to explicitly
+versions~\cite{Duala-Ekoko2007}, a stark contrast toour ad-hoc model.
+ The tool requires users to explicitly
 create tracked clone groups by ``documenting'' a group of results from
 the SimScan clone detection tool. \textsc{CloneTracker} additionally
 supports simultaneously editing clones. However, in the author's
@@ -455,6 +471,8 @@ Holmes and Murphy built the Strathcona tool for Eclipse which displays
 relevant API usage examples when the developer performs a query by
 selecting a region of code in the IDE; the search is based on the
 structural content of the query line(s)~\cite{Holmes2005}. 
+This is a similar interface to searching for clones in real-time, but a
+much simpler process because only the API call must be matched.
 Related systems also exist, but require the user to
 perform a formal query, or to write special comments in the code.
 
@@ -463,7 +481,8 @@ perform a formal query, or to write special comments in the code.
 Applying code clone analysis during development places speed demands
 on the detection algorithms. However, the need to only perform clone
 detection in a single direction provides many opportunities for
-speedup.
+speedup compared to traditional methods, which must search
+over all pairs of potential clones.
 
 Keivanloo et al. describe SeClone, a system for Internet code clone
 search that performs clone pair clustering based on a ontology base on
