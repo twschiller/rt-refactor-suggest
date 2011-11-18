@@ -49,6 +49,7 @@ public class JccdDetector implements IActiveDetector, IDetector{
 	public static final String NAME = "JCCD";
 
 	private static final String PREPROCESSOR_PACKAGE = "org.eposoft.jccd.preprocessors.java";
+	private static final String AST_COMPARATORS_PACKAGE = "org.eposoft.jccd.comparators.ast.java";
 
 	private final APipeline<?> detector = new ASTDetector();
 
@@ -57,10 +58,38 @@ public class JccdDetector implements IActiveDetector, IDetector{
 	public static final Preference<?> PREFERENCES[] = new Preference[]{
 		new Preference<Boolean>(NAME, "GeneralizeMethodDeclarationNames", "Ignore method declaration names", true),
 		new Preference<Boolean>(NAME, "GeneralizeVariableNames", "Ignore variable names", true),
-		new Preference<Boolean>(NAME, "CompleteToBlock", "Adds blocks to single arguments around control flow", false),
-		new Preference<Boolean>(NAME, "GeneralizeMethodArgumentTypes", "Ignore method argument types", false),
-		new Preference<Boolean>(NAME, "GeneralizeMethodReturnTypes", "Ignore method return types", false),
+		
 		new Preference<Boolean>(NAME, "GeneralizeClassDeclarationNames", "Ignore class declaration names", true),
+		
+		new Preference<Boolean>(NAME, "GeneralizeMethodArgumentTypes", "Ignore method argument types", false),
+		new Preference<Boolean>(NAME, "GeneralizeMethodCallNames", "Ignore method calls", false),
+		new Preference<Boolean>(NAME, "GeneralizeMethodDeclarationNames", "Ignore method declarations", true),
+		new Preference<Boolean>(NAME, "GeneralizeMethodReturnTypes", "Ignore method return types", false),
+		
+		new Preference<Boolean>(NAME, "RemoveThrow", "Ignore throws introduced with throw keyword", false),
+		new Preference<Boolean>(NAME, "RemoveThrowsClause", "Ignore throws part of method declarations", false),
+		
+		new Preference<Boolean>(NAME, "RemoveSemicolons", "Ignore semicolons", false),
+		new Preference<Boolean>(NAME, "RemoveRedundantParentheses", "Ignore unnecessary parentheses", true),
+		new Preference<Boolean>(NAME, "RemoveAnnotations", "Ignore all annotations", true),
+		new Preference<Boolean>(NAME, "RemoveAssertions", "Ignore all assertions", true),
+		
+		new Preference<Boolean>(NAME, "ReduceIdentifiersToCapitalLetterSubstring", "Ignore package qualifiers on types", false),
+		new Preference<Boolean>(NAME, "ReduceIdentifiersToLastSubstring", "Ignore package and class qualifiers on types", true),
+	
+		new Preference<Boolean>(NAME, "AcceptIdentifiers", "Ignore all identifiers", true),
+		new Preference<Boolean>(NAME, "AcceptVariableIdentifiers", "Ignore all variable identifiers", false),
+		new Preference<Boolean>(NAME, "CompleteToBlock", "Adds blocks to single arguments around control flow", true),
+		new Preference<Boolean>(NAME, "AcceptNumberLiterals", "Ignore number literals", true),
+		new Preference<Boolean>(NAME, "AcceptNumberTypeNames", "Ignore primitive number types", true),
+		new Preference<Boolean>(NAME, "AcceptPrimitives", "Ignore primitive values", false),
+		new Preference<Boolean>(NAME, "AcceptPrimitiveTypes", "Ignore primitive types", false),
+		new Preference<Boolean>(NAME, "AcceptStringLiterals", "Ignores all string literals", false),
+		new Preference<Boolean>(NAME, "GeneralizeTypes", "Ignores all types", false),
+		new Preference<Boolean>(NAME, "RemoveGenericTypes", "Ignores all generics", false),
+		new Preference<Boolean>(NAME, "RemoveVariableDeclerationNodes", "Ignores all variable declarations", false),
+		new Preference<Boolean>(NAME, "RenameVariableNamesLocalConsistent", "Ignores local variable renaming", true),
+		
 	};
 
 	/**
@@ -72,6 +101,23 @@ public class JccdDetector implements IActiveDetector, IDetector{
 		}	
 	}
 
+	private boolean exists(String pkg, String name){
+		try{
+			Class.forName(pkg + "." + name);
+			return true; 
+		}catch (Exception ex){
+			return false;
+		}
+	}
+	private Class getClass(String pkg, String name){
+		try {
+			return Class.forName(pkg + "." + name);
+		} catch (ClassNotFoundException e) {
+			throw new RuntimeException(e);
+		}
+	}
+	
+	
 	/**
 	 * Set the JCCD preferences by reflectively instantiating corresponding operator
 	 * @param preference the preference descriptor
@@ -79,20 +125,26 @@ public class JccdDetector implements IActiveDetector, IDetector{
 	private <Q> void setPreference(Preference<Q> preference){	
 		IPreferenceStore store = Activator.getDefault().getPreferenceStore();
 
-		try {
-			String name = "set" + preference.getName();
+		try{
 			Q val = preference.getDefault();
 
 			if (val instanceof Boolean){
-				if (store.getBoolean(name)){
-					detector.addOperator((APreprocessor) Class.forName(PREPROCESSOR_PACKAGE + "." + name).newInstance());
+				if (store.getBoolean(preference.getKey())){
+					String name = preference.getName();
+					
+					if (exists(PREPROCESSOR_PACKAGE, preference.getName())){
+						detector.addOperator((APreprocessor)getClass(PREPROCESSOR_PACKAGE, name).newInstance());
+					}else if (exists(AST_COMPARATORS_PACKAGE, preference.getName())){
+						detector.addOperator((APreprocessor)getClass(AST_COMPARATORS_PACKAGE, name).newInstance());
+					}else{
+						throw new RuntimeException("Preference " + name + " not supported");
+					}
 				}
 			}else{
 				throw new RuntimeException("Preference type " + val.getClass().getSimpleName() + " not supported");
 			}
+		}catch(Exception e){
 
-		} catch (Exception e) {
-			throw new RuntimeException("Error setting preference " + preference, e);
 		}
 	}
 

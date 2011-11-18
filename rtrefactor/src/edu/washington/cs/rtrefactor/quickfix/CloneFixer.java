@@ -57,7 +57,7 @@ public class CloneFixer implements IMarkerResolutionGenerator {
 	
 	/**
 	 * Called to provide quick fixes for the given marker
-	 * \
+	 * 
 	 * Should only be called once per instance
 	 * 
 	 * @see IMarkerResolutionGenerator.getResolutions
