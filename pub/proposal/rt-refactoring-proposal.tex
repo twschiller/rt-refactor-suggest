@@ -53,6 +53,7 @@ application that 79.3\% of commits included modifications to files
 containing code clones, but that only 9.7\% of such commits included
 modifications to files containing the other
 clones suggesting some clones may have erroneously not been updated
+(the clone length considered was 50 characters).
 ~\cite{Yamashina2008}. 
 In a study of a commercial product line, Li and Ernst report that 4\%
 of bugs were duplicated across at least one product or file;
@@ -85,7 +86,13 @@ manner consistent with eliminating bugs.
 In addition to helping developers \emph{maintain} clones, this work
 aims to help developers \emph{develop} more effectively by
 facilitating actions in the presence of system clones, existing code
-that is a (partial) clone of the source under development:
+that is a (partial) clone of the source under development.
+
+Unifying code written by multiple developers may improve
+code consistency, readability, and modularity;
+We identify three actions that
+reduce development and mainenance cost due to rewriting and
+debugging duplicated code:
 
 \begin{enumerate}
   \item Replacing the code under development with a method call
@@ -96,14 +103,16 @@ that is a (partial) clone of the source under development:
     by opening the relevant sections of code 
     %, and potentially
     %supporting ``simultaneous editing''~\cite{Miller2002};
+\end{enumerate}
+
+Additionally, a fourth action also reduces development costs, but has
+a relatively negative effect on maintenance compared to the other
+actions:
+
+\begin{enumerate}
   \item Copying the system clone to the code under development,
     substituting identifiers as needed.
 \end{enumerate}
-
-All four actions reduce development cost due to rewriting and
-debugging duplicated code, while \#1-3 reduce maintenance costs;
-unifying unifying code written by multiple developers may also improve
-code consistency, readability, and modularity.
 
 Unlike other recent work for managing code clones during
 development~\cite{deWit2009, Duala-Ekoko2007}, the tool does not
@@ -151,6 +160,16 @@ functionality.
 %without referring to the first code section.
 
 \subsection{Clone Detectors}
+The tool is designed to perform detection both during development and
+during maintenance.  As such, may not be possible to parse the source
+file, build an AST, or type the AST. Given this, text-based detectors
+are advantageous because they can be run during active
+development. When a program is parsable or compilable,
+more-sophisticated dectors that use ASTs or program
+dependence graphs ~\cite{LiE2011} produce better results
+because they can use structural information when determining
+similarity.
+
 \label{sec:detectors}
 The tool is currently packaged with three code clone detectors:
 
@@ -175,7 +194,8 @@ These code clone detectors were selected because the all support Java
 1.5 features (e.g., generics), are Java-based, and are freely
 available for at least academic use. JCCD and Checkstyle are
 open-source, and therefore can be modified to perform one-way clone
-search.
+search. 
+The tool is designed so that other clone detectors can be easily used instead.
 
 %% TWS: the big-O analysis isn't correct, and I don't believe this adds anything
 %% Such optimization could potentially involve exploiting knowledge of the 
@@ -203,6 +223,10 @@ the corresponding clone(s) and potential refactoring options are shown,
 similar to Eclipse's QuickFix functionality for resolving errors and warnings.
 
 \subsection{Determining When to Make Suggestions}
+\todo{Motivate why an adaptive approach is necessary: some clone
+  suggestions aren't good, the display to the user is intentionally
+  intrusive so false positives are costly}
+
 The tool adaptively determines when to display refactorings and
 actions to the user by adjusting an action-specific score with learned
 user preferences and action history:
@@ -248,6 +272,12 @@ performs an action:
 score. If the user selects an action with a score close to, or at, the
 threshold, it has a greater positive effect on the preference than
 when the user selects a ``perfect'' action.
+
+The development decay factor, $D$, is set to be much larger than the
+maintenance decay factor, $M$, to correspond to the intuition that
+when the user performs development between clone views they have
+either (1) switched to another task, or (2) have explicity determined
+not to act on the current clone suggestions.
 
 Time permitting, we also plan to investigate simple machine learning
 strategies to base the preference term $B$ on the features of the
