@@ -89,7 +89,7 @@
          id="rtrefactor.cloneMarker"
          name="Clone Marker"
          point="org.eclipse.core.resources.markers">
-         <super type="org.eclipse.core.resources.problemmarker"/>         
+         <super type="org.eclipse.core.resources.textmarker"/>         
      	 <persistent value="true"/> 
      	 <attribute name="cloneNumber"/>  
      	 <attribute name="cloneFile"/>
@@ -108,40 +108,17 @@
         />
     </extension>
     
-     <extension point="org.eclipse.ui.editors.annotationTypes">
-     <type
-       super="org.eclipse.ui.workbench.texteditor.warning"
-        markerType="rtrefactor.cloneMarker"
-        name="rtrefactor.cloneAnnotation2"
-        />
-    </extension>
-    
-    <extension point="org.eclipse.ui.editors.annotationTypes">
-     <type
-       super="org.eclipse.ui.workbench.texteditor.warning"
-        markerType="rtrefactor.cloneMarker"
-        name="rtrefactor.cloneAnnotation3"
-        />
-    </extension>
-    
-    <extension point="org.eclipse.ui.editors.annotationTypes">
-     <type
-       super="org.eclipse.ui.workbench.texteditor.warning"
-        markerType="rtrefactor.cloneMarker"
-        name="rtrefactor.cloneAnnotation4"
-        />
-    </extension>
+     
     
   <extension point="org.eclipse.ui.editors.markerAnnotationSpecification">
      <specification
         annotationType="rtrefactor.cloneAnnotation"
-        icon="icons/sample.gif"
-        quickFixIcon="icons/marker.png"
+        icon="icons/marker.png"
         label="Clone Marking"
         presentationLayer="1"
         includeOnPreferencePage="true"
         colorPreferenceKey="rtrefactor.highlight.color"
-        colorPreferenceValue="0,255,0"
+        colorPreferenceValue="255,0,255"
         highlightPreferenceKey="highlight.background"
         highlightPreferenceValue="true"
         textPreferenceKey="rtrefactor.highlight.text"
@@ -151,69 +128,6 @@
         overviewRulerPreferenceKey="rtrefactor.overview"
         overviewRulerPreferenceValue="true"
         verticalRulerPreferenceKey="rtrefactor.verticalRuler"
-        verticalRulerPreferenceValue="true"/>
-  </extension>
-  <extension point="org.eclipse.ui.editors.markerAnnotationSpecification">
-     <specification
-        annotationType="rtrefactor.cloneAnnotation2"
-        icon="icons/sample.gif"
-        quickFixIcon="icons/marker.png"
-        label="Clone Marking"
-        presentationLayer="1"
-        includeOnPreferencePage="true"
-        colorPreferenceKey="rtrefactor.highlight2.color"
-        colorPreferenceValue="0,230,0"
-        highlightPreferenceKey="highlight.background"
-        highlightPreferenceValue="true"
-        textPreferenceKey="rtrefactor.highlight.text"
-        textPreferenceValue="true"
-        textStylePreferenceKey="rtrefactor.highlight2.text.style"
-        textStylePreferenceValue="BOX"
-        overviewRulerPreferenceKey="rtrefactor.overview2"
-        overviewRulerPreferenceValue="true"
-        verticalRulerPreferenceKey="rtrefactor.verticalRuler2"
-        verticalRulerPreferenceValue="true"/>
-  </extension>
-  <extension point="org.eclipse.ui.editors.markerAnnotationSpecification">
-     <specification
-        annotationType="rtrefactor.cloneAnnotation3"
-        icon="icons/sample.gif"
-        quickFixIcon="icons/marker.png"
-        label="Clone Marking"
-        presentationLayer="1"
-        includeOnPreferencePage="true"
-        colorPreferenceKey="rtrefactor.highlight3.color"
-        colorPreferenceValue="0,200,0"
-        highlightPreferenceKey="highlight.background"
-        highlightPreferenceValue="true"
-        textPreferenceKey="rtrefactor.highlight.text"
-        textPreferenceValue="true"
-        textStylePreferenceKey="rtrefactor.highlight3.text.style"
-        textStylePreferenceValue="PROBLEM_UNDERLINE"
-        overviewRulerPreferenceKey="rtrefactor.overview2"
-        overviewRulerPreferenceValue="true"
-        verticalRulerPreferenceKey="rtrefactor.verticalRuler2"
-        verticalRulerPreferenceValue="true"/>
-  </extension>
-   <extension point="org.eclipse.ui.editors.markerAnnotationSpecification">
-     <specification
-        annotationType="rtrefactor.cloneAnnotation4"
-        icon="icons/sample.gif"
-        quickFixIcon="icons/marker.png"
-        label="Clone Marking"
-        presentationLayer="1"
-        includeOnPreferencePage="true"
-        colorPreferenceKey="rtrefactor.highlight4.color"
-        colorPreferenceValue="0,180,0"
-        highlightPreferenceKey="highlight.background"
-        highlightPreferenceValue="true"
-        textPreferenceKey="rtrefactor.highlight.text"
-        textPreferenceValue="true"
-        textStylePreferenceKey="rtrefactor.highlight4.text.style"
-        textStylePreferenceValue="DASHED_BOX"
-        overviewRulerPreferenceKey="rtrefactor.overview2"
-        overviewRulerPreferenceValue="true"
-        verticalRulerPreferenceKey="rtrefactor.verticalRuler2"
         verticalRulerPreferenceValue="true"/>
   </extension>
   
