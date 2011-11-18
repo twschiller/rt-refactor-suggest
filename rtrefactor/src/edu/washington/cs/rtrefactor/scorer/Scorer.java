@@ -33,31 +33,82 @@ public class Scorer {
 
 	protected static Logger scoreLog = Logger.getLogger("scorer");
 	
-	// ADAPTIVE SCORE-ING SYSTEM
+	// ADAPTIVE SCORING SYSTEM
 	// 
 	// The THRESHOLD stays constant, the scores for a particular
 	// action are adjusted according to the following formula:
 	//
-	// Y = (X_{clone} * B_{action} + C_{action}) * (1-DECAY)^N_{CLONE}
+	// Y = (X_{clone} * B_{action} + C_{action}) * (1-D)^I_{clone} * (1-M)^N_{clone}
 	//
 	// , where   X_{clone} is the action score (e.g., the similarity)
 	//           B_{action} is a an action-specific scaling factor (preference)
-	//           N_{clone} the number of times the clone has been viewed
-	//			 C_{action} is fixed constant for the action (normative information)
+	//           C_{action} is fixed constant for the action (normative information)
+	//           D is the DEVELOPMENT_DECAY
+	//           I_{clone} is the number of times one or more development actions occurred between clone views
+	//		     M is the MAINTENANCE_DECAY
+	//           N_{clone} is the number of times the clone has been viewed
+	//			 
+
+	private double calc(double base, int action, int cloneNumber){
+		return (base * B_ACTION[JUMP] + C_ACTION[JUMP]) * decayAdjustment(cloneNumber);
+	}
 	
 	private static int JUMP = 0;
 	private static int PASTE = 1;
 	private static int INSERT = 2;
 	private static int EXTRACT = 2;
 	
-	private static double DECAY = 0.15;
-	
 	private double C_ACTION[] = new double[] { 50., 20., 90., 85. };
 	private double B_ACTION[] = new double[] { 1.0, 1.0, 1.0, 1.0 };
 	
 	private static final int THRESHOLD = 40;
 	
-	Multiset<Integer> activationCnt = HashMultiset.create();
+	// DECAY SCENARIOS
+	// 
+	// (1) User views QF, doesn't select a fix, modifies source code a
+	//     single time
+	//
+	//	   recordQuickFixActivation
+	//	   calculateResolutions(clone)
+	//
+	// (2) User views QF, doesn't select a fix, modifies the source code
+	//     multiple times
+	//
+	//     recordQuickFixActivation
+	//     calculateResolutions(clone)+
+	//
+	// (3) User views QF, doesn't select a fix, views other QFs (no development)
+	//
+	//     recordQuickFixActivation
+	//     recordQuickFixActivation
+	//
+	// 1 & 2 should have the same effect on the clone score
+	
+	/**
+	 * Decay incurred when user views quick fixes multiple times
+	 */
+	private static double MAINTENANCE_DECAY = 0.05;
+	
+	/**
+	 * Decay incurred when user views quick fixes multiple times, but
+	 * performed development between views
+	 */
+	private static double DEVELOPMENT_DECAY = 0.2;
+
+	/**
+	 * Multiset tracking the number of times a clone has been viewed
+	 */
+	private Multiset<Integer> activationCnt = HashMultiset.create();
+	
+	/**
+	 * Set of clones that have been viewed since the last development action
+	 */
+	private Set<Integer> since = Sets.newHashSet();
+	
+	/**
+	 * tracks number of times a clone pair has been viewed and then development was performed
+	 */
+	private Multiset<Integer> developmentDecayCnt = HashMultiset.create();
 	
 	/**
 	 * The singleton instance
@@ -140,6 +191,7 @@ public class Scorer {
 		
 		for (Integer c : cs){
 			activationCnt.add(c);
+			since.add(c);
 			scoreLog.debug("Clone #" + c + " has been activated " + activationCnt.count(c) + " time(s)");
 		}
 	}
@@ -151,6 +203,7 @@ public class Scorer {
 	 * @return the marker resolutions
 	 */
 	public List<CloneFix> calculateResolutions(ClonePairData pair) {
+		onDevelopment();
 		return calculateResolutions(pair, null);
 	}
 	
@@ -165,8 +218,6 @@ public class Scorer {
 	 * @return the marker resolutions
 	 */
 	public List<CloneFix> calculateResolutions(ClonePairData pair, CloneFixer parent){
-		scoreLog.debug("Calculating resolutions for clone pair " + pair.getCloneNumber());
-		
 		List<CloneFix> rs = Lists.newArrayList();
 		
 		rs.addAll(generateJumpToCloneFixes(pair, parent));
@@ -238,18 +289,36 @@ public class Scorer {
 		return Lists.<CloneFix>newArrayList(new CopyPasteFix(pair, truncate(score), parent));
 	}
 	
+	/**
+	 * Force the relevance score to be an integer between 10 and 100
+	 * @param x the score
+	 * @return an integer score between 10 and 100
+	 */
 	private int truncate(double x){
 		return Math.max(10, Math.min((int) x, 100));
 	}
-	
-	private double calc(double base, int action, int cloneNumber){
-		return (base * B_ACTION[JUMP] + C_ACTION[JUMP]) * getCloneAdjustment(cloneNumber);
+
+	/**
+	 * Calculate the decay adjustment for <code>cloneNumber</code>
+	 * @param cloneNumber the clone
+	 * @return the multiplicative decay adjustment
+	 */
+	private double decayAdjustment(int cloneNumber){
+		double ignoreDecay = activationCnt.contains(cloneNumber) ? Math.pow((1 - MAINTENANCE_DECAY), activationCnt.count(cloneNumber)) : 1.0;
+		double developmentDecay = developmentDecayCnt.contains(cloneNumber) ? Math.pow((1 - DEVELOPMENT_DECAY), developmentDecayCnt.count(cloneNumber)) : 1.0;
+		return ignoreDecay * developmentDecay;
 	}
 	
-	private double getCloneAdjustment(int cloneNumber){
-		double adj = activationCnt.contains(cloneNumber) ? Math.pow((1 - DECAY), activationCnt.count(cloneNumber)) : 1.0;
-		//scoreLog.debug("Adjustment for clone " + cloneNumber + ": "+ adj);
-		return adj;
+	/**
+	 * Action to perform when development has occurred in the editor
+	 */
+	private void onDevelopment(){
+		if (!since.isEmpty()){
+			scoreLog.debug("Development decay for clones " + since.toString());
+		}
+	
+		developmentDecayCnt.addAll(since);
+		since.clear();
 	}
 	
 }
