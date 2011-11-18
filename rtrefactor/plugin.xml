@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+
+   <extension
+         point="org.eclipse.ui.preferencePages">
+      <page
+            class="edu.washington.cs.rtrefactor.preferences.RtRefactorPreferencePage"
+            id="edu.washington.cs.rtrefactor.preferences.RtRefactorPreferencePage"
+            name="Real-time Refactoring">
+      </page>
+      <page
+            category="edu.washington.cs.rtrefactor.preferences.RtRefactorPreferencePage"
+            class="edu.washington.cs.rtrefactor.preferences.CheckStylePreferencePage"
+            id="edu.washington.cs.rtrefactor.preferences.CheckStylePreferencePage"
+            name="CheckStyle">
+      </page>
+      <page
+            category="edu.washington.cs.rtrefactor.preferences.RtRefactorPreferencePage"
+            class="edu.washington.cs.rtrefactor.preferences.JccdPreferencePage"
+            id="edu.washington.cs.rtrefactor.preferences.JccdPreferencePage"
+            name="JCCD">
+       </page>
+       <page
+            category="edu.washington.cs.rtrefactor.preferences.RtRefactorPreferencePage"
+            class="edu.washington.cs.rtrefactor.preferences.SimianPreferencePage"
+            id="edu.washington.cs.rtrefactor.preferences.SimianPreferencePage"
+            name="Simian">
+      </page>
+   </extension>
+   <extension
+         point="org.eclipse.core.runtime.preferences">
+      <initializer
+            class="edu.washington.cs.rtrefactor.preferences.PreferenceInitializer">
+      </initializer>
+   </extension>
+   <extension
+         point="org.eclipse.ui.startup">
+      <startup
+            class="edu.washington.cs.rtrefactor.Activator">
+      </startup>
+   </extension>
+   <extension
+         point="org.eclipse.jdt.ui.quickFixProcessors">
+      <quickFixProcessor
+            class="edu.washington.cs.rtrefactor.CloneQuickFixHook"
+            id="edu.washington.cs.rtrefactor.CloneQuickFixHook">
+      </quickFixProcessor>
+   </extension>
+   <extension
+         point="org.eclipse.ui.actionSets">
+      <actionSet
+            id="edu.washington.cs.rtrefactor.actionSet"
+            label="Run Clone Detection"
+            visible="true">
+         <menu
+               id="rtRefactorMenu"
+               label="Real-time Refactor">
+            <separator
+                  name="rtRefactorGroup">
+            </separator>
+         </menu>
+         <action
+               class="edu.washington.cs.rtrefactor.actions.RunCloneDetection"
+               icon="icons/sample.gif"
+               id="edu.washington.cs.rtrefactor.actions.RunCloneDetection"
+               label="Detect Code Clones"
+               toolbarPath="rtRefactorGroup"
+               tooltip="Detect Code Clones">
+         </action>
+      </actionSet>
+   </extension>
+   
+   
+    <extension
+         point="org.eclipse.ui.editors">
+      <editor
+            class="edu.washington.cs.rtrefactor.reconciler.CloneEditor"
+            contributorClass="org.eclipse.jdt.internal.ui.javaeditor.CompilationUnitEditorActionContributor"
+            default="true"
+            extensions="java"
+            icon="icons/sample.gif"
+            id="org.eclipse.jdt.ui.CompilationUnitEditor"
+            name="Java Clone Editor">
+      </editor>
+   </extension>
+   
+   <extension
+         id="rtrefactor.cloneMarker"
+         name="Clone Marker"
+         point="org.eclipse.core.resources.markers">
+         <super type="org.eclipse.core.resources.textmarker"/>         
+     	 <persistent value="true"/> 
+     	 <attribute name="cloneNumber"/>  
+     	 <attribute name="cloneFile"/>
+     	 <attribute name="cloneStartOffset"/>
+     	 <attribute name="cloneEndOffset"/> 
+     	 <attribute name="dirtyFileText"/>
+     	 <attribute name="sourceStartOffset"/>
+     	 <attribute name="sourceEndOffset"/>            
+   </extension>
+   
+   <extension point="org.eclipse.ui.editors.annotationTypes">
+     <type
+       super="org.eclipse.ui.workbench.texteditor.warning"
+        markerType="rtrefactor.cloneMarker"
+        name="rtrefactor.cloneAnnotation"
+        />
+    </extension>
+    
+     
+    
+  <extension point="org.eclipse.ui.editors.markerAnnotationSpecification">
+     <specification
+        annotationType="rtrefactor.cloneAnnotation"
+        icon="icons/marker.png"
+        label="Clone Marking"
+        presentationLayer="1"
+        includeOnPreferencePage="true"
+        colorPreferenceKey="rtrefactor.highlight.color"
+        colorPreferenceValue="255,0,255"
+        highlightPreferenceKey="highlight.background"
+        highlightPreferenceValue="true"
+        textPreferenceKey="rtrefactor.highlight.text"
+        textPreferenceValue="true"
+        textStylePreferenceKey="rtrefactor.highlight.text.style"
+        textStylePreferenceValue="IBEAM"
+        overviewRulerPreferenceKey="rtrefactor.overview"
+        overviewRulerPreferenceValue="true"
+        verticalRulerPreferenceKey="rtrefactor.verticalRuler"
+        verticalRulerPreferenceValue="true"/>
+  </extension>
+  
+  <extension point="org.eclipse.ui.ide.markerResolution">
+      <markerResolutionGenerator
+         markerType="rtrefactor.cloneMarker"
+         class="edu.washington.cs.rtrefactor.quickfix.CloneFixer"/>
+   </extension>
+  
+</plugin>
