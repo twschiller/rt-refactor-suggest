@@ -29,7 +29,12 @@ public class CopyPasteFix extends CloneFix {
 	 */
 	public String getLabel() {
 		getParent().notifyFixesActivated();
-		return "Copy and paste clone #" + getCloneNumber() + " (" + getRelevance() + ")";
+		if(isSameFile()) {
+			return "Copy and pastes local clone";
+		} else {
+			return "Copy and pastes clone from "+ 
+			getOtherRegion().getFile().getName();
+		}
 	}
 	
 	@Override

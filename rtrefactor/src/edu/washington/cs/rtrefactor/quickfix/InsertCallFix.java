@@ -31,7 +31,12 @@ public class InsertCallFix extends CloneFix {
 	 */
 	public String getLabel() {
 		getParent().notifyFixesActivated();
-		return "Insert Call to clone #" + getCloneNumber() + " (" + getRelevance() + ")";
+		if(isSameFile()) {
+			return "Insert Call to local clone";
+		} else {
+			return "Insert Call to clone from "+ 
+			getOtherRegion().getFile().getName();
+		}
 	}
 	
 	@Override
