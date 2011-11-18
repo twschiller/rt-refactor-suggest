@@ -82,13 +82,15 @@ public class InsertCallFix extends CloneFix {
 			return "An error occured when locating the method: " + e.getMessage();
 		}
 	
-		// TODO fix this so that spacing and tabs work
-		source = source.replaceAll("[\r\n]+", "<br/>");
+		
+		source = source.replaceAll("[\r\n]+", "<br/>")
+				.replaceAll(" ", "&#160;")
+				.replaceAll("\t", "&#160;&#160;&#160;&#160;"); 
 	
 		if(isSameFile()) {
-			return "Replaces code with a call to " + name + " in this file:<br/>" + source;
+			return "Replaces code with a call to " + name + " in this file:<br/><br/>" + source;
 		} else {
-			return "Replaces code with a call to " + name + " in " + getOtherRegion().getFile().getName() + ":<br/>" 
+			return "Replaces code with a call to " + name + " in " + getOtherRegion().getFile().getName() + ":<br/><br/>" 
 			+ source;
 		}
 	}

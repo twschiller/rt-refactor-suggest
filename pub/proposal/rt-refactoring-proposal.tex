@@ -1,6 +1,7 @@
 \documentclass[preprint,10pt]{sigplanconf}
 
 \usepackage{url}
+\usepackage{amsmath}
 
 \newcommand{\todo}[1]{{\bfseries [[#1]]}}
 %% To disable, just uncomment this line
@@ -92,8 +93,9 @@ that is a (partial) clone of the source under development:
     replacing the code under development with a call to the extracted
     method;
   \item Aiding the user making analogous changes to the system clones
-    by opening the relevant sections of code, and potentially
-    supporting ``simultaneous editing''~\cite{Miller2002};
+    by opening the relevant sections of code 
+    %, and potentially
+    %supporting ``simultaneous editing''~\cite{Miller2002};
   \item Copying the system clone to the code under development,
     substituting identifiers as needed.
 \end{enumerate}
@@ -169,6 +171,12 @@ and Checkstyle may not be practical for real-time detection in large
 projects. Since both are open source, we can and will optimize the
 detection for use in our tool, if necessary.  
 
+These code clone detectors were selected because the all support Java
+1.5 features (e.g., generics), are Java-based, and are freely
+available for at least academic use. JCCD and Checkstyle are
+open-source, and therefore can be modified to perform one-way clone
+search.
+
 %% TWS: the big-O analysis isn't correct, and I don't believe this adds anything
 %% Such optimization could potentially involve exploiting knowledge of the 
 %% modified code region to drastically reduce the complexity of the search,
@@ -177,42 +185,90 @@ detection for use in our tool, if necessary.
 %% we only annotate clones located in the currently modified area, but
 %% that is implemented as a filter instead of an algorithmic change.
 
-We have been in contact with Li et al.~\cite{LiE2011} to apply program
-dependence graph (PDG) approaches to clone search, however at this
-time our search for a tool for generating detailed Java PDGs has been
-unsuccessful.
+%% We have been in contact with Li et al.~\cite{LiE2011} to apply program
+%% dependence graph (PDG) approaches to clone search, however at this
+%% time our search for a tool for generating detailed Java PDGs has been
+%% unsuccessful.
 
 Currently, only a single detector can be active at a time. In the
 future, it may be beneficial to run the analyses simultaneously and
 combine results.
 
-\subsection{Determining When to Make Suggestions}
-The tool will score the clone based on a variety of heuristics that
-capture the value of the clone for method extraction or copying:
-
-\begin{itemize}
-  \item length of the code clone
-  \item number of parameters in the extracted method
-  \item module distance (how far away the clone is in the code base)
-  \item how complete the current code section is
-\end{itemize}
-
-If the score exceeds a threshold, the tool will present the 
-clone suggestions to the user, along with potential refactoring options.  
-In many cases it may suffice simply to show actions based on the "top 
-hit", but in others it may be helpful to show a larger ranking.  The detected 
-areas in the current file will be displayed as Eclipse annotations, which take 
+\subsection{Displaying Suggestions}
+Clones \emph{with suggested actions} are displayed as Eclipse annotations,
+which take 
 the form of highlighting with a marker icon on the left vertical bar and a 
 colored marking on the right vertical bar.  When users click the left marker,
-the corresponding clone(s) and potential refactoring options will be shown, 
-similar to Eclipse's quickfix functionality for resolving errors and warnings.
+the corresponding clone(s) and potential refactoring options are shown,
+similar to Eclipse's QuickFix functionality for resolving errors and warnings.
 
-Time permitting, we also plan to investigate, in place of a 
-fixed threshold, simple machine learning strategies to ensure the
-false positives are reduced if the user frequently rejects the tool's
-suggestions.  This will take the form of a classifier using the
-heuristics as input, and may be trained on each individual user to
+\subsection{Determining When to Make Suggestions}
+The tool adaptively determines when to display refactorings and
+actions to the user by adjusting an action-specific score with learned
+user preferences and action history:
+
+\begin{align*}
+  Y = & (X_{clone,action} * B_{action} + C_{action}) \\
+      & * (1-D)^{I_{clone}} * (1-M)^{N_{clone}}
+\end{align*}
+
+\noindent, where 
+\begin{itemize}
+  \item $X_{clone,action}$ is an action-specific score for the clone
+  \item $B_{action}$ is the user's preference for the action, learned over time
+  \item $C_{action}$ is a fixed constant for the action, used to
+    represent normative information (e.g., it is better to insert a
+    method call than it is to paste the clone)
+  \item $D$ is the ``development'' decay factor
+  \item $I_{clone}$ is the number of times one or more development
+    actions occured between clone views (or since the clone was last
+    viewed)
+  \item $M$ is the ``maintenance'' decay factor
+  \item $N_{clone}$ is the number of times the clone has been viewed
+\end{itemize} 
+
+\noindent If the adjusted relevance $Y$ exceeds the threshold $T$,
+that action is included as a suggestion for the clone.
+
+In the current implementation, $X_{clone,action}$ is equal to the
+similarity score determined by the clone detector, except for the
+``insert method call'' action. Before performing the evaluation, we
+plan to introduce action-specific factors for the other actions, e.g.,
+how far away the other clone is in the code base for the ``extract
+method'' and ``insert method call'' actions.
+
+The preference for an action $B_{action}$ is modified when the user
+performs an action:
+
+\begin{equation}
+  B^*_{action} = B_{action} * (1 + (100 - Y) / T)
+\end{equation}
+
+\noindent, where $T$ is the threshold and 100 is the maximum allowable
+score. If the user selects an action with a score close to, or at, the
+threshold, it has a greater positive effect on the preference than
+when the user selects a ``perfect'' action.
+
+Time permitting, we also plan to investigate simple machine learning
+strategies to base the preference term $B$ on the features of the
+clone pair as well. The learner may
+be trained on each individual user to
 account for different programming styles.
+
+\subsubsection{Scoring Method Calls}
+The score for an insert method call action for a clone is determined
+from the (1) clone's similarity (2) the number of arguments in the
+resulting method call, and (3) the percent of the method being called
+that is covered by the clone:
+
+\begin{equation}
+  Y = S * O * (1 - P)^N
+\end{equation}
+
+\noindent, where $S$ is the similarity score for the clones, $O$ is
+the percent of the callee that is covered by the clone, $P$ is a
+penalty for the number of arguments in the resulting call, and $N$ is
+the number of arguments in the resulting call. 
 
 \section{Evaluation}
 \label{sec:eval}
