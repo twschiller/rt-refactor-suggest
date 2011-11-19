@@ -2,6 +2,7 @@
 
 \usepackage{url}
 \usepackage{amsmath}
+\usepackage{graphicx}
 
 \newcommand{\todo}[1]{{\bfseries [[#1]]}}
 %% To disable, just uncomment this line
@@ -224,7 +225,14 @@ colored marking on the right vertical bar.  When users click the left marker,
 the corresponding clone(s) and potential refactoring options are shown,
 similar to Eclipse's QuickFix functionality for resolving errors and warnings.
 Multiple clones at the same location are indicated by multicolored markers.
-See the screenshot of our interface (Fig.1).
+See the screenshot of our interface (Fig. \ref{fig:screenshot}).
+
+\begin{figure}[here]
+\caption{A screenshot of our interface in Eclipse}
+\centering
+\includegraphics[scale=0.5]{screen1.png}
+\label{fig:screenshot}
+\end{figure}
 
 \subsection{Determining When to Make Suggestions}
 
