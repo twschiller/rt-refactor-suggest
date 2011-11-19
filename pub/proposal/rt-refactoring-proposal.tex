@@ -53,7 +53,7 @@ application that 79.3\% of commits included modifications to files
 containing code clones, but that only 9.7\% of such commits included
 modifications to files containing the other
 clones suggesting some clones may have erroneously not been updated
-(the clone length considered was 50 characters).
+(the minimum clone length considered was 50 characters).
 ~\cite{Yamashina2008}. 
 In a study of a commercial product line, Li and Ernst report that 4\%
 of bugs were duplicated across at least one product or file;
@@ -75,7 +75,8 @@ Similarly, we hypothesize that when a developer (un)intentionally
 nearly duplicates the functionality of an existing piece of code, without
 referencing the original source, that the new code is more likely to
 contain bugs than the original as it has not been tested or used in
-production.
+production. Unifying code written by multiple developers has other 
+benefits, such as improved code consistency, readability, and modularity.
 
 Code clones have historically been viewed as a problem of software
 \emph{maintenance}, as failure to revise a clone can be an error. 
@@ -86,10 +87,10 @@ manner consistent with eliminating bugs.
 In addition to helping developers \emph{maintain} clones, this work
 aims to help developers \emph{develop} more effectively by
 facilitating actions in the presence of system clones, existing code
-that is a (partial) clone of the source under development.
+that is a (partial) clone of the source under development.  Our hypothesis
+ is that identifying clones during development will prevent many of the problems
+associated with duplicated code from ever arising, greatly reducing development time.
 
-Unifying code written by multiple developers may improve
-code consistency, readability, and modularity;
 We identify three actions that
 reduce development and maintenance cost due to rewriting and
 debugging duplicated code:
@@ -161,11 +162,11 @@ functionality.
 
 \subsection{Clone Detectors}
 The tool is designed to perform detection both during development and
-during maintenance.  As such, may not be possible to parse the source
-file, build an AST, or type the AST. Given this, text-based detectors
+during maintenance.  As such, it may not be possible to parse the source
+file, build an Abstract Syntax Tree (AST), or type the AST. Given this, text-based detectors
 are advantageous because they can be run during active
 development. When a program is parsable or compilable,
-more-sophisticated dectors that use ASTs or program
+more-sophisticated detectors that use ASTs or program
 dependence graphs ~\cite{LiE2011} produce better results
 because they can use structural information when determining
 similarity.
@@ -215,17 +216,29 @@ future, it may be beneficial to run the analyses simultaneously and
 combine results.
 
 \subsection{Displaying Suggestions}
+\label{sec:display}
 Clones \emph{with suggested actions} are displayed as Eclipse annotations,
 which take 
 the form of highlighting with a marker icon on the left vertical bar and a 
 colored marking on the right vertical bar.  When users click the left marker,
 the corresponding clone(s) and potential refactoring options are shown,
 similar to Eclipse's QuickFix functionality for resolving errors and warnings.
+Multiple clones at the same location are indicated by multicolored markers.
+See the screenshot of our interface (Fig.1).
 
 \subsection{Determining When to Make Suggestions}
-\todo{Motivate why an adaptive approach is necessary: some clone
-  suggestions aren't good, the display to the user is intentionally
-  intrusive so false positives are costly}
+
+Even the latest clone detectors simply score based on code similarity. 
+Because of this, clone detectors may make many suggestions which 
+cannot be easily refactored, or lend themselves to only one or two 
+potential refactorings.  Additionally, because we are presenting these
+clones to the user during development, a balance of intrusiveness must 
+be reached. Not intrusive enough, and programmers may simply ignore 
+clone suggestions.  Too intrusive, and programmers may disable the 
+tool because it lowers development productivity.  Our solution is to make
+fairly intrusive UI changes (see section \ref{sec:display}), but with an 
+adaptive scoring system that removes unhelpful UI elements based
+on user actions.  This  scoring system is described below.
 
 The tool adaptively determines when to display refactorings and
 actions to the user by adjusting an action-specific score with learned
@@ -312,38 +325,43 @@ the number of arguments in the resulting call.
 %spent. We will poll users after the fact to ask them how helpful they
 %found the tool.
 
-We will evaluate the tool via controlled user study. Each user will be given
-a series of development and maintenance tasks for an existing Java
-code base. Subjects will be provided with a suite of unit tests covering the
-entire codebase (and their new development task) which must all pass
-before the task is considered complete.
+We will evaluate the tool via controlled user study. We will develop a fairly small 
+Java codebase (15 files, 300 lines each). In addition to the code, the users will be
+given a suite of JUnit tests which cover the codebase.  Most of the tests will pass
+ on the provided code, 
+but there will be several tests which test their development task and 
+thus will not pass initially.  Our current idea is to have the codebase be part of an image processing library with a custom image format. (no visual rendering will actually occur) There will be a small set of classes in a separate package (such as the base image class) which the users will be instructed not to modify. Subjects will be instructed that they ``own'' all other classes in the code base, that is they have permission to introduce new methods, but must document the
+methods.  
 
-To direct the participants toward working with clones, the development
-task will involve replicating functionality that exists elsewhere in
-the system. Similarly, for the maintenance task, the participants will
-be asked to fix code that is cloned elsewhere in the system. In both
-cases, the instructions will not identify the cloned code so that the
-code clone must be found manually or with the aide of the tool.
+In the development portion of the study, the users will be then be directed
+to implement a method of an existing class.     The subjects will be instructed to implement a method 
+in such a way that the remaining unit tests pass.  They will be given a detailed 
+ method specification. For example, the task may be to take a set of images and do a complex postprocessing operation them.  Implementing this specification will involve
+ duplicating functionality that exists in other classes.  Some of the subtasks may be 
+performed by static methods of the other classes, others may be performed 
+within the body of methods belonging to the other classes. For example, blending images may be performed inside many methods, while reddening an image may be a separate function.
+ Neither the specification
+nor instructions will indicate that these clones exist.  We intend that, if the cloned parts of the 
+task were replaced with method calls, the task would be about 5-10 lines, whereas duplicating clone functionality would take roughly 50 lines.
+
+We will also include a maintenance task, as a second phase once the first is complete.  This task will involve functionality duplicated across the codebase.  We will provide each user with an initial location where the enhancement should occur.  For example, we will instruct the users that "every time two images are blended, each should be darkened by 10% first".  There will be 6 or so total locations that must be changed, but we will only tell users about the first one, and suggest that there might be others, but the total number will remain unknown to the user.
 
 %\todo{Characterize the tasks and code base} 
 
 The control group will use the stock Eclipse development
-environment, the tool group will use the Eclipse development
+environment with logging code, the tool group will use the Eclipse development
 environment with the tool. For the initial study for CSE 503, each
 group will consist of two individuals who have experience using the
 Java development environment.  
 
-Subjects will be instructed that they ``own'' the code base, that is they
-have permission to introduce new methods, but must document the
-methods.  
 
 \subsection{Quantitative Evaluation}
 For the development tasks, we will measure the time to complete the
-task, the number of times the the tool detects a code clone (or would
-detect a clone, for the control group),
-the number of methods extracted, and the number of code clones
-introduced into the code base, and percentage of the new code that is
-a clone of other code. 
+task, the number of times the the tool detects a code clone throughout development (or would
+detect a clone during development, for the control group),
+the number of methods extracted/calls inserted, and the number of code clones
+introduced into the code base, and percentage of the new code in the final method
+ that is a duplicate (by human judgment) of other code. 
 For the control group, we will additionally
 record the number of times the developer searches for a method that
 performs a subtask. 
@@ -351,12 +369,15 @@ For the tool group, we will record the number of
 times the user ignores the tool's
 alert, the user views the tool's analysis, and the user acts on the
 tool's analysis. Additionally, when the user acts on the tool's
-analysis, we will record the ranking of the clone the user acted on.
+analysis, we will record the ranking of the clone the user acted on.  We expect to see a dramatic reduction in resulting method size and time (each approximately 50% reduced).  We hope that the user views several of our suggestions and invokes the fixes several times.  Failure would be defined as the user never acts on any fix suggestion, and shows no significant reduction in code size or time spent on the task.
 
 For the maintenance tasks, we will measure the time to complete the
-task, and whether the user has correctly revised all of the clones (as
-determined by hidden test suite). We will record the same
+task, and whether the user has correctly revised all of the clones. This will be measured
+determined by a separate  hidden test suite, which is inaccessible to the 
+users and will be run on their completed code only). 
+We will record the same
 group-specific metrics as for the development tasks.
+We will be successful if the users with the clone tool correct significantly more of the duplicates than the control group and/or take significantly less time to fix the same number of duplicates.
 
 \subsection{Qualitative Evaluation}
 In addition to the quantitative results, we will have the study
@@ -389,11 +410,15 @@ validity:
     future, and are therefore may be more likely to perform a
     short-sighted action
   \item The results may not generalize, as in real software there may
-    be de facto or de jure restrictions (e.g., a certain module cannot
+    be many de facto or de jure restrictions (e.g., a certain module cannot
     be changed) restricting the set of actions a user can make
   \item This tool seems especially helpful if it suggests that a
     developer is cloning code which that developer personally wrote in the
-    past.  Due to time limitations this scenario may be difficult to
+    past.  This is because the developer may not initially recall having written 
+code with duplicate functionality and/or may not be willing to take the time to manually locate it,
+but once the tool suggests the clone they may remember writing it and have no reservations about refactoring that section of code.
+	If the tool suggests an unfamiliar section of code written by another developer, in constrast, the programmer may be less willing to refactor or otherwise modify it.
+	Due to time limitations this scenario may be difficult to
     induce, as it usually occurs after one has been working on the
     same project for a long time.
 \end{itemize}
@@ -437,7 +462,7 @@ development-time clone management, and \emph{development-time} code clone detect
 
 Several tools are similar to our work in that they attempt to not only
 detect clones, but also provide refactoring techniques to eliminate the clones.  However,
-they are post-hoc, so in constrast to our technique
+they are post-hoc, so in contrast to our technique
  the detection and refactoring proposals are only presented once the 
 programmer manually runs detection on a compiling codebase.
 
