@@ -334,7 +334,7 @@ the number of arguments in the resulting call.
 %found the tool.
 
 We will evaluate the tool via controlled user study. We will develop a fairly small 
-Java codebase (15 files, 300 lines each). In addition to the code, the users will be
+Java codebase (15 files, 300 lines each) for this purpose. In addition to the code, the users will be
 given a suite of JUnit tests which cover the codebase.  Most of the tests will pass
  on the provided code, 
 but there will be several tests which test their development task and 
@@ -352,7 +352,7 @@ within the body of methods belonging to the other classes. For example, blending
 nor instructions will indicate that these clones exist.  We intend that, if the cloned parts of the 
 task were replaced with method calls, the task would be about 5-10 lines, whereas duplicating clone functionality would take roughly 50 lines.
 
-We will also include a maintenance task, as a second phase once the first is complete.  This task will involve functionality duplicated across the codebase.  We will provide each user with an initial location where the enhancement should occur.  For example, we will instruct the users that "every time two images are blended, each should be darkened by 10% first".  There will be 6 or so total locations that must be changed, but we will only tell users about the first one, and suggest that there might be others, but the total number will remain unknown to the user.
+We will also include a maintenance task, as a second phase once the first is complete.  This task will involve functionality duplicated across the codebase.  We will provide each user with an initial location where the enhancement should occur.  For example, we will instruct the users that ``every time two images are blended, each should be darkened by 10\% first".  There will be 6 or so total locations that must be changed, but we will only tell users about the first one, and suggest that there might be others, but the total number will remain unknown to the user.
 
 %\todo{Characterize the tasks and code base} 
 
@@ -377,7 +377,7 @@ For the tool group, we will record the number of
 times the user ignores the tool's
 alert, the user views the tool's analysis, and the user acts on the
 tool's analysis. Additionally, when the user acts on the tool's
-analysis, we will record the ranking of the clone the user acted on.  We expect to see a dramatic reduction in resulting method size and time (each approximately 50% reduced).  We hope that the user views several of our suggestions and invokes the fixes several times.  Failure would be defined as the user never acts on any fix suggestion, and shows no significant reduction in code size or time spent on the task.
+analysis, we will record the ranking of the clone the user acted on.  We expect to see a dramatic reduction in resulting method size and time (each approximately 50\% reduced).  We hope that the user views several of our suggestions and invokes the fixes several times.  Failure would be defined as the user never acts on any fix suggestion, and shows no significant reduction in code size or time spent on the task.
 
 For the maintenance tasks, we will measure the time to complete the
 task, and whether the user has correctly revised all of the clones. This will be measured
@@ -444,7 +444,7 @@ The code clone literature can be divided into two areas: (1)
 (2) \emph{development-time} clone management. By post-hoc we mean the scenario in which
 detection is manually invoked to find all clones across an entire codebase, typically with the assumption that the codebase compiles and has already passed some level of testing.  In constrast, we use development-time to refer to the scenario in which detection automatically occurs as the user modifies code, typically without requirements about the compilability of the code.  The techniques used in the
 post-hoc detection can vary greatly  based on the authors' definition of what 
-level of similarity defines a "clone", but typically utilize an
+level of similarity defines a ``clone", but typically utilize an
 ad hoc model of clones. In contrast, the development-time literature focuses on
 the creation and maintenance of formal code clone models during the
 development process.
