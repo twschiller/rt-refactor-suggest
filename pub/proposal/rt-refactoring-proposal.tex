@@ -1,4 +1,4 @@
-\documentclass[preprint,10pt]{sigplanconf}
+\documentclass[nocopyrightspace,10pt]{sigplanconf}
 
 \usepackage{url}
 \usepackage{amsmath}
@@ -6,21 +6,21 @@
 
 \newcommand{\todo}[1]{{\bfseries [[#1]]}}
 %% To disable, just uncomment this line
-%% \renewcommand{\todo}[1]{\relax}
+\renewcommand{\todo}[1]{\relax}
 
 \begin{document}
 %
 % --- Author Metadata here ---
-\conferenceinfo{CSE503}{'11 Seattle, USA}
+%\conferenceinfo{CSE503}{'11 Seattle, USA}
 %\CopyrightYear{2007} % Allows default copyright year (20XX) to be over-ridden - IF NEED BE.
 %\crdata{0-12345-67-8/90/01}  % Allows default copyright data (0-89791-88-6/97/05) to be over-ridden - IF NEED BE.
 % --- End of Author Metadata ---
 
 \title{Real-time Code Clone Refactoring Recommendations}
 % 1st. author
-\authorinfo{Travis Mandel, Todd W. Schiller, Michael D. Ernst}
+\authorinfo{Travis Mandel, Todd W. Schiller}
            {University of Washington}
-           {\{tmandel,tws,mernst\}@cs.washington.edu}
+           {\{tmandel,tws\}@cs.washington.edu}
 
 \maketitle
 \begin{abstract}
@@ -71,7 +71,7 @@ Linux kernel, Git, and PostgreSQL respectively~\cite{LiE2011}.
 Under the assumption that code clones are not maintained properly,
 Jeurgens et al. built a static bug detection tool based on
 inconsistencies in clones, and confirmed that clones were a major
-source of bugs in the studies subject programs~\cite{Juergens2009}.
+source of bugs in the study's subject programs~\cite{Juergens2009}.
 Similarly, we hypothesize that when a developer (un)intentionally
 nearly duplicates the functionality of an existing piece of code, without
 referencing the original source, that the new code is more likely to
@@ -90,28 +90,26 @@ aims to help developers \emph{develop} more effectively by
 facilitating actions in the presence of system clones, existing code
 that is a (partial) clone of the source under development.  Our hypothesis
  is that identifying clones during development will prevent many of the problems
-associated with duplicated code from ever arising, greatly reducing development time.
+associated with duplicated code from ever arising, reducing development time.
 
-We identify three actions that
-reduce development and maintenance cost due to rewriting and
-debugging duplicated code:
+The tool suggests two actions that eliminate code duplication:
 
 \begin{enumerate}
-  \item Replacing the code under development with a method call
+  \item Replacing the code under development with a call to an existing method
   \item Extracting all, or part, of the system clone as a method;
     replacing the code under development with a call to the extracted
-    method;
-  \item Aiding the user making analogous changes to the system clones
-    by opening the relevant sections of code 
-    %, and potentially
-    %supporting ``simultaneous editing''~\cite{Miller2002};
+    method.
 \end{enumerate}
 
-Additionally, a fourth action also reduces development costs, but has
-a relatively negative effect on maintenance compared to the other
-actions:
+\noindent Additionally, two actions may be suggested to help the developer
+develop or maintain code with duplication:
 
 \begin{enumerate}
+\setcounter{enumi}{2}
+  \item Aiding the user making analogous changes to the system clones
+    by opening the relevant sections of code; 
+    %, and potentially
+    %supporting ``simultaneous editing''~\cite{Miller2002};
   \item Copying the system clone to the code under development,
     substituting identifiers as needed.
 \end{enumerate}
@@ -192,7 +190,7 @@ and Checkstyle may not be practical for real-time detection in large
 projects. Since both are open source, we can and will optimize the
 detection for use in our tool, if necessary.  
 
-These code clone detectors were selected because the all support Java
+These code clone detectors were selected because they all support Java
 1.5 features (e.g., generics), are Java-based, and are freely
 available for at least academic use. JCCD and Checkstyle are
 open-source, and therefore can be modified to perform one-way clone
@@ -225,81 +223,98 @@ colored marking on the right vertical bar.  When users click the left marker,
 the corresponding clone(s) and potential refactoring options are shown,
 similar to Eclipse's QuickFix functionality for resolving errors and warnings.
 Multiple clones at the same location are indicated by multicolored markers.
-See the screenshot of our interface (Fig. \ref{fig:screenshot}).
+Figure \ref{fig:screenshot} shows the Eclipse Quick Fix interface.
 
 \begin{figure}[here]
-\caption{A screenshot of our interface in Eclipse}
 \centering
-\includegraphics[scale=0.5]{screen1.png}
+\includegraphics[width=80mm]{img/screen1.eps}
+\caption{Eclipse Quick Fix clone suggestions. The color of the icon
+  next to a fix differs by clone pair. The right side window shows the
+  other side of the clone, higlighted with additional lines of
+  context, or the body of the method call that will be inserted.}
 \label{fig:screenshot}
 \end{figure}
 
 \subsection{Determining When to Make Suggestions}
 
-Even the latest clone detectors simply score based on code similarity. 
-Because of this, clone detectors may make many suggestions which 
-cannot be easily refactored, or lend themselves to only one or two 
-potential refactorings.  Additionally, because we are presenting these
-clones to the user during development, a balance of intrusiveness must 
-be reached. Not intrusive enough, and programmers may simply ignore 
-clone suggestions.  Too intrusive, and programmers may disable the 
-tool because it lowers development productivity.  Our solution is to make
-fairly intrusive UI changes (see section \ref{sec:display}), but with an 
-adaptive scoring system that removes unhelpful UI elements based
-on user actions.  This  scoring system is described below.
+Clone detectors score clone pairs based on code similarity; therefore,
+the results may not be suitable for certains types of downstream
+refactorings or other actions.
+Additionally,
+because we are presenting these clones to the user during development,
+the suggestions must be conspicuous without being too obstrusive, lest
+a developer disable the tool.
+Our solution is to display conspicuous UI notifications
+(see section \ref{sec:display}), while utilizing an 
+adaptive scoring system to remove unhelpful UI elements based
+on user actions.  
 
-The tool adaptively determines when to display refactorings and
-actions to the user by adjusting an action-specific score with learned
-user preferences and action history:
+The tool determines a relevance for a clone pair and action according
+to the following formula, which takes into account the user's previous
+actions:
 
 \begin{align*}
-  Y = & (X_{clone,action} * B_{action} + C_{action}) \\
+  Y = & \left[ X_{clone,action} * \left(\frac{B_{action}}{\sum{B}}\right) \right] \\
       & * (1-D)^{I_{clone}} * (1-M)^{N_{clone}}
 \end{align*}
 
 \noindent, where 
 \begin{itemize}
+  \item $Y$ is the adjusted relevance of the suggestion, which the
+    Eclipse Quick Fix mechanism uses to order the suggestions (in
+    practice, $Y$ is truncated such that $10 \le Y \le 100$,
+    for this reason). Additionally, if $Y < T$, a fixed threshold, our
+    tool excludes the suggestion from the set presented
+    by Eclipse.
   \item $X_{clone,action}$ is an action-specific score for the clone
-  \item $B_{action}$ is the user's preference for the action, learned over time
-  \item $C_{action}$ is a fixed constant for the action, used to
-    represent normative information (e.g., it is better to insert a
-    method call than it is to paste the clone)
-  \item $D$ is the ``development'' decay factor
+    determined by the clone pair's similarity, and a heuristic
+    estimate of the usefulness of the action; calculation details
+    are provided later in this section.
+  \item $0 \leq B_{action}$ is the user's preference for the action; $B_{action} / 
+    \sum{B}$ is the user's relative preference for the action. The
+    initial values are set with normative information (e.g., it is
+    better to insert a method call than it is to paste a clone). The
+    value is then adaptively adjusted according to the users actions, as described
+    later in section \ref{sec:preference}.
   \item $I_{clone}$ is the number of times one or more development
-    actions occurred between clone views (or since the clone was last
-    viewed)
-  \item $M$ is the ``maintenance'' decay factor
-  \item $N_{clone}$ is the number of times the clone has been viewed
+    actions occurred between Quick Fix sessions that included the
+    clone (or since the clone was last included in a Quick Fix
+    session).
+  \item $N_{clone}$ is the number of times the clone has been
+    displayed in a Quick Fix session
+  \item $0 < D < 1$ is a constant ``development'' decay factor which
+    reduces the suggestion's relevance under the assumption that when
+    a user performs development taks between clone views, they have
+    either (1) switched to another task, or (2) have explicitly
+    determined not to act on clone's suggestions.
+  \item $0 < M << D < 1$ is constant ``maintenance'' decay factor that
+    reduces the clone's relevance when the developer ignores the
+    clone's suggestions without performing development -- i.e., when
+    the developer is exploring the code for maintenance purposes.
 \end{itemize} 
-
-\noindent If the adjusted relevance $Y$ exceeds the threshold $T$,
-that action is included as a suggestion for the clone.
 
 In the current implementation, $X_{clone,action}$ is equal to the
 similarity score determined by the clone detector, except for the
-``insert method call'' action. Before performing the evaluation, we
+``insert method call'' action which is described in section~\ref{sec:call}.
+Before performing the evaluation, we
 plan to introduce action-specific factors for the other actions, e.g.,
 how far away the other clone is in the code base for the ``extract
 method'' and ``insert method call'' actions.
 
-The preference for an action $B_{action}$ is modified when the user
-performs an action:
+\subsubsection{Adapting to Developer Action Preferences}
+\label{sec:preference}
+When an action is selected in a Quick Fix session, the preference for
+the action, $B_{action}$, is increased inversely with respect to its
+distance from the threshold:
 
 \begin{equation}
-  B^*_{action} = B_{action} * (1 + (100 - Y) / T)
+  B^{new}_{action} = B^{old}_{action} * \left[ 1 + \frac{100 - Y}{T} \right]
 \end{equation}
 
 \noindent, where $T$ is the threshold and 100 is the maximum allowable
 score. If the user selects an action with a score close to, or at, the
 threshold, it has a greater positive effect on the preference than
 when the user selects a ``perfect'' action.
-
-The development decay factor, $D$, is set to be much larger than the
-maintenance decay factor, $M$, to correspond to the intuition that
-when the user performs development between clone views they have
-either (1) switched to another task, or (2) have explicitly determined
-not to act on the current clone suggestions.
-
 Time permitting, we also plan to investigate simple machine learning
 strategies to base the preference term $B$ on the features of the
 clone pair as well. The learner may
@@ -307,17 +322,18 @@ be trained on each individual user to
 account for different programming styles.
 
 \subsubsection{Scoring Method Calls}
+\label{sec:call}
 The score for an insert method call action for a clone is determined
 from the (1) clone's similarity (2) the number of arguments in the
 resulting method call, and (3) the percent of the method being called
 that is covered by the clone:
 
 \begin{equation}
-  Y = S * O * (1 - P)^N
+  X_{action, clone} = S_{clone} * O * (1 - P)^N
 \end{equation}
 
-\noindent, where $S$ is the similarity score for the clones, $O$ is
-the percent of the callee that is covered by the clone, $P$ is a
+\noindent, where $S_{clone}$ is the similarity score for the clones, $O$ is
+the percent of the callee that is covered by the clone, $0 < P < 1$ is a constant
 penalty for the number of arguments in the resulting call, and $N$ is
 the number of arguments in the resulting call. 
 
