@@ -390,28 +390,46 @@ Java development environment.
 
 
 \subsection{Quantitative Evaluation}
-For the development tasks, we will measure the time to complete the
-task, the number of times the the tool detects a code clone throughout development (or would
-detect a clone during development, for the control group),
-the number of methods extracted/calls inserted, and the number of code clones
-introduced into the code base, and percentage of the new code in the final method
- that is a duplicate (by human judgment) of other code. 
-For the control group, we will additionally
-record the number of times the developer searches for a method that
-performs a subtask. 
-For the tool group, we will record the number of
-times the user ignores the tool's
-alert, the user views the tool's analysis, and the user acts on the
-tool's analysis. Additionally, when the user acts on the tool's
-analysis, we will record the ranking of the clone the user acted on.  We expect to see a dramatic reduction in resulting method size and time (each approximately 50\% reduced).  We hope that the user views several of our suggestions and invokes the fixes several times.  Failure would be defined as the user never acts on any fix suggestion, and shows no significant reduction in code size or time spent on the task.
+For the development tasks, we will record:
 
-For the maintenance tasks, we will measure the time to complete the
-task, and whether the user has correctly revised all of the clones. This will be measured
-determined by a separate  hidden test suite, which is inaccessible to the 
-users and will be run on their completed code only). 
-We will record the same
-group-specific metrics as for the development tasks.
-We will be successful if the users with the clone tool correct significantly more of the duplicates than the control group and/or take significantly less time to fix the same number of duplicates.
+\begin{itemize}
+  \item the time to complete the task
+  \item the number of times the the tool detects a code clone
+    throughout development (or would detect a clone during
+    development, for the control group
+  \item the number of methods extracted/calls inserted
+  \item the number of code clones introduced into the code base
+  \item the percentage of the new code in the final method that is a
+    duplicate of other code; this will be determined by human
+    judgement with the aide of a clone detector.
+\end{itemize}
+
+\noindent For the control group, we will additionally record the
+number of times the developer searches for a method that performs a
+subtask. For the tool group, we will record:
+\begin{itemize}
+  \item the number of times the user ignores the tool's alert
+  \item the number of times the user views the tool's analysis
+  \item the number of times the the user acts on the tool's analysis;
+    when the user acts on the tool's analysis, we will additionally
+    record the ranking of the clone the user acted on.
+\end{itemize}
+
+We expect to see a dramatic reduction in resulting method size and
+time (each approximately 50\% reduced).  We hope that the user views
+several of our suggestions and invokes the fixes several times.
+Failure would be defined as the user never acts on any fix suggestion,
+and shows no significant reduction in code size or time spent on the
+task.
+
+For the maintenance tasks, we will additionally record whether the
+user has correctly revised all of the clones. This will be determined
+by a separate hidden test suite, which is inaccessible to the users
+and will be run exclusively on their completed code).
+
+We will be successful if the users with the clone tool correct
+significantly more of the duplicates than the control group and/or
+take significantly less time to fix the same number of duplicates.
 
 \subsection{Qualitative Evaluation}
 In addition to the quantitative results, we will have the study
