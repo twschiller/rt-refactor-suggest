@@ -254,43 +254,42 @@ to the following formula, which takes into account the user's previous
 actions:
 
 \begin{align*}
-  Y = & \left[ X_{clone,action} * \left(\frac{B_{action}}{\sum{B}}\right) \right] \\
-      & * (1-D)^{I_{clone}} * (1-M)^{N_{clone}}
+  \textsc{Adj} = & \left[ \textsc{RAW}_{\text{clone},\text{action}} * \left(\frac{\textsc{Pref}_{\text{action}}}{\sum{\textsc{Pref}}}\right) \right] \\
+      & * (1-\textsc{MainDecay})^{\textsc{\#Display}_{\text{clone}}} \\
+      & * (1-\textsc{DevDecay})^{\textsc{\#Dev}_{\text{clone}}} 
 \end{align*}
 
 \noindent, where 
 \begin{itemize}
-  \item $Y$ is the adjusted relevance of the suggestion, which the
+  \item $\textsc{Adj}$ is the adjusted relevance of the suggestion, which the
     Eclipse Quick Fix mechanism uses to order the suggestions (in
-    practice, $Y$ is truncated such that $10 \le Y \le 100$,
-    for this reason). Additionally, if $Y < T$, a fixed threshold, our
+    practice, $\textsc{Adj}$ is truncated such that $10 \le \textsc{Adj} \le 100$,
+    for this reason). Additionally, if $\textsc{Adj} < \textsc{Threshold}$, a fixed threshold, our
     tool excludes the suggestion from the set presented
     by Eclipse.
-  \item $X_{clone,action}$ is an action-specific score for the clone
+  \item $\textsc{Raw}_{\text{clone},\text{action}}$ is an action-specific score for the clone
     determined by the clone pair's similarity, and a heuristic
     estimate of the usefulness of the action; calculation details
     are provided later in this section.
-  \item $0 \leq B_{action}$ is the user's preference for the action; $B_{action} / 
-    \sum{B}$ is the user's relative preference for the action. The
+  \item $\textsc{Pref}_{\text{action}} > 0$ is the user's preference for the action; $\textsc{Pref}_{\text{action}} / 
+    \sum{\textsc{Pref}}$ is the user's relative preference for the action. The
     initial values are set with normative information (e.g., it is
     better to insert a method call than it is to paste a clone). The
     value is then adaptively adjusted according to the users actions, as described
     later in section \ref{sec:preference}.
-  \item $I_{clone}$ is the number of times one or more development
+  \item $\textsc{\#Display}_{\text{clone}}$ is the number of times the clone has been
+    displayed in a Quick Fix session.
+  \item $\textsc{\#Dev}_{\text{clone}}$ is the number of times one or more development
     actions occurred between Quick Fix sessions that included the
     clone (or since the clone was last included in a Quick Fix
     session).
-  \item $N_{clone}$ is the number of times the clone has been
-    displayed in a Quick Fix session
-  \item $0 < D < 1$ is a constant ``development'' decay factor which
-    reduces the suggestion's relevance under the assumption that when
-    a user performs development taks between clone views, they have
-    either (1) switched to another task, or (2) have explicitly
-    determined not to act on clone's suggestions.
-  \item $0 < M << D < 1$ is constant ``maintenance'' decay factor that
-    reduces the clone's relevance when the developer ignores the
-    clone's suggestions without performing development -- i.e., when
-    the developer is exploring the code for maintenance purposes.
+  \item $0 < \textsc{MainDecay} << \textsc{DevDecay} < 1$ are constant
+    decay factors that reduce a suggestion's relevance when a
+    developer does not act on the suggestion. The ``development'' decay
+    factor $\textsc{DevDecay}$ is much larger under the assumption
+    that when a user performs development taks between clone views,
+    they have either (1) switched to another task, or (2) have
+    explicitly determined not to act on clone's suggestions.
 \end{itemize} 
 
 In the current implementation, $X_{clone,action}$ is equal to the
@@ -308,18 +307,26 @@ the action, $B_{action}$, is increased inversely with respect to its
 distance from the threshold:
 
 \begin{equation}
-  B^{new}_{action} = B^{old}_{action} * \left[ 1 + \frac{100 - Y}{T} \right]
+  \textsc{Pref}^{\text{new}}_{\text{action}} = \textsc{Pref}^{\text{old}}_{\text{action}} * \left[ 1 + \frac{100 - \textsc{Relevance}}{\textsc{Threshold}} \right]
 \end{equation}
 
-\noindent, where $T$ is the threshold and 100 is the maximum allowable
+\noindent, where 100 is the maximum allowable
 score. If the user selects an action with a score close to, or at, the
 threshold, it has a greater positive effect on the preference than
 when the user selects a ``perfect'' action.
 Time permitting, we also plan to investigate simple machine learning
-strategies to base the preference term $B$ on the features of the
+strategies to base the preference terms $\textsc{Pref}$ on the features of the
 clone pair as well. The learner may
 be trained on each individual user to
 account for different programming styles.
+While a developer's preference for an action may be low, it cannot be
+negative. Therefore, preference alone cannot preclude a suggestion
+from being shown to the developer: $\textsc{Pref}_{action} > 0 \Rightarrow
+\textsc{Raw}_{\text{action,clone}}B_{\text{action}} > \textsc{Raw}_{\text{action,clone}}$.
+All developers see suggestions for which $\textsc{Raw}_{\text{action,clone}} > \textsc{Adj}$,
+however given the developer's action preferences (1) additional
+suggestions may be displayed, and (2) the ordering of the suggestions
+will differ.
 
 \subsubsection{Scoring Method Calls}
 \label{sec:call}
@@ -328,13 +335,16 @@ from the (1) clone's similarity (2) the number of arguments in the
 resulting method call, and (3) the percent of the method being called
 that is covered by the clone:
 
-\begin{equation}
-  X_{action, clone} = S_{clone} * O * (1 - P)^N
-\end{equation}
+\begin{align*}
+  X_{action, clone} = & \textsc{Similarity}_{\text{clone}} \\ 
+   & * \textsc{Coverage}  \\
+   & * (1 - \textsc{ArgPenality})^{\textsc{\#Args}}
+\end{align*}
 
-\noindent, where $S_{clone}$ is the similarity score for the clones, $O$ is
-the percent of the callee that is covered by the clone, $0 < P < 1$ is a constant
-penalty for the number of arguments in the resulting call, and $N$ is
+\noindent, where $\textsc{Similarity}_{\text{clone}}$ is the similarity score for the clones, 
+$\textsc{Coverage}$ is
+the percent of the callee that is covered by the clone, $0 < \textsc{ArgPenality} < 1$ is a constant
+penalty for the number of arguments in the resulting call, and $\textsc{\#Params}$ is
 the number of arguments in the resulting call. 
 
 \section{Evaluation}
