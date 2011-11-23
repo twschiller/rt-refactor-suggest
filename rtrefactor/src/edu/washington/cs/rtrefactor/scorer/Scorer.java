@@ -6,7 +6,8 @@ import java.util.Set;
 import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jdt.core.IMethod;
-import org.eclipse.jdt.core.JavaModelException;
+import org.eclipse.jface.text.BadLocationException;
+import org.eclipse.jface.text.Document;
 import org.eclipse.ui.IMarkerResolution;
 
 import com.google.common.base.Predicate;
@@ -16,10 +17,14 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Multiset;
 import com.google.common.collect.Sets;
 
+import edu.washington.cs.rtrefactor.detect.SourceLocation;
+import edu.washington.cs.rtrefactor.detect.SourceRegion;
 import edu.washington.cs.rtrefactor.quickfix.CloneFix;
 import edu.washington.cs.rtrefactor.quickfix.CloneFixer;
 import edu.washington.cs.rtrefactor.quickfix.CopyPasteFix;
 import edu.washington.cs.rtrefactor.quickfix.ExtractMethodFix;
+import edu.washington.cs.rtrefactor.quickfix.FindBlock;
+import edu.washington.cs.rtrefactor.quickfix.FindBlock.BlockInfo;
 import edu.washington.cs.rtrefactor.quickfix.FindMethod;
 import edu.washington.cs.rtrefactor.quickfix.InsertCallFix;
 import edu.washington.cs.rtrefactor.quickfix.JumpToFix;
@@ -29,7 +34,7 @@ import edu.washington.cs.rtrefactor.reconciler.ClonePairData;
  * Methods for creating and scoring code clone resolutions
  * @author Todd Schiller
  */
-public class Scorer {
+strictfp public class Scorer {
 
 	protected static final Logger scoreLog = Logger.getLogger("scorer");
 	
@@ -55,13 +60,18 @@ public class Scorer {
 		double maintenance = activationCnt.contains(cloneNumber) ? Math.pow((1 - MAINTENANCE_DECAY), activationCnt.count(cloneNumber)) : 1.0;
 		double developmentDecay = developmentDecayCnt.contains(cloneNumber) ? Math.pow((1 - DEVELOPMENT_DECAY), developmentDecayCnt.count(cloneNumber)) : 1.0;
 		
-		return (truncate(base) * B_ACTION[JUMP]) * maintenance * developmentDecay;
+		double sumB = 0;
+		for (int i = 0; i < B_ACTION.length; i++){
+			sumB += B_ACTION[i];
+		}
+		
+		return (truncate(base) * (1. + B_ACTION[action] / sumB)) * maintenance * developmentDecay;
 	}
 	
 	private static final int JUMP = 0;
 	private static final int PASTE = 1;
 	private static final int INSERT = 2;
-	private static final int EXTRACT = 2;
+	private static final int EXTRACT = 3;
 
 	private double B_ACTION[] = new double[] { 50., 20., 90., 85. };
 	
@@ -238,6 +248,7 @@ public class Scorer {
 		double score = calc(pair.getSimilarity(), JUMP, pair.getCloneNumber());
 		return Lists.<CloneFix>newArrayList(new JumpToFix(pair, truncate(score), parent));
 	}
+	
 	/**
 	 * Generate Insert Method Call fixes, score according to the following criteria:
 	 * (1) the base score (2) the number of arguments, and (3) the percent of the method covered by the clone.
@@ -266,8 +277,34 @@ public class Scorer {
 	}
 	
 	private List<CloneFix> generateExtractMethodFixes(ClonePairData pair, CloneFixer parent){
-		double score = calc(pair.getSimilarity(), EXTRACT, pair.getCloneNumber());
-		return Lists.<CloneFix>newArrayList(new ExtractMethodFix(pair, truncate(score), parent));
+		BlockInfo b;
+		try {
+			b = FindBlock.findLargestBlock(pair.getOtherRegion());
+		} catch (CoreException e) {
+			scoreLog.error("Error accessing block for clone pair", e);
+			return Lists.newArrayList();
+		}
+		
+		if (b == null){
+			return Lists.newArrayList();
+		}
+		
+		double base = pair.getSimilarity() /* x penalty for the number of names to be extracted */;
+		
+		double score = calc(base, EXTRACT, pair.getCloneNumber());
+		
+		Document document = new Document(pair.getOtherContents());
+		
+		SourceRegion region;
+		try {
+			region = new SourceRegion(
+				new SourceLocation(pair.getOtherRegion().getFile(), b.getStart(), document),
+				new SourceLocation(pair.getOtherRegion().getFile(), b.getEnd(), document));
+		} catch (BadLocationException e) {
+			throw new RuntimeException(e);
+		}
+		
+		return Lists.<CloneFix>newArrayList(new ExtractMethodFix(pair, truncate(score), parent, region));
 	}
 	
 	private List<CloneFix> generatePasteCloneFixes(ClonePairData pair, CloneFixer parent){
@@ -294,6 +331,19 @@ public class Scorer {
 	
 		developmentDecayCnt.addAll(since);
 		since.clear();
+	}
+	
+	/**
+	 * Scale the value <code>x</code> in range <code>(oMin, oMax)</code> to the range <code>(nMin, nMax)</code>
+	 * @param x a value in <code>(oMin, oMax)</code>
+	 * @param oMin minimum value of the original range
+	 * @param oMax maximum value of the original range
+	 * @param nMin minimum value of the new range
+	 * @param nMax maximum value of the new range
+	 * @return the scaled value
+	 */
+	public static double scale(double x, double oMin, double oMax, double nMin, double nMax){
+		return (x / ((oMax - oMin) / (nMax - nMin))) + nMin;
 	}
 	
 	private int actionIndex(CloneFix fix){
