@@ -6,6 +6,7 @@ import java.util.Set;
 import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jdt.core.IMethod;
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.Document;
 import org.eclipse.ui.IMarkerResolution;
@@ -17,8 +18,10 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Multiset;
 import com.google.common.collect.Sets;
 
+import edu.washington.cs.rtrefactor.Activator;
 import edu.washington.cs.rtrefactor.detect.SourceLocation;
 import edu.washington.cs.rtrefactor.detect.SourceRegion;
+import edu.washington.cs.rtrefactor.preferences.PreferenceConstants;
 import edu.washington.cs.rtrefactor.quickfix.CloneFix;
 import edu.washington.cs.rtrefactor.quickfix.CloneFixer;
 import edu.washington.cs.rtrefactor.quickfix.CopyPasteFix;
@@ -40,32 +43,33 @@ strictfp public class Scorer {
 	
 	public static final int MAX_SCORE = 100;
 	public static final int MIN_SCORE = 10;
+	public static final int THRESHOLD = 50;
 	
 	// ADAPTIVE SCORING SYSTEM
 	// 
 	// The THRESHOLD stays constant, the scores for a particular
 	// action are adjusted according to the following formula:
 	//
-	// Y = (X_{clone} * B_{action}) * (1-D)^I_{clone} * (1-M)^N_{clone}
+	// ADJ = (RAW_{clone,action} * PREF_{action}) * (1-DevDecay)^#DevClone_{clone} * (1-MainDecay)^#DisplayClone_{clone}
 	//
-	// , where   X_{clone} is the action score (e.g., the similarity)
-	//           B_{action} is a an action-specific scaling factor (preference)
-	//           D is the DEVELOPMENT_DECAY
-	//           I_{clone} is the number of times one or more development actions occurred between clone views
-	//		     M is the MAINTENANCE_DECAY
-	//           N_{clone} is the number of times the clone has been viewed
+	// , where   RAW_{clone,action} is the action score 
+	//           PREF_{action} is a an action-specific scaling factor (preference)
+	//           DevDecay is the DEVELOPMENT_DECAY
+	//           #DevClone_{clone} is the number of times one or more development actions occurred between clone views
+	//		     MainDecay is the MAINTENANCE_DECAY
+	//           #DisplayClone_{clone} is the number of times the clone has been viewed
 	//			 
 
-	private double calc(double base, int action, int cloneNumber){
-		double maintenance = activationCnt.contains(cloneNumber) ? Math.pow((1 - MAINTENANCE_DECAY), activationCnt.count(cloneNumber)) : 1.0;
+	private int calc(double raw, int action, int cloneNumber){
+		double maintenanceDecay = activationCnt.contains(cloneNumber) ? Math.pow((1 - MAINTENANCE_DECAY), activationCnt.count(cloneNumber)) : 1.0;
 		double developmentDecay = developmentDecayCnt.contains(cloneNumber) ? Math.pow((1 - DEVELOPMENT_DECAY), developmentDecayCnt.count(cloneNumber)) : 1.0;
 		
-		double sumB = 0;
-		for (int i = 0; i < B_ACTION.length; i++){
-			sumB += B_ACTION[i];
+		double sumPref = 0;
+		for (int i = 0; i < preferences.length; i++){
+			sumPref += preferences[i];
 		}
 		
-		return (truncate(base) * (1. + B_ACTION[action] / sumB)) * maintenance * developmentDecay;
+		return truncate(truncate(raw) * (1. + preferences[action] / sumPref) * maintenanceDecay * developmentDecay);
 	}
 	
 	private static final int JUMP = 0;
@@ -73,10 +77,8 @@ strictfp public class Scorer {
 	private static final int INSERT = 2;
 	private static final int EXTRACT = 3;
 
-	private double B_ACTION[] = new double[] { 50., 20., 90., 85. };
-	
-	private static final int THRESHOLD = 50;
-	
+	private double preferences[] = new double[] { 50., 20., 90., 85. };
+		
 	// DECAY SCENARIOS
 	// 
 	// (1) User views QF, doesn't select a fix, modifies source code a
@@ -110,6 +112,23 @@ strictfp public class Scorer {
 	private static double DEVELOPMENT_DECAY = 0.2;
 
 	/**
+	 * Penalty incurred for the number of arguments in the method when
+	 * scoring an InsertCall action
+	 */
+	private static double ARGS_PENALTY = 0.05;
+	
+	/**
+	 * Penalty incurred for the number of non-local when
+	 * scoring an Extract Method action
+	 */
+	private static double NONLOCAL_PENALTY = 0.05;
+	
+	/**
+	 * Penalty incurred when scoring a Jump To action in Development mode
+	 */
+	private static double DEV_PENALTY = 0.35;
+	
+	/**
 	 * Multiset tracking the number of times a clone has been viewed
 	 */
 	private final Multiset<Integer> activationCnt = HashMultiset.create();
@@ -123,6 +142,7 @@ strictfp public class Scorer {
 	 * tracks number of times a clone pair has been viewed and then development was performed
 	 */
 	private final Multiset<Integer> developmentDecayCnt = HashMultiset.create();
+	
 	
 	/**
 	 * The singleton instance
@@ -155,7 +175,7 @@ strictfp public class Scorer {
 		// Scale the action preference B to reward actions with lower scores more; don't
 		// penalize the other actions
 		//
-		// B_{action} = B_{action} * (1 + (100 - SCORE) / THRESHOLD)
+		// preferences_{action} = preferences_{action} * (1 + (100 - SCORE) / THRESHOLD)
 		
 		if (select instanceof CloneFix){
 			scoreLog.debug(select.getClass().getName());
@@ -171,13 +191,13 @@ strictfp public class Scorer {
 				max = Math.max(max, ((CloneFix) x).getRelevance());
 			}
 			
-			double old = B_ACTION[fix];
-			B_ACTION[fix] = B_ACTION[fix] * (1 + (MAX_SCORE - relevance) / THRESHOLD);
+			double old = preferences[fix];
+			preferences[fix] = preferences[fix] * (1. + (MAX_SCORE - relevance) / (double) THRESHOLD);
 			
 			scoreLog.debug("Fix " + f.getClass().getCanonicalName() + " selected with score " + relevance + 
 					" (max score: " + max + ")");
 			
-			scoreLog.debug("Adjusted preference " + B_ACTION[fix] + " (old: " + old + ")");
+			scoreLog.debug("Adjusted preference " + preferences[fix] + " (old: " + old + ")");
 			
 		}
 	}
@@ -244,9 +264,13 @@ strictfp public class Scorer {
 	}
 	
 	private List<CloneFix> generateJumpToCloneFixes(ClonePairData pair, CloneFixer parent){
-		// TODO if the user is editing existing code (instead of writing new code), increase the score for "jump to clone"?
-		double score = calc(pair.getSimilarity(), JUMP, pair.getCloneNumber());
-		return Lists.<CloneFix>newArrayList(new JumpToFix(pair, truncate(score), parent));
+		IPreferenceStore store = Activator.getDefault().getPreferenceStore();	
+	
+		double base = truncate(pair.getSimilarity() * 
+				(store.getBoolean(PreferenceConstants.P_INCREMENT) ? (1. - DEV_PENALTY) : 1.0));
+				
+		int score = calc(base, JUMP, pair.getCloneNumber());
+		return Lists.<CloneFix>newArrayList(new JumpToFix(pair, score, parent));
 	}
 	
 	/**
@@ -270,10 +294,10 @@ strictfp public class Scorer {
 			
 		double coverage = FindMethod.methodCoverage(m, pair.getOtherRegion());
 
-		double base = coverage * pair.getSimilarity() * Math.pow(0.95, m.getNumberOfParameters());
-		double score = calc(base, INSERT, pair.getCloneNumber());
+		double base = truncate(coverage * pair.getSimilarity() * Math.pow(ARGS_PENALTY, m.getNumberOfParameters()));
+		int score = calc(base, INSERT, pair.getCloneNumber());
 		
-		return Lists.<CloneFix>newArrayList(new InsertCallFix(pair, truncate(score), parent));
+		return Lists.<CloneFix>newArrayList(new InsertCallFix(pair, score, parent));
 	}
 	
 	private List<CloneFix> generateExtractMethodFixes(ClonePairData pair, CloneFixer parent){
@@ -289,9 +313,9 @@ strictfp public class Scorer {
 			return Lists.newArrayList();
 		}
 		
-		double base = pair.getSimilarity() * Math.pow(0.95, b.getNumCapturedVariable());
+		double base = truncate(pair.getSimilarity() * Math.pow(NONLOCAL_PENALTY, b.getNumCapturedVariable()));
 		
-		double score = calc(base, EXTRACT, pair.getCloneNumber());
+		int score = calc(base, EXTRACT, pair.getCloneNumber());
 		
 		Document document = new Document(pair.getOtherContents());
 		
@@ -304,7 +328,7 @@ strictfp public class Scorer {
 			throw new RuntimeException(e);
 		}
 		
-		return Lists.<CloneFix>newArrayList(new ExtractMethodFix(pair, truncate(score), parent, region));
+		return Lists.<CloneFix>newArrayList(new ExtractMethodFix(pair, score, parent, region));
 	}
 	
 	private List<CloneFix> generatePasteCloneFixes(ClonePairData pair, CloneFixer parent){
