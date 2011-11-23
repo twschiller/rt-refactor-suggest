@@ -92,11 +92,13 @@ that is a (partial) clone of the source under development.  Our hypothesis
  is that identifying clones during development will prevent many of the problems
 associated with duplicated code from ever arising, reducing development time.
 
+\paragraph{Actions for Duplicate Code}
+
 The tool suggests two actions that eliminate code duplication:
 
 \begin{enumerate}
-  \item Replacing the code under development with a call to an existing method
-  \item Extracting all, or part, of the system clone as a method;
+  \item \textsc{InsertCall}: Replacing the code under development with a call to an existing method
+  \item \textsc{Extract}: Extracting all, or part, of the system clone as a method;
     replacing the code under development with a call to the extracted
     method.
 \end{enumerate}
@@ -106,11 +108,11 @@ develop or maintain code with duplication:
 
 \begin{enumerate}
 \setcounter{enumi}{2}
-  \item Aiding the user making analogous changes to the system clones
+  \item \textsc{JumpTo}: Aiding the user making analogous changes to the system clones
     by opening the relevant sections of code; 
     %, and potentially
     %supporting ``simultaneous editing''~\cite{Miller2002};
-  \item Copying the system clone to the code under development,
+  \item \textsc{Paste}: Copying the system clone to the code under development,
     substituting identifiers as needed.
 \end{enumerate}
 
@@ -235,6 +237,13 @@ Figure \ref{fig:screenshot} shows the Eclipse Quick Fix interface.
 \label{fig:screenshot}
 \end{figure}
 
+\paragraph{Modes}
+The tool has two modes: development mode and maintenance mode. In
+development mode, only clones located in the active development area
+are highlighted (as determined by Eclipse's dirty region). In
+maintenance mode, all clones located in the file are displayed. The
+developer switches between the two modes using a toolbar button.
+
 \subsection{Determining When to Make Suggestions}
 
 Clone detectors score clone pairs based on code similarity; therefore,
@@ -292,23 +301,15 @@ actions:
     explicitly determined not to act on clone's suggestions.
 \end{itemize} 
 
-In the current implementation, $X_{clone,action}$ is equal to the
-similarity score determined by the clone detector, except for the
-``insert method call'' action which is described in section~\ref{sec:call}.
-Before performing the evaluation, we
-plan to introduce action-specific factors for the other actions, e.g.,
-how far away the other clone is in the code base for the ``extract
-method'' and ``insert method call'' actions.
-
 \subsubsection{Adapting to Developer Action Preferences}
 \label{sec:preference}
 When an action is selected in a Quick Fix session, the preference for
-the action, $B_{action}$, is increased inversely with respect to its
+the action, $\textsc{Raw}_{action}$, is increased inversely with respect to its
 distance from the threshold:
 
-\begin{equation}
+\begin{equation*}
   \textsc{Pref}^{\text{new}}_{\text{action}} = \textsc{Pref}^{\text{old}}_{\text{action}} * \left[ 1 + \frac{100 - \textsc{Relevance}}{\textsc{Threshold}} \right]
-\end{equation}
+\end{equation*}
 
 \noindent, where 100 is the maximum allowable
 score. If the user selects an action with a score close to, or at, the
@@ -322,21 +323,21 @@ account for different programming styles.
 While a developer's preference for an action may be low, it cannot be
 negative. Therefore, preference alone cannot preclude a suggestion
 from being shown to the developer: $\textsc{Pref}_{action} > 0 \Rightarrow
-\textsc{Raw}_{\text{action,clone}}B_{\text{action}} > \textsc{Raw}_{\text{action,clone}}$.
+\textsc{Raw}_{\text{action,clone}}\textsc{Pref}_{\text{action}} > \textsc{Raw}_{\text{action,clone}}$.
 All developers see suggestions for which $\textsc{Raw}_{\text{action,clone}} > \textsc{Adj}$,
 however given the developer's action preferences (1) additional
 suggestions may be displayed, and (2) the ordering of the suggestions
 will differ.
 
-\subsubsection{Scoring Method Calls}
+\subsubsection{Scoring \textsc{InsertCall} Actions}
 \label{sec:call}
-The score for an insert method call action for a clone is determined
+The score for an \textsc{InsertCall} action is determined
 from the (1) clone's similarity (2) the number of arguments in the
 resulting method call, and (3) the percent of the method being called
 that is covered by the clone:
 
 \begin{align*}
-  X_{action, clone} = & \textsc{Similarity}_{\text{clone}} \\ 
+  \textsc{Raw}_{\textsc{InsertCall}, \text{clone}} = & \textsc{Similarity}_{\text{clone}} \\ 
    & * \textsc{Coverage}  \\
    & * (1 - \textsc{ArgPenality})^{\textsc{\#Args}}
 \end{align*}
@@ -346,6 +347,56 @@ $\textsc{Coverage}$ is
 the percent of the callee that is covered by the clone, $0 < \textsc{ArgPenality} < 1$ is a constant
 penalty for the number of arguments in the resulting call, and $\textsc{\#Params}$ is
 the number of arguments in the resulting call. 
+
+\subsubsection{Scoring \textsc{Extract} Actions}
+\label{sec:extract}
+The set of consecutive statements to extract for a clone pair is
+determined by finding the longest chain of statements (as measured by
+the \textit{number} of statements) for which some part of the system
+clone region overlaps the statements.  The score for the extraction
+action is then determined by (1) the clone's similarity, and (2) the
+number of variables used in the statements that aren't declared
+locally in the statements --- i.e., fields, method parameters, local
+variables declared prior to the statmements --- excluding static
+fields:
+
+\begin{align*}
+  \textsc{Raw}_{\textsc{Extract}, \text{clone}} = & \textsc{Similarity}_{\text{clone}} \\ 
+   & * (1 - \textsc{NonLocalPenality})^{\textsc{\#NonLocal}}
+\end{align*}
+
+\noindent, where $\textsc{Similarity}_{\text{clone}}$ is the
+similarity score for the clones, $0 < \textsc{NonLocalPenality} < 1$
+is a constant penalty for non-local variable usage, and
+$\textsc{\#NonLocal}$ is the number of non-static variables and fields
+used by the statements that are not declared within the statements.
+
+\subsubsection{Scoring \textsc{JumpTo} Actions}
+\textsc{JumpTo} actions aide analogous edits to system clones
+during maintenance and bugfixing, therefore the scores are higher when
+the developer is maintaining code. The score for a ``jump to'' action
+is determined by (1) the clone's similarity, and (2) the mode (see
+section \ref{sec:display}):
+
+\begin{align*}
+  \textsc{Raw}_{\textsc{JumpTo}, \text{clone}} = & \textsc{Similarity}_{\text{clone}} \\ 
+   & * (\textsc{IsDeveloping} * (1 - \textsc{DevPenalty}))
+\end{align*}
+
+\noindent, where $\textsc{Similarity}_{\text{clone}}$ is the
+similarity score for the clones, $\textsc{IsDeveloping}$ is an
+indicator variable that is $1$ when the tool is in development mode,
+and $0 < \textsc{DevPenality} < 1$ is a constant penalty to be applied
+when the tool is in development mode, as opposed to maintenance mode.
+
+\subsubsection{Scoring \textsc{Paste} Actions}
+The score for \textsc{Paste} actions are determined by (1) the clone's
+similarity, and (2) an estimate of the number of variables that must
+be renamed after the paste action. This is similar to the calculation
+performed for extract method actions (see section \ref{sec:extract}),
+however the pasted region may span multiple methods, or parts of
+methods; additionally, other parts of the file under development may
+refer to variables declared in the region to be replaced.
 
 \section{Evaluation}
 \label{sec:eval}
@@ -359,16 +410,22 @@ the number of arguments in the resulting call.
 %spent. We will poll users after the fact to ask them how helpful they
 %found the tool.
 
-We will evaluate the tool via controlled user study. We will develop a fairly small 
-Java codebase (15 files, 300 lines each) for this purpose. In addition to the code, the users will be
-given a suite of JUnit tests which cover the codebase.  Most of the tests will pass
- on the provided code, 
-but there will be several tests which test their development task and 
-thus will not pass initially.  Our current idea is to have the codebase be part of an image processing library with a custom image format. (no visual rendering will actually occur) There will be a small set of classes in a separate package (such as the base image class) which the users will be instructed not to modify. Subjects will be instructed that they ``own'' all other classes in the code base, that is they have permission to introduce new methods, but must document the
-methods.  
+We will evaluate the tool via controlled user study. We will develop a
+fairly small Java codebase (15 files, 300 lines each) for this
+purpose. In addition to the code, the users will be given a suite of
+JUnit tests which cover the codebase.  Most of the tests will pass on
+the provided code, but there will be several tests which test their
+development task and thus will not pass initially.  Our current idea
+is to have the codebase be part of an image processing library with a
+custom image format. (no visual rendering will actually occur) There
+will be a small set of classes in a separate package (such as the base
+image class) which the users will be instructed not to
+modify. Subjects will be instructed that they ``own'' all other
+classes in the code base, that is they have permission to introduce
+new methods, but must document the methods.
 
 In the development portion of the study, the users will be then be directed
-to implement a method of an existing class.     The subjects will be instructed to implement a method 
+to implement a method of an existing class. The subjects will be instructed to implement a method 
 in such a way that the remaining unit tests pass.  They will be given a detailed 
  method specification. For example, the task may be to take a set of images and do a complex postprocessing operation them.  Implementing this specification will involve
  duplicating functionality that exists in other classes.  Some of the subtasks may be 
