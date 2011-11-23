@@ -62,7 +62,7 @@
          </menu>
          <action
                class="edu.washington.cs.rtrefactor.actions.SwitchDetectionMode"
-               icon="icons/sample.gif"
+               icon="icons/keyboard-icon.png"
                id="edu.washington.cs.rtrefactor.actions.SwitchDetectionMode"
                label="Switch RT Refactoring Mode"
                style="toggle"
