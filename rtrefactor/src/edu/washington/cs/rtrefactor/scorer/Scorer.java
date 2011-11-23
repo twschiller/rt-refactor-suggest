@@ -31,18 +31,20 @@ import edu.washington.cs.rtrefactor.reconciler.ClonePairData;
  */
 public class Scorer {
 
-	protected static Logger scoreLog = Logger.getLogger("scorer");
+	protected static final Logger scoreLog = Logger.getLogger("scorer");
+	
+	public static final int MAX_SCORE = 100;
+	public static final int MIN_SCORE = 10;
 	
 	// ADAPTIVE SCORING SYSTEM
 	// 
 	// The THRESHOLD stays constant, the scores for a particular
 	// action are adjusted according to the following formula:
 	//
-	// Y = (X_{clone} * B_{action} + C_{action}) * (1-D)^I_{clone} * (1-M)^N_{clone}
+	// Y = (X_{clone} * B_{action}) * (1-D)^I_{clone} * (1-M)^N_{clone}
 	//
 	// , where   X_{clone} is the action score (e.g., the similarity)
 	//           B_{action} is a an action-specific scaling factor (preference)
-	//           C_{action} is fixed constant for the action (normative information)
 	//           D is the DEVELOPMENT_DECAY
 	//           I_{clone} is the number of times one or more development actions occurred between clone views
 	//		     M is the MAINTENANCE_DECAY
@@ -50,18 +52,20 @@ public class Scorer {
 	//			 
 
 	private double calc(double base, int action, int cloneNumber){
-		return (base * B_ACTION[JUMP] + C_ACTION[JUMP]) * decayAdjustment(cloneNumber);
+		double maintenance = activationCnt.contains(cloneNumber) ? Math.pow((1 - MAINTENANCE_DECAY), activationCnt.count(cloneNumber)) : 1.0;
+		double developmentDecay = developmentDecayCnt.contains(cloneNumber) ? Math.pow((1 - DEVELOPMENT_DECAY), developmentDecayCnt.count(cloneNumber)) : 1.0;
+		
+		return (truncate(base) * B_ACTION[JUMP]) * maintenance * developmentDecay;
 	}
 	
-	private static int JUMP = 0;
-	private static int PASTE = 1;
-	private static int INSERT = 2;
-	private static int EXTRACT = 2;
+	private static final int JUMP = 0;
+	private static final int PASTE = 1;
+	private static final int INSERT = 2;
+	private static final int EXTRACT = 2;
+
+	private double B_ACTION[] = new double[] { 50., 20., 90., 85. };
 	
-	private double C_ACTION[] = new double[] { 50., 20., 90., 85. };
-	private double B_ACTION[] = new double[] { 1.0, 1.0, 1.0, 1.0 };
-	
-	private static final int THRESHOLD = 40;
+	private static final int THRESHOLD = 50;
 	
 	// DECAY SCENARIOS
 	// 
@@ -98,17 +102,17 @@ public class Scorer {
 	/**
 	 * Multiset tracking the number of times a clone has been viewed
 	 */
-	private Multiset<Integer> activationCnt = HashMultiset.create();
+	private final Multiset<Integer> activationCnt = HashMultiset.create();
 	
 	/**
 	 * Set of clones that have been viewed since the last development action
 	 */
-	private Set<Integer> since = Sets.newHashSet();
+	private final Set<Integer> since = Sets.newHashSet();
 	
 	/**
 	 * tracks number of times a clone pair has been viewed and then development was performed
 	 */
-	private Multiset<Integer> developmentDecayCnt = HashMultiset.create();
+	private final Multiset<Integer> developmentDecayCnt = HashMultiset.create();
 	
 	/**
 	 * The singleton instance
@@ -148,16 +152,7 @@ public class Scorer {
 			
 			CloneFix f = (CloneFix) select;
 			
-			Integer fix = null;
-			if (select instanceof JumpToFix){
-				fix = JUMP;
-			}else if (select instanceof CopyPasteFix){
-				fix = PASTE;
-			}else if (select instanceof ExtractMethodFix){
-				fix = EXTRACT;
-			}else if (select instanceof InsertCallFix){
-				fix = INSERT;
-			}
+			int fix = actionIndex(f);
 			
 			int relevance = f.getRelevance();
 			
@@ -167,7 +162,7 @@ public class Scorer {
 			}
 			
 			double old = B_ACTION[fix];
-			B_ACTION[fix] = B_ACTION[fix] * (1 + (100. - relevance) / THRESHOLD);
+			B_ACTION[fix] = B_ACTION[fix] * (1 + (MAX_SCORE - relevance) / THRESHOLD);
 			
 			scoreLog.debug("Fix " + f.getClass().getCanonicalName() + " selected with score " + relevance + 
 					" (max score: " + max + ")");
@@ -261,18 +256,9 @@ public class Scorer {
 		if (m == null){
 			return Lists.newArrayList();
 		}
-		
-		String methodSource;
-		try {
-			methodSource = m.getSource();
-		} catch (JavaModelException e) {
-			scoreLog.error("Error getting method source ", e);
-			return Lists.newArrayList();
-		}
-		
-		// TODO this is actually wrong. need to inspect each character in the other region to see if it is part of the method
-		double coverage = Math.min(pair.getOtherRegion().getLength() / (double) methodSource.length(), 1.);
-		
+			
+		double coverage = FindMethod.methodCoverage(m, pair.getOtherRegion());
+
 		double base = coverage * pair.getSimilarity() * Math.pow(0.95, m.getNumberOfParameters());
 		double score = calc(base, INSERT, pair.getCloneNumber());
 		
@@ -290,25 +276,14 @@ public class Scorer {
 	}
 	
 	/**
-	 * Force the relevance score to be an integer between 10 and 100
+	 * Force the relevance score to be an integer between {@link Scorer#MIN_SCORE} and {@link Scorer#MAX_SCORE}
 	 * @param x the score
-	 * @return an integer score between 10 and 100
+	 * @return an integer score between {@link Scorer#MIN_SCORE} and {@link Scorer#MAX_SCORE}
 	 */
 	private int truncate(double x){
-		return Math.max(10, Math.min((int) x, 100));
+		return Math.max(MIN_SCORE, Math.min((int) x, MAX_SCORE));
 	}
 
-	/**
-	 * Calculate the decay adjustment for <code>cloneNumber</code>
-	 * @param cloneNumber the clone
-	 * @return the multiplicative decay adjustment
-	 */
-	private double decayAdjustment(int cloneNumber){
-		double ignoreDecay = activationCnt.contains(cloneNumber) ? Math.pow((1 - MAINTENANCE_DECAY), activationCnt.count(cloneNumber)) : 1.0;
-		double developmentDecay = developmentDecayCnt.contains(cloneNumber) ? Math.pow((1 - DEVELOPMENT_DECAY), developmentDecayCnt.count(cloneNumber)) : 1.0;
-		return ignoreDecay * developmentDecay;
-	}
-	
 	/**
 	 * Action to perform when development has occurred in the editor
 	 */
@@ -319,6 +294,20 @@ public class Scorer {
 	
 		developmentDecayCnt.addAll(since);
 		since.clear();
+	}
+	
+	private int actionIndex(CloneFix fix){
+		if (fix instanceof JumpToFix){
+			return JUMP;
+		}else if (fix instanceof CopyPasteFix){
+			return PASTE;
+		}else if (fix instanceof ExtractMethodFix){
+			return EXTRACT;
+		}else if (fix instanceof InsertCallFix){
+			return INSERT;
+		}else{
+			throw new IllegalArgumentException();
+		}
 	}
 	
 }
