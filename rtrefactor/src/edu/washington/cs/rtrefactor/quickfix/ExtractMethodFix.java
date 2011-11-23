@@ -9,6 +9,7 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.commands.ICommandService;
 import org.eclipse.ui.handlers.IHandlerService;
 
+import edu.washington.cs.rtrefactor.detect.SourceRegion;
 import edu.washington.cs.rtrefactor.reconciler.ClonePairData;
 
 /**
@@ -19,8 +20,18 @@ import edu.washington.cs.rtrefactor.reconciler.ClonePairData;
  */
 public class ExtractMethodFix extends CloneFix {
 	
-	public ExtractMethodFix(ClonePairData pairData, int relevance, CloneFixer parent){
+	private final SourceRegion extractRegion;
+	
+	/**
+	 * Instantiates a clone clone quick fix
+	 * @param pairData The clone pair data
+	 * @param relevance A score from 10-100 indicating the relevance of this suggestion
+	 * @param parent The parent CloneFixer (can be null)
+	 * @param extractRegion the source region to extract
+	 */
+	public ExtractMethodFix(ClonePairData pairData, int relevance, CloneFixer parent, SourceRegion extractRegion){
 		super(pairData, relevance, parent);
+		this.extractRegion = extractRegion;
 	}
 	
 	@Override
@@ -46,7 +57,7 @@ public class ExtractMethodFix extends CloneFix {
 		
 		// jump to the region and invoke the Extract Method menu command
 		
-		JumpToFix.jumpToRegion(this.getOtherRegion(), this.isSameFile());
+		JumpToFix.jumpToRegion(extractRegion, this.isSameFile());
 		
 		try{
 			IWorkbench workbench = PlatformUI.getWorkbench();

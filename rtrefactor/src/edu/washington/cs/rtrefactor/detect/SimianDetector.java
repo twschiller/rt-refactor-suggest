@@ -16,6 +16,7 @@ import com.puppycrawl.tools.checkstyle.api.AuditEvent;
 import com.puppycrawl.tools.checkstyle.api.CheckstyleException;
 
 import edu.washington.cs.rtrefactor.preferences.PreferenceUtil.Preference;
+import edu.washington.cs.rtrefactor.scorer.Scorer;
 import edu.washington.cs.rtrefactor.util.FileUtil;
 
 /**
@@ -148,7 +149,9 @@ public class SimianDetector extends BaseCheckStyleDetector<SimianCheck> {
 		int otherStart = Integer.parseInt(m.group(4).replace(",",""));
 		int otherEnd = Integer.parseInt(m.group(5).replace(",",""));
 		
-		return (numLines + (otherEnd - otherStart + 1)) / 2.0;
+		double avg = (numLines + (otherEnd - otherStart + 1)) / 2.0;
+	
+		return Scorer.scale(Math.min(avg, 5), 0, 5, 50, 100);
 	}
 	
 	@Override
