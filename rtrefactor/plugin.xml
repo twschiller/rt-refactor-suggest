@@ -61,12 +61,13 @@
             </separator>
          </menu>
          <action
-               class="edu.washington.cs.rtrefactor.actions.RunCloneDetection"
+               class="edu.washington.cs.rtrefactor.actions.SwitchDetectionMode"
                icon="icons/sample.gif"
-               id="edu.washington.cs.rtrefactor.actions.RunCloneDetection"
-               label="Detect Code Clones"
+               id="edu.washington.cs.rtrefactor.actions.SwitchDetectionMode"
+               label="Switch RT Refactoring Mode"
+               style="toggle"
                toolbarPath="rtRefactorGroup"
-               tooltip="Detect Code Clones">
+               tooltip="Enable Development Mode">
          </action>
       </actionSet>
    </extension>

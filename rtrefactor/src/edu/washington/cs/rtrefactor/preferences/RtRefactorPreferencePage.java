@@ -47,11 +47,7 @@ public class RtRefactorPreferencePage
 				{ "JCCD", "JCCD" }, 
 				{"Simian", "Simian" },
 		}, getFieldEditorParent()));
-		
-		addField(new BooleanFieldEditor(
-				PreferenceConstants.P_INCREMENT,
-			"Incremental Detection",  getFieldEditorParent()));
-		
+			
 		addField(new IntegerFieldEditor(
 				PreferenceConstants.P_CONTEXT_LINES,
 			"# of Context Lines",  getFieldEditorParent()));
