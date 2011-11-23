@@ -247,7 +247,7 @@ developer switches between the two modes using a toolbar button.
 \subsection{Determining When to Make Suggestions}
 
 Clone detectors score clone pairs based on code similarity; therefore,
-the results may not be suitable for certains types of downstream
+the results may not be suitable for certain types of downstream
 refactorings or other actions.
 Additionally,
 because we are presenting these clones to the user during development,
@@ -357,7 +357,7 @@ clone region overlaps the statements.  The score for the extraction
 action is then determined by (1) the clone's similarity, and (2) the
 number of variables used in the statements that aren't declared
 locally in the statements --- i.e., fields, method parameters, local
-variables declared prior to the statmements --- excluding static
+variables declared prior to the statements --- excluding static
 fields:
 
 \begin{align*}
@@ -458,7 +458,7 @@ For the development tasks, we will record:
   \item the number of code clones introduced into the code base
   \item the percentage of the new code in the final method that is a
     duplicate of other code; this will be determined by human
-    judgement with the aide of a clone detector.
+    judgment with the aide of a clone detector.
 \end{itemize}
 
 \noindent For the control group, we will additionally record the
@@ -526,7 +526,7 @@ validity:
     past.  This is because the developer may not initially recall having written 
 code with duplicate functionality and/or may not be willing to take the time to manually locate it,
 but once the tool suggests the clone they may remember writing it and have no reservations about refactoring that section of code.
-	If the tool suggests an unfamiliar section of code written by another developer, in constrast, the programmer may be less willing to refactor or otherwise modify it.
+	If the tool suggests an unfamiliar section of code written by another developer, in contrast, the programmer may be less willing to refactor or otherwise modify it.
 	Due to time limitations this scenario may be difficult to
     induce, as it usually occurs after one has been working on the
     same project for a long time.
@@ -543,7 +543,7 @@ requires a long-term study over weeks, months, or years.
 The code clone literature can be divided into two areas: (1)
 \emph{post} hoc code clone detection and
 (2) \emph{development-time} clone management. By post-hoc we mean the scenario in which
-detection is manually invoked to find all clones across an entire codebase, typically with the assumption that the codebase compiles and has already passed some level of testing.  In constrast, we use development-time to refer to the scenario in which detection automatically occurs as the user modifies code, typically without requirements about the compilability of the code.  The techniques used in the
+detection is manually invoked to find all clones across an entire codebase, typically with the assumption that the codebase compiles and has already passed some level of testing.  In contrast, we use development-time to refer to the scenario in which detection automatically occurs as the user modifies code, typically without requirements about the compilability of the code.  The techniques used in the
 post-hoc detection can vary greatly  based on the authors' definition of what 
 level of similarity defines a ``clone", but typically utilize an
 ad hoc model of clones. In contrast, the development-time literature focuses on
@@ -600,7 +600,7 @@ displaying code clones in real-time to support software
 technique for indexing clones. Displayed clones are ranked via the sum
 of the ratio files committed at the same time and the ratio of files
 opened or edited at the same period in Visual Studio. Note that, unlike our tool,
- this sytem only \emph{displays} detected clones in real-time, detection is still
+ this system only \emph{displays} detected clones in real-time, detection is still
  a manual post-processing step.
 %\todo{How do they get the latter piece of information?}
 
