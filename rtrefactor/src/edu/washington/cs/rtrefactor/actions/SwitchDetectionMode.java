@@ -1,7 +1,11 @@
 package edu.washington.cs.rtrefactor.actions;
 
+import java.net.MalformedURLException;
+import java.net.URL;
+
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.IWorkbenchWindowActionDelegate;
@@ -14,6 +18,10 @@ import edu.washington.cs.rtrefactor.preferences.PreferenceConstants;
  * @author Todd Schiller
  */
 public class SwitchDetectionMode implements IWorkbenchWindowActionDelegate {
+	
+	private ImageDescriptor developmentIcon;
+	private ImageDescriptor maintenanceIcon;
+	
 	/**
 	 * The constructor.
 	 */
@@ -42,8 +50,10 @@ public class SwitchDetectionMode implements IWorkbenchWindowActionDelegate {
 	private void setTooltip(IAction action){
 		if (action.isChecked()){
 			action.setToolTipText("Development Mode (click to switch to Maintenance Mode)");
+			action.setImageDescriptor(developmentIcon);
 		}else{
 			action.setToolTipText("Maintenance Mode (click to switch to Development Mode)");
+			action.setImageDescriptor(maintenanceIcon);
 		}
 	}
 
@@ -53,5 +63,15 @@ public class SwitchDetectionMode implements IWorkbenchWindowActionDelegate {
 
 	@Override
 	public void init(IWorkbenchWindow window) {
+		URL d = null;
+		URL m = null;
+		try {
+			d = new URL(Activator.getDefault().getDescriptor().getInstallURL(), "icons/keyboard-add-icon.png");
+			m = new URL(Activator.getDefault().getDescriptor().getInstallURL(), "icons/keyboard-magnify-icon.png");
+		} catch (MalformedURLException e) {
+			return;
+		}
+		developmentIcon = ImageDescriptor.createFromURL(d);
+		maintenanceIcon = ImageDescriptor.createFromURL(m);
 	}
 }

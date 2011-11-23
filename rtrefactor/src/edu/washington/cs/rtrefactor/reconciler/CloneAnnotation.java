@@ -1,7 +1,6 @@
 package edu.washington.cs.rtrefactor.reconciler;
 
 import org.eclipse.core.resources.IMarker;
-import org.eclipse.ui.texteditor.MarkerAnnotation;
 import org.eclipse.ui.texteditor.SimpleMarkerAnnotation;
 
 /** This trivial class lets us quickly and easily find our own annotations 
