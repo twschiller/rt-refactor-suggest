@@ -11,8 +11,10 @@ import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
+import org.eclipse.jdt.core.ISourceRange;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
+import org.eclipse.jdt.core.SourceRange;
 
 import com.google.common.collect.HashMultiset;
 
@@ -77,6 +79,41 @@ public class FindMethod {
 		}
 		
 		return maxE;
+	}
+	
+	/**
+	 * Get the percent of the method covered by <code>region</code>
+	 * @param method the method
+	 * @param region the query region
+	 * @return the percent of the method covered by <code>region</code>
+	 */
+	public static double methodCoverage(IMethod method, SourceRegion region){
+		ICompilationUnit cu = method.getCompilationUnit();
+		int cnt = 0;		
+
+		for (int i = region.getStart().getGlobalOffset(); i < region.getEnd().getGlobalOffset(); i++){
+			try{
+				IMethod m = getSurroundingMethod(cu.getElementAt(i));
+				
+				if (m != null && method.isSimilar(m)){
+					cnt++;
+				}
+			}catch (JavaModelException ex){
+				// ignore
+			}
+		}
+	
+		try{
+			ISourceRange rng = method.getSourceRange();
+			if (SourceRange.isAvailable(rng)){
+				// TODO is this wrong if the method has Javadoc?
+				return cnt / (double) method.getSourceRange().getLength();
+			}else{
+				throw new IllegalArgumentException("The method has no attached source");
+			}
+		}catch(JavaModelException ex){
+			throw new RuntimeException(ex);
+		}
 	}
 	
 	/**
