@@ -289,7 +289,7 @@ strictfp public class Scorer {
 			return Lists.newArrayList();
 		}
 		
-		double base = pair.getSimilarity() /* x penalty for the number of names to be extracted */;
+		double base = pair.getSimilarity() * Math.pow(0.95, b.getNumCapturedVariable());
 		
 		double score = calc(base, EXTRACT, pair.getCloneNumber());
 		
