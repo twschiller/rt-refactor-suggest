@@ -123,4 +123,12 @@ public class ClonePair {
 
 		return new ClonePairData(cloneNumber, sourceClone, otherClone, sourceContents, sameFile, score);
 	}
+	
+	@Override 
+	public String toString(){
+		return "(" + first.getFile().getName() + ":" + first.getStart().getLine() + "=" 
+				+ second.getFile().getName() + ":" + second.getStart().getLine() + ")";
+		
+	}
+	
 }

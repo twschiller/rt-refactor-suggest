@@ -72,7 +72,7 @@ public class SimianDetector extends BaseCheckStyleDetector<SimianCheck> {
 		return NAME;
 	}
 
-	private SourceRegion mkRegion(BiMap<File, File> files, AuditEvent e, Matcher m) throws BadLocationException, IOException{
+	private SourceRegion mkRegion(BiMap<File, File> files, AuditEvent e, Matcher m){
 		int endLine = Integer.parseInt(m.group(2).replace(",",""));
 		
 		File abs = super.absolutePath(super.absolutePath(new File(e.getFileName())));
@@ -81,17 +81,33 @@ public class SimianDetector extends BaseCheckStyleDetector<SimianCheck> {
 		if (files.containsKey(abs)){
 			File underlier = files.get(abs);
 			
-			Document underlierDoc = new Document(FileUtil.read(abs));
+			Document underlierDoc;
+			try {
+				underlierDoc = new Document(FileUtil.read(abs));
+			} catch (IOException ex) {
+				throw new RuntimeException("Problem reading file " + abs.getName() + " when parsing Simian message " + ex.getMessage());
+			}
 			
-			return new SourceRegion(
-				new SourceLocation(underlier, e.getLine(), 0, underlierDoc),
-				new SourceLocation(underlier, endLine + 1, 0, underlierDoc));
+			SourceLocation start;
+			try {
+				start = new SourceLocation(underlier, e.getLine(), 0, underlierDoc);
+			} catch (BadLocationException ex) {
+				throw new RuntimeException("Bad location in file " + abs.getName() + " (Line: " + e.getLine() + ")", ex);
+			}
+			SourceLocation end;
+			try {
+				end = new SourceLocation(underlier, endLine, 0, underlierDoc);
+			} catch (BadLocationException ex) {
+				throw new RuntimeException("Bad location in file " + abs.getName() + " (Line: " + endLine  + ")", ex);
+			}
+			
+			return new SourceRegion(start, end);
 		}else{
-			throw new RuntimeException("internal error: temporary source file " + abs.getAbsolutePath() + " is not registered");
+			throw new RuntimeException("Internal error: temporary source file " + abs.getAbsolutePath() + " is not registered");
 		}
 	}
 	
-	private SourceRegion mkOtherRegion(BiMap<File, File> files, AuditEvent e, Matcher m) throws BadLocationException, IOException{
+	private SourceRegion mkOtherRegion(BiMap<File, File> files, AuditEvent e, Matcher m){
 		File src = new File(m.group(3));
 		int otherStart = Integer.parseInt(m.group(4).replace(",",""));
 		int otherEnd = Integer.parseInt(m.group(5).replace(",",""));
@@ -101,13 +117,29 @@ public class SimianDetector extends BaseCheckStyleDetector<SimianCheck> {
 		if (files.containsKey(abs)){
 			File underlier = files.get(abs);
 			
-			Document underlierDoc = new Document(FileUtil.read(abs));
+			Document underlierDoc;
+			try {
+				underlierDoc = new Document(FileUtil.read(abs));
+			} catch (IOException ex) {
+				throw new RuntimeException("Problem reading file " + abs.getName() + " when parsing Simian message " + ex.getMessage());
+			}
 			
-			return new SourceRegion(
-					new SourceLocation(underlier, otherStart, 0, underlierDoc),
-					new SourceLocation(underlier, otherEnd + 1, 0, underlierDoc));			
+			SourceLocation start;
+			try {
+				start = new SourceLocation(underlier, otherStart, 0, underlierDoc);
+			} catch (BadLocationException ex) {
+				throw new RuntimeException("Bad location in file " + abs.getName() + " (Line: " + otherStart + ")", ex);
+			}
+			SourceLocation end;
+			try {
+				end = new SourceLocation(underlier, otherEnd , 0, underlierDoc);
+			} catch (BadLocationException ex) {
+				throw new RuntimeException("Bad location in file " + abs.getName() + " (Line: " + otherEnd + ")", ex);
+			}
+			
+			return new SourceRegion(start, end);		
 		}else{
-			throw new RuntimeException("internal error: temporary source file " + abs.getAbsolutePath() + " is not registered");
+			throw new RuntimeException("Internal error: temporary source file " + abs.getAbsolutePath() + " is not registered");
 		}
 	}
 	
@@ -127,13 +159,7 @@ public class SimianDetector extends BaseCheckStyleDetector<SimianCheck> {
 		Matcher m = EN_REGEX.matcher(e.getMessage());
 		
 		if (m.matches()){
-			try {
 			return new ClonePair(mkRegion(files, e, m), mkOtherRegion(files, e, m), quality(e,m));
-			} catch (BadLocationException ex) {
-				throw new RuntimeException("Bad location in parsing Simian message " + ex.getMessage());
-			} catch (IOException ex) {
-				throw new RuntimeException("Problem reading file when parsing Simian message " + ex.getMessage());
-			}
 		}else{
 			throw new RuntimeException("Internal error parsing Simian message: " + e.getMessage());	
 		}
