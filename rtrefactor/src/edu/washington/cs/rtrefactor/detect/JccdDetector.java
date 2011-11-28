@@ -2,6 +2,7 @@ package edu.washington.cs.rtrefactor.detect;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Map;
@@ -224,18 +225,40 @@ public class JccdDetector implements IActiveDetector, IDetector{
 		DetectorUtil.detectLog.debug("Begin full clone detection with detector JCCD");
 
 		Set<ClonePair> result = Sets.newHashSet();
+		
+		
+		//assert (dirty.size() == 1);
+	
+		
+	
 
+		
+		BiMap<File, File> files = DetectorUtil.collect(dirty);
+		
+		//Pick out the current working source file (used for one-sided detection)
+		final File sourceFile = files.get(dirty.keySet().iterator().next());
+		JCCDFile sourceJCCD = new JCCDFile(sourceFile);
+	
 		// switch direction: result name -> resource name
-		BiMap<File, File> files = DetectorUtil.collect(dirty).inverse();
+		files = files.inverse();
 
-		Collection<JCCDFile> jccdFiles = Collections2.transform(files.keySet(), new Function<File, JCCDFile>(){
-			@Override
-			public JCCDFile apply(File input) {
-				return new JCCDFile(input);
-			}
-		});
-
-		detector.setSourceFiles(jccdFiles.toArray(new JCCDFile[]{}));
+		Collection<JCCDFile> jccdFiles = new ArrayList<JCCDFile>();
+		for(File f: files.keySet())
+		{
+			//For one-sided detection, we do not want the source file to appear in both sets 
+			if(dirty.size() != 1 || !f.equals(sourceFile))
+				jccdFiles.add(new JCCDFile(f));
+		}
+		
+		
+			
+		if(dirty.size() == 1)
+		{
+			//One-sided detection 
+			detector.setSourceFiles(new JCCDFile[]{sourceJCCD}, jccdFiles.toArray(new JCCDFile[]{}));
+		}
+		else
+			detector.setSourceFiles(jccdFiles.toArray(new JCCDFile[]{}));
 
 		SimilarityGroupManager m = detector.process();
 
@@ -250,6 +273,7 @@ public class JccdDetector implements IActiveDetector, IDetector{
 		} catch (BadLocationException ex) {
 			throw new RuntimeException("Bad location in JCCD node conversion " + ex.getMessage());
 		}
+		
 
 		for (File underlier : dirty.keySet()){
 			File tmp = files.inverse().get(underlier);
