@@ -214,7 +214,7 @@ public class JccdDetector implements IActiveDetector, IDetector{
 	 */
 	public Set<ClonePair> detect(Map<File, String> dirty, SourceRegion active) throws CoreException, IOException {
 
-		return new HashSet<ClonePair>(Sets.filter(detect(dirty), new DetectorUtil.ActiveRegion(active)));
+		return new HashSet<ClonePair>(detect(dirty));
 	}
 
 	@Override

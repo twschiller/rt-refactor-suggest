@@ -1,7 +1,10 @@
 package edu.washington.cs.rtrefactor.quickfix;
 
-import java.util.HashSet;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IWorkspace;
@@ -26,6 +29,8 @@ import org.eclipse.jdt.core.dom.SimpleName;
 import org.eclipse.jdt.core.dom.Statement;
 import org.eclipse.jdt.core.dom.VariableDeclarationFragment;
 import org.eclipse.jdt.core.dom.VariableDeclarationStatement;
+import org.eclipse.jface.text.IDocument;
+import org.eclipse.text.edits.TextEdit;
 
 import soot.Modifier;
 
@@ -33,6 +38,8 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
 import edu.washington.cs.rtrefactor.detect.SourceRegion;
+import edu.washington.cs.rtrefactor.reconciler.CloneReconciler;
+import edu.washington.cs.rtrefactor.util.ASTUtil;
 
 // TODO we need to penalize for occurrences of local variables use a variable that would be 
 // defined locally in the extracted method
@@ -49,6 +56,7 @@ public class FindBlock {
 	 */
 	public static class BlockInfo{
 		private List<Statement> statements;
+		private CompilationUnit cUnit;
 
 		protected BlockInfo(List<Statement> statements) {
 			if (statements.isEmpty()){
@@ -67,6 +75,21 @@ public class FindBlock {
 		}
 		
 		/**
+		 * Get the compilation unit in which this block resides.
+		 * @return the compilation unit in which this block resides.
+		 */
+		public CompilationUnit getCompilationUnit() {
+			return cUnit;
+		}
+		
+		/**
+		 * Set the compilation unit in which this block resides.
+		 */
+		public void setCompilationUnit(CompilationUnit compUnit) {
+			cUnit = compUnit;
+		}
+		
+		/**
 		 * Get the ending global file offset
 		 * @return the ending global file offset
 		 */
@@ -82,11 +105,70 @@ public class FindBlock {
 		 * @return the number of captured variables
 		 */
 		public int getNumCapturedVariable(){
+			return getCapturedVariables().size();
+		}
+		
+		/**
+		 * Get the set of variables that  are captured by the statements
+		 * in this block. Captured variables are those that are used, but not declared within
+		 * the block (excluding static variables).
+		 * @return the set of captured variables
+		 */
+		public LinkedHashSet<String> getCapturedVariables() {
 			VariableCaptureCounter counter = new VariableCaptureCounter();
 			for (Statement s : statements){
 				s.accept(counter);
 			}
-			return counter.captured.size();
+			return counter.captured;
+		}
+		
+		
+		/**
+		 * Replace any names in this block matching the external variables in the other block 
+		 * 	with the specified variables names.
+		 * 
+		 * The variables to be replaced in this block do not need to be properly bound.
+		 * 
+		 * Currently order is used to determine the mapping between the two sets of variables.
+		 * 
+		 * @param replaceVars Variable name replacements to be used.
+		 * @param other The other block to read external variable names from
+		 * @param original The document in which this block resides
+		 * @return An edit to this document with the requested replacements.
+		 */
+		public TextEdit replaceWithVariablesFrom(LinkedHashSet<String> replaceVars, 
+				BlockInfo other, IDocument original)
+		{
+			//Find external dependencies in the other block to know which variables to replace.
+			VariableCaptureCounter otherCounter = new VariableCaptureCounter();
+			for (Statement s : other.statements){
+				s.accept(otherCounter);
+			}
+			
+			//Create the mapping between variables.  Currently only order is used.
+			HashMap<String, String> variableReplacements = new HashMap<String, String>();
+			Iterator<String> otherVars =  otherCounter.captured.iterator();
+			for(String sourceVar : replaceVars){
+				String otherVar = otherVars.next();
+				CloneReconciler.reconcilerLog.debug("Replacing " + otherVar + " with " + sourceVar);
+				variableReplacements.put(otherVar, sourceVar);
+			}
+			
+			CompilationUnit myUnit = this.getCompilationUnit();
+			
+			//start recording modifications
+			myUnit.recordModifications();
+			
+			//Modify the AST with the name replacements
+			VariableReferenceReplacer replacer = 
+					new VariableReferenceReplacer(variableReplacements);
+			for (Statement s : statements){
+				s.accept(replacer);
+			}
+			
+			return myUnit.rewrite(original, null);
+			
+			
 		}
 	}
 
@@ -136,6 +218,7 @@ public class FindBlock {
 		
 		RegionFinder f = new RegionFinder(region);
 		unit.accept(f);
+		f.maxRegion.setCompilationUnit(unit);
 		
 		return f.maxRegion;
 	}
@@ -209,6 +292,52 @@ public class FindBlock {
 			return true;
 		}
 	}
+	
+	
+	/**
+	 * Replaces one set of variable names in the AST with another
+	 * @author Travis Mandel
+	 */
+	private static class VariableReferenceReplacer extends ASTVisitor{
+		
+		Map<String, String> replacements;
+		/**
+		 * Constructor taking a replacement map
+		 * @param refs A mapping from original variable names to replacements. 
+		 */
+		public VariableReferenceReplacer(Map<String, String> refs) {
+			replacements = refs;
+		}
+		
+		
+		@Override
+		public boolean visit(SimpleName name){
+			doName(name);
+			return false;
+		}
+		
+		@Override
+		public boolean visit(QualifiedName name){
+			doName(name);
+			return false;
+		}
+		
+		/**
+		 * Replaces the variable name with the new name if it is in our map.  
+		 * @param name the name of variable
+		 */
+		private void doName(Name name){
+			if (!(name.getParent() instanceof VariableDeclarationFragment)){
+				//May not have any binding info, so no reason to do further checks
+				String replacementName = replacements.get(name.getFullyQualifiedName());
+				if (replacementName != null){
+					ASTUtil.replace(name, name.getAST().newName(replacementName));
+				}
+				
+			}
+
+		}
+	}
 
 	/**
 	 * Collects the set of captured variables, pass in a sequence of statements.
@@ -225,7 +354,7 @@ public class FindBlock {
 		/**
 		 * Fully qualified names of captured variables
 		 */
-		protected HashSet<String> captured = Sets.newHashSet();
+		protected LinkedHashSet<String> captured = Sets.newLinkedHashSet();
 		
 		@Override
 		public boolean visit(VariableDeclarationStatement x){
