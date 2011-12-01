@@ -15,7 +15,6 @@ import edu.washington.cs.rtrefactor.quickfix.FindBlock.BlockInfo;
 import edu.washington.cs.rtrefactor.reconciler.CloneEditor;
 import edu.washington.cs.rtrefactor.reconciler.ClonePairData;
 import edu.washington.cs.rtrefactor.reconciler.CloneReconciler;
-import edu.washington.cs.rtrefactor.util.FileUtil;
 
 /**
  * The quickfix which copies & pastes the clone 
@@ -67,11 +66,14 @@ public class CopyPasteFix extends CloneFix {
 			BlockInfo origSource = FindBlock.findLargestBlock(this.getSourceRegion());
 			LinkedHashSet<String> origVars = origSource.getCapturedVariables();
 			
-			// Paste the clone verbatim
-			doc.replace(start, len, FileUtil.get(this.getOtherContents(), this.getOtherRegion()));
+			//Get the block containing the clone
+			BlockInfo other = FindBlock.findLargestBlock(this.getOtherRegion());
+			String otherBlockText = this.getOtherContents().substring(other.getStart(), other.getEnd());
+			
+			// Paste the cloned block verbatim
+			doc.replace(start, len, otherBlockText);
 			
 			//Replace the variable names in the new block with the old names.
-			BlockInfo other = FindBlock.findLargestBlock(this.getOtherRegion());
 			BlockInfo current = FindBlock.findLargestBlock(this.getSourceRegion());
 			TextEdit te = current.replaceWithVariablesFrom(origVars, other, doc);
 			te.apply(doc);
