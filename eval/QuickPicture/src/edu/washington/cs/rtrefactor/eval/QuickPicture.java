@@ -29,6 +29,10 @@ public class QuickPicture extends java.awt.Image {
 		return new QuickPicture(ImageIO.read(input));
 	}
 	
+	public void write(File input) throws IOException{
+		ImageIO.write(raw, "PNG", input);
+	}
+	
 	public int getWidth() {
 		return raw.getWidth();
 	}
