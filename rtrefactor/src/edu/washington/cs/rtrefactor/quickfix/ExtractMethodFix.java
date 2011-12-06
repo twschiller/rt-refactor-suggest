@@ -34,10 +34,10 @@ public class ExtractMethodFix extends CloneFix {
 		this.extractRegion = extractRegion;
 	}
 	
-	@Override
 	/**
-	 * Requires a valid parent
+	 * Requires a valid parent. {@inheritDoc}
 	 */
+	@Override
 	public String getLabel() {
 		getParent().notifyFixesActivated();
 		if(isSameFile()) {
@@ -48,10 +48,10 @@ public class ExtractMethodFix extends CloneFix {
 		}
 	}
 	
-	@Override
 	/**
-	 * Requires a valid parent
+	 * Requires a valid parent. {@inheritDoc}
 	 */
+	@Override
 	public void run(IMarker marker) {
 		getParent().notifyFixSelected(this);
 		

@@ -31,10 +31,10 @@ public class JumpToFix extends CloneFix {
 		super(pairData, relevance, parent);
 	}
 
-	@Override
 	/**
-	 * Requires a valid parent
+	 * Requires a valid parent. {@inheritDoc}
 	 */
+	@Override
 	public String getLabel() {
 		getParent().notifyFixesActivated();
 		if(isSameFile()) {
@@ -45,7 +45,6 @@ public class JumpToFix extends CloneFix {
 		}
 	}
 	
-
 	/**
 	 * Jump to the region and select it, opening a new buffer iff <code>isSameFile == false</code>
 	 * @param region the region to jump to
@@ -100,10 +99,11 @@ public class JumpToFix extends CloneFix {
 		}
 	}
 	
-	@Override
+
 	/**
-	 * Requires a valid parent
+	 * Requires a valid parent. {@inheritDoc}
 	 */
+	@Override 
 	public void run(IMarker marker) {
 		
 		getParent().notifyFixSelected(this);
