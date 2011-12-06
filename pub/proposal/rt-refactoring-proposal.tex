@@ -263,7 +263,7 @@ to the following formula, which takes into account the user's previous
 actions:
 
 \begin{align*}
-  \textsc{Adj} = & \left[ \textsc{RAW}_{\text{clone},\text{action}} * \left(\frac{\textsc{Pref}_{\text{action}}}{\sum{\textsc{Pref}}}\right) \right] \\
+  \textsc{Adj} = & \left[ \textsc{RAW}_{\text{clone},\text{action}} * \left(1 + \frac{\textsc{Pref}_{\text{action}}}{\sum{\textsc{Pref}}}\right) \right] \\
       & * (1-\textsc{MainDecay})^{\textsc{\#Display}_{\text{clone}}} \\
       & * (1-\textsc{DevDecay})^{\textsc{\#Dev}_{\text{clone}}} 
 \end{align*}
@@ -323,7 +323,7 @@ account for different programming styles.
 While a developer's preference for an action may be low, it cannot be
 negative. Therefore, preference alone cannot preclude a suggestion
 from being shown to the developer: $\textsc{Pref}_{action} > 0 \Rightarrow
-\textsc{Raw}_{\text{action,clone}}\textsc{Pref}_{\text{action}} > \textsc{Raw}_{\text{action,clone}}$.
+\textsc{Raw}_{\text{action,clone}}\left(1 + \frac{\textsc{Pref}_{\text{action}}}{\sum{\textsc{Pref}}}\right) > \textsc{Raw}_{\text{action,clone}}$.
 All developers see suggestions for which $\textsc{Raw}_{\text{action,clone}} > \textsc{Adj}$,
 however given the developer's action preferences (1) additional
 suggestions may be displayed, and (2) the ordering of the suggestions
@@ -423,7 +423,7 @@ either section of code.  Ideally, one would match the variables based on
 future work.  We simply use the order which the variables were referenced to 
 determine which source variable must be substituted for each clone variable.
 
-% TSM: Is an example needed here?
+% TSM: Is an example needed here to clarify the problem with matching references?
 
 
 \section{Evaluation}
