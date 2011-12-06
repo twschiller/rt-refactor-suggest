@@ -25,10 +25,11 @@ public class InsertCallFix extends CloneFix {
 		super(pairData, relevance, parent);
 	}
 
-	@Override
+	
 	/**
-	 * Requires a valid parent
+	 * Requires a valid parent. {@inheritDoc}
 	 */
+	@Override
 	public String getLabel() {
 		getParent().notifyFixesActivated();
 		if(isSameFile()) {
@@ -41,7 +42,7 @@ public class InsertCallFix extends CloneFix {
 	
 	@Override
 	/**
-	 * Requires a valid parent
+	 * Requires a valid parent. {@inheritDoc}
 	 */
 	public void run(IMarker marker) {
 		
