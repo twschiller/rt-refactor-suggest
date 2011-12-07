@@ -135,7 +135,7 @@
   <extension point="org.eclipse.ui.ide.markerResolution">
       <markerResolutionGenerator
          markerType="rtrefactor.cloneMarker"
-         class="edu.washington.cs.rtrefactor.quickfix.CloneFixer"/>
+         class="edu.washington.cs.rtrefactor.quickfix.CloneResolutionGenerator"/>
    </extension>
   
 </plugin>

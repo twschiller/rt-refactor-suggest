@@ -38,7 +38,7 @@ import edu.washington.cs.rtrefactor.detect.SimianDetector;
 import edu.washington.cs.rtrefactor.detect.SourceLocation;
 import edu.washington.cs.rtrefactor.detect.SourceRegion;
 import edu.washington.cs.rtrefactor.preferences.PreferenceConstants;
-import edu.washington.cs.rtrefactor.quickfix.CloneFixer;
+import edu.washington.cs.rtrefactor.quickfix.CloneResolutionGenerator;
 import edu.washington.cs.rtrefactor.scorer.Scorer;
 
 /**
@@ -290,17 +290,17 @@ public class CloneReconcilingStrategy implements IReconcilingStrategy,IReconcili
 		try {
 			cloneMarker = res.createMarker(CLONE_MARKER);
 			
-			cloneMarker.setAttribute(CloneFixer.CLONE_NUMBER, cloneNumber);
+			cloneMarker.setAttribute(CloneResolutionGenerator.CLONE_NUMBER, cloneNumber);
 			
-			cloneMarker.setAttribute(CloneFixer.SOURCE_START_OFFSET, source.getStart().getGlobalOffset());
-			cloneMarker.setAttribute(CloneFixer.SOURCE_END_OFFSET, source.getEnd().getGlobalOffset());
-			cloneMarker.setAttribute(CloneFixer.SOURCE_TEXT, fDocument.get());
+			cloneMarker.setAttribute(CloneResolutionGenerator.SOURCE_START_OFFSET, source.getStart().getGlobalOffset());
+			cloneMarker.setAttribute(CloneResolutionGenerator.SOURCE_END_OFFSET, source.getEnd().getGlobalOffset());
+			cloneMarker.setAttribute(CloneResolutionGenerator.SOURCE_TEXT, fDocument.get());
 			
-			cloneMarker.setAttribute(CloneFixer.OTHER_START_OFFSET, other.getStart().getGlobalOffset());
-			cloneMarker.setAttribute(CloneFixer.OTHER_END_OFFSET, other.getEnd().getGlobalOffset());
-			cloneMarker.setAttribute(CloneFixer.OTHER_FILE, other.getFile().getAbsolutePath());
+			cloneMarker.setAttribute(CloneResolutionGenerator.OTHER_START_OFFSET, other.getStart().getGlobalOffset());
+			cloneMarker.setAttribute(CloneResolutionGenerator.OTHER_END_OFFSET, other.getEnd().getGlobalOffset());
+			cloneMarker.setAttribute(CloneResolutionGenerator.OTHER_FILE, other.getFile().getAbsolutePath());
 			
-			cloneMarker.setAttribute(CloneFixer.CLONE_SIMILARITY, Double.toString(similarity));
+			cloneMarker.setAttribute(CloneResolutionGenerator.CLONE_SIMILARITY, Double.toString(similarity));
 		} catch (CoreException e) {
 			CloneReconciler.reconcilerLog.error("Cannot add annotation to document, marker does not have required field", e);
 			return;
@@ -332,7 +332,7 @@ public class CloneReconcilingStrategy implements IReconcilingStrategy,IReconcili
 				{
 					int cloneNumber = -1;
 					try {
-						cloneNumber = (Integer) ((CloneAnnotation) an).getMarker().getAttribute(CloneFixer.CLONE_NUMBER);
+						cloneNumber = (Integer) ((CloneAnnotation) an).getMarker().getAttribute(CloneResolutionGenerator.CLONE_NUMBER);
 					} catch (CoreException e) {
 						throw new RuntimeException("Marker attached to clone annotation has no clone number!" + 
 									e.getMessage());

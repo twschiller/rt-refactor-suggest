@@ -1,6 +1,5 @@
 package edu.washington.cs.rtrefactor.scorer;
 
-import java.io.File;
 import java.util.List;
 import java.util.Set;
 
@@ -20,11 +19,10 @@ import com.google.common.collect.Multiset;
 import com.google.common.collect.Sets;
 
 import edu.washington.cs.rtrefactor.Activator;
-import edu.washington.cs.rtrefactor.detect.SourceLocation;
 import edu.washington.cs.rtrefactor.detect.SourceRegion;
 import edu.washington.cs.rtrefactor.preferences.PreferenceConstants;
 import edu.washington.cs.rtrefactor.quickfix.CloneFix;
-import edu.washington.cs.rtrefactor.quickfix.CloneFixer;
+import edu.washington.cs.rtrefactor.quickfix.CloneResolutionGenerator;
 import edu.washington.cs.rtrefactor.quickfix.CopyPasteFix;
 import edu.washington.cs.rtrefactor.quickfix.ExtractMethodFix;
 import edu.washington.cs.rtrefactor.quickfix.FindBlock;
@@ -225,7 +223,7 @@ strictfp public class Scorer {
 	/**
 	 * Generate the marker resolutions for the given code clone <code>pair</code>.
 	 * @param pair the code clone pair
-	 * @see {@link Scorer#calculateResolutions(ClonePairData, CloneFixer)}
+	 * @see {@link Scorer#calculateResolutions(ClonePairData, CloneResolutionGenerator)}
 	 * @return the marker resolutions
 	 */
 	public List<CloneFix> calculateResolutions(ClonePairData pair) {
@@ -243,7 +241,7 @@ strictfp public class Scorer {
 	 * @param parent the parent Clonefixer (can be null)
 	 * @return the marker resolutions
 	 */
-	public List<CloneFix> calculateResolutions(ClonePairData pair, CloneFixer parent){
+	public List<CloneFix> calculateResolutions(ClonePairData pair, CloneResolutionGenerator parent){
 		List<CloneFix> rs = Lists.newArrayList();
 		
 		rs.addAll(generateJumpToCloneFixes(pair, parent));
@@ -264,7 +262,7 @@ strictfp public class Scorer {
 		}));
 	}
 	
-	private List<CloneFix> generateJumpToCloneFixes(ClonePairData pair, CloneFixer parent){
+	private List<CloneFix> generateJumpToCloneFixes(ClonePairData pair, CloneResolutionGenerator parent){
 		IPreferenceStore store = Activator.getDefault().getPreferenceStore();	
 	
 		double base = truncate(pair.getSimilarity() * 
@@ -280,7 +278,7 @@ strictfp public class Scorer {
 	 * @param pair the clone pair
 	 * @return scored insert method call fixes
 	 */
-	private List<CloneFix> generateInsertMethodCallFixes(ClonePairData pair, CloneFixer parent){
+	private List<CloneFix> generateInsertMethodCallFixes(ClonePairData pair, CloneResolutionGenerator parent){
 		IMethod m;
 		try {
 			m = FindMethod.findMethod(pair.getOtherRegion());
@@ -301,7 +299,7 @@ strictfp public class Scorer {
 		return Lists.<CloneFix>newArrayList(new InsertCallFix(pair, score, parent));
 	}
 	
-	private List<CloneFix> generateExtractMethodFixes(ClonePairData pair, CloneFixer parent){
+	private List<CloneFix> generateExtractMethodFixes(ClonePairData pair, CloneResolutionGenerator parent){
 		BlockInfo b;
 		try {
 			b = FindBlock.findLargestBlock(pair.getOtherRegion());
@@ -320,7 +318,7 @@ strictfp public class Scorer {
 		
 		SourceRegion region;
 		try {
-			region = mkRegion(pair.getOtherRegion().getFile(), pair.getOtherContents(), b.getStart(), b.getEnd());
+			region = new SourceRegion(pair.getOtherRegion().getFile(), new Document(pair.getOtherContents()), b.getStart(), b.getEnd());
 		} catch (BadLocationException e) {
 			throw new RuntimeException(e);
 		}
@@ -328,7 +326,7 @@ strictfp public class Scorer {
 		return Lists.<CloneFix>newArrayList(new ExtractMethodFix(pair, score, parent, region));
 	}
 	
-	private List<CloneFix> generatePasteCloneFixes(ClonePairData pair, CloneFixer parent){
+	private List<CloneFix> generatePasteCloneFixes(ClonePairData pair, CloneResolutionGenerator parent){
 		BlockInfo copyBlock;
 		BlockInfo pasteBlock;
 		
@@ -342,32 +340,11 @@ strictfp public class Scorer {
 		if (copyBlock == null || pasteBlock == null){
 			return Lists.newArrayList();
 		}
-		
-//		SourceRegion copyRegion;
-//		SourceRegion pasteRegion;
-//		
-//		try {
-//			copyRegion = mkRegion(pair.getOtherRegion().getFile(), pair.getOtherContents(), copyBlock.getStart(), copyBlock.getEnd());
-//			pasteRegion = mkRegion(pair.getSourceRegion().getFile(), pair.getSourceContents(), pasteBlock.getStart(), pasteBlock.getEnd());
-//		} catch (BadLocationException e) {
-//			throw new RuntimeException(e);
-//		}
 	
 		double score = calc(pair.getSimilarity(), PASTE, pair.getCloneNumber());
 		return Lists.<CloneFix>newArrayList(new CopyPasteFix(pair, truncate(score), parent, pasteBlock, copyBlock));
 	}
-	
-	private static SourceRegion mkRegion(File file, String content, int start, int end) throws BadLocationException{
-		return mkRegion(file, new Document(content), start, end);
-	}
-	
-	private static SourceRegion mkRegion(File file, Document content, int start, int end) throws BadLocationException{
-		return new SourceRegion(
-				new SourceLocation(file, start, content),
-				new SourceLocation(file, end, content));
-	}
-	
-	
+		
 	/**
 	 * Force the relevance score to be an integer between {@link Scorer#MIN_SCORE} and {@link Scorer#MAX_SCORE}
 	 * @param x the score
