@@ -21,7 +21,7 @@ import edu.washington.cs.rtrefactor.reconciler.ClonePairData;
 public class InsertCallFix extends CloneFix {
 
 	
-	public InsertCallFix(ClonePairData pairData, int relevance, CloneFixer parent){
+	public InsertCallFix(ClonePairData pairData, int relevance, CloneResolutionGenerator parent){
 		super(pairData, relevance, parent);
 	}
 

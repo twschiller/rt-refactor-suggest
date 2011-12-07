@@ -29,7 +29,7 @@ public class ExtractMethodFix extends CloneFix {
 	 * @param parent The parent CloneFixer (can be null)
 	 * @param extractRegion the source region to extract
 	 */
-	public ExtractMethodFix(ClonePairData pairData, int relevance, CloneFixer parent, SourceRegion extractRegion){
+	public ExtractMethodFix(ClonePairData pairData, int relevance, CloneResolutionGenerator parent, SourceRegion extractRegion){
 		super(pairData, relevance, parent);
 		this.extractRegion = extractRegion;
 	}
@@ -76,7 +76,7 @@ public class ExtractMethodFix extends CloneFix {
 
 	@Override
 	public String getDescription() {
-		String description = CloneFixer.getCloneString(
+		String description = CloneResolutionGenerator.getCloneString(
 				extractRegion.getStart().getGlobalOffset(), 
 				extractRegion.getEnd().getGlobalOffset(), 
 				super.getOtherContents());

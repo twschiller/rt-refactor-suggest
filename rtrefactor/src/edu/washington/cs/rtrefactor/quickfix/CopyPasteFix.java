@@ -53,7 +53,7 @@ public class CopyPasteFix extends CloneFix {
 	 * @param pasteBlock the statements to replace during the paste
 	 * @param copyBlock the statements to copy
 	 */
-	public CopyPasteFix(ClonePairData pairData, int relevance, CloneFixer parent, BlockInfo pasteBlock, BlockInfo copyBlock){
+	public CopyPasteFix(ClonePairData pairData, int relevance, CloneResolutionGenerator parent, BlockInfo pasteBlock, BlockInfo copyBlock){
 		super(pairData, relevance, parent);
 		this.pasteBlock = pasteBlock;
 		this.copyBlock = copyBlock;
@@ -118,7 +118,7 @@ public class CopyPasteFix extends CloneFix {
 
 	@Override
 	public String getDescription() {
-		String description = CloneFixer.getCloneString(copyBlock.getStart(), copyBlock.getEnd(), super.getOtherContents());
+		String description = CloneResolutionGenerator.getCloneString(copyBlock.getStart(), copyBlock.getEnd(), super.getOtherContents());
 		
 		if(isSameFile()) {
 			return "Paste clone from the same file: <br/>" 
