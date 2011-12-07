@@ -390,41 +390,30 @@ and $0 < \textsc{DevPenality} < 1$ is a constant penalty to be applied
 when the tool is in development mode, as opposed to maintenance mode.
 
 \subsubsection{Scoring \textsc{Paste} Actions}
-The score for \textsc{Paste} actions are determined by (1) the clone's
-similarity, and (2) an estimate of the number of variables that must
-be renamed after the paste action. This is similar to the calculation
-performed for extract method actions (see section \ref{sec:extract}),
-however the pasted region may span multiple methods, or parts of
-methods; additionally, other parts of the file under development may
-refer to variables declared in the region to be replaced.
+The \textsc{Paste} action replaces the active clone with the the
+system clone extended to the end of block; external identifiers are
+substituted where possible. The current replacement implementation
+naively assumes that the order in which new external identifiers is
+introduced is consistent between the clones.  The extended system
+clone is used under the assumption that it is likely that the user
+will need to replicate the subsequent behavior during development, and
+that the developer effort required to delete extraneous code is small
+relative to the effort required to write new code.
 
-\subsection{Implementing Paste Actions}
- While the implementation of other actions is straightforward 
-(extract method is provided by Eclipse), simply 
- copy-and pasting the clone directly is unlikely to reduce development time
- for two reasons: (1) The programmer will have to heavily edit the
- pasted clone in order to integrate it into the current code context, and 
-(2) after the cloned code is pasted, the programmer must finish writing 
-the section, even if what they are \emph{about to write} is also a clone.
-We fix the latter problem by pasting the largest code block covered by the
-clone into the source document.  In this way, if the block is long, many lines 
-of code can be pasted (even if the clone itself is short), hopefully eliminating the 
-need to rewrite those lines. 
+The score for a paste action is determined by (1) the clone's
+similarity, and (2) the quality of the external identifier matching as
+determined by the number of unmatched identifiers.
 
- Problem 1 is more difficult to solve completely 
-because of the variety of integration tasks that one may need to perform. 
-However, we feel that one of the most common tasks would be to rename the 
-external variable references in the pasted block.  By traversing the AST for each block,
-we can easily determine the set of externally-defined variables that are used in 
-the source and clone regions.  However, it is a challenging problem to try and match 
-the sets of variables, because variable references can be inserted or deleted in 
-either section of code.  Ideally, one would match the variables based on 
-\emph{how they are used} in the code, however, such an approach is left for 
-future work.  We simply use the order which the variables were referenced to 
-determine which source variable must be substituted for each clone variable.
+\begin{align*}
+  \textsc{Raw}_{\textsc{Paste}, \text{clone}} = & \textsc{Similarity}_{\text{clone}} \\ 
+   & * (1 - \textsc{IdMismatchPenalty})^{\textsc{\#Unmatched}}
+\end{align*}
 
-% TSM: Is an example needed here to clarify the problem with matching references?
-
+\noindent, where $\textsc{Similarity}_{\text{clone}}$ is the
+similarity score for the clones, $\textsc{\#Unmatched}$ is the number
+of unmatched external identifiers, and $0 <
+\textsc{IdMismatchPenality} < 1$ is a constant penalty to apply for
+external identifier mismatches.
 
 \section{Evaluation}
 \label{sec:eval}
