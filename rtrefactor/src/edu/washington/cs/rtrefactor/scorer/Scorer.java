@@ -1,5 +1,6 @@
 package edu.washington.cs.rtrefactor.scorer;
 
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -121,6 +122,12 @@ strictfp public class Scorer {
 	 * scoring an Extract Method action
 	 */
 	private static double NONLOCAL_PENALTY = 0.05;
+	
+	/**
+	 * Penalty incurred for identifier mismatches when scoring
+	 * a Paste action
+	 */
+	private static double MISMATCH_PENALTY = 0.05;
 	
 	/**
 	 * Penalty incurred when scoring a Jump To action in Development mode
@@ -340,9 +347,16 @@ strictfp public class Scorer {
 		if (copyBlock == null || pasteBlock == null){
 			return Lists.newArrayList();
 		}
-	
-		double score = calc(pair.getSimilarity(), PASTE, pair.getCloneNumber());
-		return Lists.<CloneFix>newArrayList(new CopyPasteFix(pair, truncate(score), parent, pasteBlock, copyBlock));
+		
+		LinkedHashSet<String> copyIds = copyBlock.getCapturedVariables();
+		LinkedHashSet<String> pasteIds = pasteBlock.getCapturedVariables();
+		
+		int unmatched = Math.max(0, pasteIds.size() - copyIds.size());
+		
+		double base = truncate(pair.getSimilarity() * Math.pow(MISMATCH_PENALTY, unmatched));
+		int score = calc(base, EXTRACT, pair.getCloneNumber());
+		
+		return Lists.<CloneFix>newArrayList(new CopyPasteFix(pair, score, parent, pasteBlock, copyBlock));
 	}
 		
 	/**
