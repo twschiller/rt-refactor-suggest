@@ -50,9 +50,6 @@ public class CheckStyleDetector extends BaseCheckStyleDetector<StrictDuplicateCo
 	}
 
 	@Override
-	/**
-	 * {@inheritDoc}
-	 */
 	public String getName() {
 		return NAME;
 	}
@@ -85,18 +82,16 @@ public class CheckStyleDetector extends BaseCheckStyleDetector<StrictDuplicateCo
 				new SourceLocation(underlier, otherLine + numLines, 0, underlierDoc));
 	}
 
+	
 	@Override
-	/**
-	 * {@inheritDoc}
-	 */
 	protected ClonePair makeClonePair(BiMap<File, File> files, AuditEvent e) {
 		Matcher m = EN_REGEX.matcher(e.getMessage());
 		
 		if (m.matches()){
 			try {
-			return new ClonePair(mkRegion(files, e, m), mkOtherRegion(files, e, m), numLines(e,m));
+				return new ClonePair(mkRegion(files, e, m), mkOtherRegion(files, e, m), numLines(e,m));
 			} catch (Exception ex) {
-				throw new RuntimeException("Bad location parsed from CheckStyle message "+  ex.getMessage());
+				throw new RuntimeException("Bad location parsed from CheckStyle message. Message: " + e.getMessage());
 			}
 		}else{
 			throw new RuntimeException("Internal error parsing CheckStyle message: " + e.getMessage());	

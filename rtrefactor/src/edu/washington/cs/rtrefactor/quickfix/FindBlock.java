@@ -48,15 +48,18 @@ public class FindBlock {
 	 * @author Todd Schiller
 	 */
 	public static class BlockInfo{
-		private List<Statement> statements;
-		private CompilationUnit cUnit;
+		private final List<Statement> statements;
+		private final CompilationUnit cu;
 
-		protected BlockInfo(List<Statement> statements) {
+		protected BlockInfo(List<Statement> statements, CompilationUnit cu) {
 			if (statements.isEmpty()){
 				throw new IllegalArgumentException("Block cannot be empty");
+			}else if (cu == null){
+				throw new NullPointerException("Compilation Unit cannot be null");
 			}
 			
 			this.statements = Lists.newArrayList(statements);
+			this.cu = cu;
 		}
 		
 		/**
@@ -72,16 +75,9 @@ public class FindBlock {
 		 * @return the compilation unit in which this block resides.
 		 */
 		public CompilationUnit getCompilationUnit() {
-			return cUnit;
+			return cu;
 		}
-		
-		/**
-		 * Set the compilation unit in which this block resides.
-		 */
-		public void setCompilationUnit(CompilationUnit compUnit) {
-			cUnit = compUnit;
-		}
-		
+			
 		/**
 		 * Get the ending global file offset
 		 * @return the ending global file offset
@@ -169,9 +165,8 @@ public class FindBlock {
 		
 		CompilationUnit unit = parse(cu);
 		
-		RegionFinder f = new RegionFinder(region);
+		RegionFinder f = new RegionFinder(region, unit);
 		unit.accept(f);
-		f.maxRegion.setCompilationUnit(unit);
 		
 		return f.maxRegion;
 	}
@@ -210,19 +205,21 @@ public class FindBlock {
 	private static class RegionFinder extends ASTVisitor{
 		private int max = Integer.MIN_VALUE;
 		private final SourceRegion query;
-	
+		private final CompilationUnit cu;
+		
 		/**
 		 * The longest block (list of consecutive statements) covered by the region
 		 */
-		protected BlockInfo maxRegion = null;
+		private BlockInfo maxRegion = null;
 		
 		/**
 		 * Constructor taking a query region
 		 * @param query the query region
 		 */
-		protected RegionFinder(SourceRegion query) {
+		protected RegionFinder(SourceRegion query, CompilationUnit cu) {
 			super();
 			this.query = query;
+			this.cu = cu;
 		}
 
 		@Override
@@ -238,7 +235,7 @@ public class FindBlock {
 			if (!inc.isEmpty()){
 				if (inc.size() > max){
 					max = inc.size();
-					maxRegion = new BlockInfo(inc);
+					maxRegion = new BlockInfo(inc, cu);
 				}
 			}
 			

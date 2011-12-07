@@ -1,5 +1,6 @@
 package edu.washington.cs.rtrefactor.scorer;
 
+import java.io.File;
 import java.util.List;
 import java.util.Set;
 
@@ -317,13 +318,9 @@ strictfp public class Scorer {
 		
 		int score = calc(base, EXTRACT, pair.getCloneNumber());
 		
-		Document document = new Document(pair.getOtherContents());
-		
 		SourceRegion region;
 		try {
-			region = new SourceRegion(
-				new SourceLocation(pair.getOtherRegion().getFile(), b.getStart(), document),
-				new SourceLocation(pair.getOtherRegion().getFile(), b.getEnd(), document));
+			region = mkRegion(pair.getOtherRegion().getFile(), pair.getOtherContents(), b.getStart(), b.getEnd());
 		} catch (BadLocationException e) {
 			throw new RuntimeException(e);
 		}
@@ -332,9 +329,44 @@ strictfp public class Scorer {
 	}
 	
 	private List<CloneFix> generatePasteCloneFixes(ClonePairData pair, CloneFixer parent){
+		BlockInfo copyBlock;
+		BlockInfo pasteBlock;
+		
+		try {
+			copyBlock = FindBlock.findLargestBlock(pair.getOtherRegion());
+			pasteBlock = FindBlock.findLargestBlock(pair.getSourceRegion());
+		} catch (CoreException e) {
+			scoreLog.error("Error accessing block for clone pair", e);
+			return Lists.newArrayList();
+		}
+		if (copyBlock == null || pasteBlock == null){
+			return Lists.newArrayList();
+		}
+		
+//		SourceRegion copyRegion;
+//		SourceRegion pasteRegion;
+//		
+//		try {
+//			copyRegion = mkRegion(pair.getOtherRegion().getFile(), pair.getOtherContents(), copyBlock.getStart(), copyBlock.getEnd());
+//			pasteRegion = mkRegion(pair.getSourceRegion().getFile(), pair.getSourceContents(), pasteBlock.getStart(), pasteBlock.getEnd());
+//		} catch (BadLocationException e) {
+//			throw new RuntimeException(e);
+//		}
+	
 		double score = calc(pair.getSimilarity(), PASTE, pair.getCloneNumber());
-		return Lists.<CloneFix>newArrayList(new CopyPasteFix(pair, truncate(score), parent));
+		return Lists.<CloneFix>newArrayList(new CopyPasteFix(pair, truncate(score), parent, pasteBlock, copyBlock));
 	}
+	
+	private static SourceRegion mkRegion(File file, String content, int start, int end) throws BadLocationException{
+		return mkRegion(file, new Document(content), start, end);
+	}
+	
+	private static SourceRegion mkRegion(File file, Document content, int start, int end) throws BadLocationException{
+		return new SourceRegion(
+				new SourceLocation(file, start, content),
+				new SourceLocation(file, end, content));
+	}
+	
 	
 	/**
 	 * Force the relevance score to be an integer between {@link Scorer#MIN_SCORE} and {@link Scorer#MAX_SCORE}
