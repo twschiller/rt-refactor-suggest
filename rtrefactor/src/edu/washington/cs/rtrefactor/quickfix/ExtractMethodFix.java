@@ -76,14 +76,19 @@ public class ExtractMethodFix extends CloneFix {
 
 	@Override
 	public String getDescription() {
+		String description = CloneFixer.getCloneString(
+				extractRegion.getStart().getGlobalOffset(), 
+				extractRegion.getEnd().getGlobalOffset(), 
+				super.getOtherContents());
+		
 		if(isSameFile()) {
 			return "Extracts this code to a method with the following clone " +
 					"(from the same file): <br/>" 
-			+ super.getDescription();
+					+ description;
 		} else {
 			return "Extracts this code to a method with the following clone (from "+ 
-			getOtherRegion().getFile().getName()+  "):<br/>" 
-			+ super.getDescription();
+					getOtherRegion().getFile().getName()+  "):<br/>" 
+					+ description;
 		}
 	}
 

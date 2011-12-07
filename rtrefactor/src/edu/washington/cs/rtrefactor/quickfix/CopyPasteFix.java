@@ -35,8 +35,28 @@ import edu.washington.cs.rtrefactor.util.ASTUtil;
  */
 public class CopyPasteFix extends CloneFix {
 
-	public CopyPasteFix(ClonePairData pairData, int relevance, CloneFixer parent){
+	/**
+	 * the source region to replace during the paste
+	 */
+	private final BlockInfo pasteBlock;
+	
+	/**
+	 * the source region to copy 
+	 */
+	private final BlockInfo copyBlock;
+	
+	/**
+	 * Instantiates a clone clone quick fix
+	 * @param pairData The clone pair data
+	 * @param relevance A score from 10-100 indicating the relevance of this suggestion
+	 * @param parent The parent CloneFixer (can be null)
+	 * @param pasteBlock the statements to replace during the paste
+	 * @param copyBlock the statements to copy
+	 */
+	public CopyPasteFix(ClonePairData pairData, int relevance, CloneFixer parent, BlockInfo pasteBlock, BlockInfo copyBlock){
 		super(pairData, relevance, parent);
+		this.pasteBlock = pasteBlock;
+		this.copyBlock = copyBlock;
 	}
 
 	
@@ -47,9 +67,9 @@ public class CopyPasteFix extends CloneFix {
 	public String getLabel() {
 		getParent().notifyFixesActivated();
 		if(isSameFile()) {
-			return "Copy and pastes local clone";
+			return "Paste local clone";
 		} else {
-			return "Copy and pastes clone from "+ 
+			return "Paste clone from "+ 
 			getOtherRegion().getFile().getName();
 		}
 	}
@@ -72,24 +92,19 @@ public class CopyPasteFix extends CloneFix {
 				" to " + this.getSourceRegion().getFile().getName() + " (line: " + this.getSourceRegion().getStart().getLine() + ")"
 				);
 			
-		int start = this.getSourceRegion().getStart().getGlobalOffset();
-		int len = this.getSourceRegion().getLength();
-		
 		try {
 			//Save the names of the variables originally in this source
-			BlockInfo origSource = FindBlock.findLargestBlock(this.getSourceRegion());
-			LinkedHashSet<String> origVars = origSource.getCapturedVariables();
+			LinkedHashSet<String> origVars = pasteBlock.getCapturedVariables();
 			
 			//Get the block containing the clone
-			BlockInfo other = FindBlock.findLargestBlock(this.getOtherRegion());
-			String otherBlockText = this.getOtherContents().substring(other.getStart(), other.getEnd());
+			String otherBlockText = this.getOtherContents().substring(copyBlock.getStart(), copyBlock.getEnd());
 			
 			// Paste the cloned block verbatim
-			doc.replace(start, len, otherBlockText);
+			doc.replace(pasteBlock.getStart(), pasteBlock.getEnd() - pasteBlock.getStart(), otherBlockText);
 			
 			//Replace the variable names in the new block with the old names.
 			BlockInfo current = FindBlock.findLargestBlock(this.getSourceRegion());
-			TextEdit te = replaceWithVariablesFrom(origVars, current, other, doc);
+			TextEdit te = replaceWithVariablesFrom(origVars, current, copyBlock, doc);
 			te.apply(doc);
 			
 		} catch (BadLocationException e) {
@@ -103,13 +118,15 @@ public class CopyPasteFix extends CloneFix {
 
 	@Override
 	public String getDescription() {
+		String description = CloneFixer.getCloneString(copyBlock.getStart(), copyBlock.getEnd(), super.getOtherContents());
+		
 		if(isSameFile()) {
-			return "Copy and pastes this clone from the same file: <br/>" 
-			+ super.getDescription();
+			return "Paste clone from the same file: <br/>" 
+					+ description;
 		} else {
-			return "Copy and pastes this clone from "+ 
-			getOtherRegion().getFile().getName()+  ":<br/>" 
-			+ super.getDescription();
+			return "Paste clone from "+ 
+					getOtherRegion().getFile().getName()+  ":<br/>" 
+					+ description;
 		}
 	}
 	
@@ -126,7 +143,7 @@ public class CopyPasteFix extends CloneFix {
 	 * @param original The document in which this block resides
 	 * @return An edit to this document with the requested replacements.
 	 */
-	public TextEdit replaceWithVariablesFrom(LinkedHashSet<String> replaceVars, 
+	public static TextEdit replaceWithVariablesFrom(LinkedHashSet<String> replaceVars, 
 		BlockInfo before, BlockInfo other, IDocument original)
 	{
 		//Find external dependencies in the other block to know which variables to replace.
@@ -162,10 +179,12 @@ public class CopyPasteFix extends CloneFix {
 	
 	
 	/**
-	 * Replaces one set of variable names in the AST with another
+	 * <p>Replaces one set of variable names in the AST with another</p>
 	 * @author Travis Mandel
 	 */
 	protected static class VariableReferenceReplacer extends ASTVisitor{
+		
+		// TODO modify to resolve names, instwad of doing string comparison
 		
 		private final Map<String, String> replacements;
 		
