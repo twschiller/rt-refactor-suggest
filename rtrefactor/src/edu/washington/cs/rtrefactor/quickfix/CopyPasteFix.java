@@ -6,7 +6,6 @@ import java.util.LinkedHashSet;
 import java.util.Map;
 
 import org.eclipse.core.resources.IMarker;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.Name;
@@ -103,17 +102,13 @@ public class CopyPasteFix extends CloneFix {
 			doc.replace(pasteBlock.getStart(), pasteBlock.getEnd() - pasteBlock.getStart(), otherBlockText);
 			
 			//Replace the variable names in the new block with the old names.
-			BlockInfo current = FindBlock.findLargestBlock(this.getSourceRegion());
-			TextEdit te = replaceWithVariablesFrom(origVars, current, copyBlock, doc);
+			TextEdit te = replaceNames(origVars, pasteBlock, copyBlock, doc);
 			te.apply(doc);
 			
 		} catch (BadLocationException e) {
 			MessageDialog.openError(null, "Paste Clone", "An error occured when pasting the clone");
 			CloneReconciler.reconcilerLog.error("Bad location when copy & pasting " + e.getMessage());
-		} catch (CoreException e) {
-			MessageDialog.openError(null, "Paste Clone", "An error occured when pasting the clone");
-			CloneReconciler.reconcilerLog.error("Bad file when copy & pasting " + e.getMessage());
-		}
+		} 
 	}
 
 	@Override
@@ -143,8 +138,7 @@ public class CopyPasteFix extends CloneFix {
 	 * @param original The document in which this block resides
 	 * @return An edit to this document with the requested replacements.
 	 */
-	public static TextEdit replaceWithVariablesFrom(LinkedHashSet<String> replaceVars, 
-		BlockInfo before, BlockInfo other, IDocument original)
+	public static TextEdit replaceNames(LinkedHashSet<String> replaceVars, BlockInfo before, BlockInfo other, IDocument original)
 	{
 		//Find external dependencies in the other block to know which variables to replace.
 		VariableCaptureCounter otherCounter = new VariableCaptureCounter();
@@ -167,8 +161,7 @@ public class CopyPasteFix extends CloneFix {
 		myUnit.recordModifications();
 		
 		//Modify the AST with the name replacements
-		VariableReferenceReplacer replacer = 
-				new VariableReferenceReplacer(variableReplacements);
+		VariableReferenceReplacer replacer = new VariableReferenceReplacer(variableReplacements);
 		
 		for (Statement s : before.getStatements()){
 			s.accept(replacer);
