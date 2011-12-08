@@ -21,9 +21,7 @@ public class CartoonifyImageTransform implements ImageTransform {
 	public QuickPicture transform(QuickPicture old) {
 		if(!myStyle.equals(CartoonStyle.EXPERIMENTAL))
 		{
-			for(int i = 0; i<NUM_ITER; i++) {
-				old = applyBlkDistortion(old);
-			}
+			old = applyBlkDistortion(old);
 			return old;
 		} else {
 			return applyWiggleDistortion(old);
@@ -32,25 +30,42 @@ public class CartoonifyImageTransform implements ImageTransform {
 	}
 	
 	public QuickPicture applyBlkDistortion(QuickPicture old) {
-		int maxRun = 0;
-		for (int r = 0 ; r < old.getHeight(); r++){
-			for (int c = 0; c < old.getWidth(); c ++){
+		int centerOffHeight = old.getHeight()/4;
+		int centerOffWidth = old.getWidth()/4;
+		int minRun = 0;
+		for (int r = centerOffHeight ; r < old.getHeight()-centerOffHeight; r++){
+			for (int c = centerOffWidth; c < old.getWidth()-centerOffWidth; c ++){
 				QuickColor curColor = old.getColor(r, c);
-				int horizRun = 0, vertRun = 0;
-				while(old.getColor(horizRun, c).equalsRGB(curColor)) {
+				int horizRun = r, vertRun = c;
+				while(horizRun+1 < old.getWidth() && old.getColor(horizRun, c).equalsRGB(curColor)) {
 					horizRun++;
+					
+					int horizBRun = r;
+					while(horizBRun >= 0 && old.getColor(horizBRun, c).equalsRGB(curColor))
+					{
+						horizBRun--;
+						horizRun++;
+					}
+					
 				}
-				while(old.getColor(r, vertRun).equalsRGB(curColor)) {
+				while(vertRun+1 < old.getHeight() && old.getColor(r, vertRun).equalsRGB(curColor)) {
 					vertRun++;
+					
+					int vertBRun = c;
+					while(vertBRun >= 0 && old.getColor(r, vertBRun).equalsRGB(curColor))
+					{
+						vertBRun--;
+						vertRun++;
+					}
 				}
-				int maxRunHere = Math.max(horizRun, vertRun);
-				maxRun = (maxRunHere > maxRun) ? maxRunHere : maxRun;
+				int minRunHere = Math.min(horizRun-r, vertRun-c);
+				minRun = (minRunHere < minRun || minRun == 0) ? minRunHere : minRun;
 				
 			}
 		}
 			
 		QuickPicture result = new QuickPicture(old.getWidth(), old.getHeight());
-		int size = maxRun+1;
+		int size = Math.min(minRun+1, old.getHeight()/2);
 		for (int r = size ; r < old.getHeight() - size; r+= size * 2){
 			
 			for (int c = size; c < old.getWidth() - size; c += size* 2){
@@ -59,7 +74,7 @@ public class CartoonifyImageTransform implements ImageTransform {
 				int samples = 0;
 				for (int ro = -size; ro < size; ro++){
 					for (int co = -size; co < size; co++){
-						QuickColor oldColor = old.getColor(r+ro, c+co);
+						QuickColor oldColor = old.getColor(c+co, r+ro);
 						total.setRed(total.getRed() + oldColor.getRed());
 						total.setGreen(total.getGreen() + oldColor.getGreen());
 						total.setBlue(total.getBlue() + oldColor.getBlue());
@@ -72,7 +87,7 @@ public class CartoonifyImageTransform implements ImageTransform {
 						if (r + roff >= 0 && r + roff < old.getHeight() && c + coff >=0 && c + coff < old.getWidth()){
 							QuickColor newColor = new QuickColor(total.getRed()/samples, 
 									total.getGreen()/samples, total.getBlue()/samples, 
-									old.getColor(r+roff, c+coff).getAlpha());
+									old.getColor(c+coff, r+roff).getAlpha());
 							result.setColor(c+coff, r+roff, newColor);
 						}
 					}

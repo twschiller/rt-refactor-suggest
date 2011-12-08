@@ -34,10 +34,19 @@ public class ImageUtil {
 		}
 		
 	}
+	
+	
+	//Maintenance task: This method works, but it does not correctly blend the alphas when downsizing the
+	//image.  Whenever we merge a block of pixels into the same color, we want to change the alpha to be the 
+	// average.  
+	//
+	// In reality, there is a clone of this method in UnderwaterTransform, and a partial clone in 
+	//	Cartoonify that must be changed.
 	public static QuickPicture halfImage(QuickPicture orig, int pow2) {
 
 		QuickPicture res = new QuickPicture(orig.getWidth() / pow2, orig.getHeight() / pow2);
 
+	
 		int halfsize = pow2/2;
 		for (int r = halfsize; r < orig.getHeight() - halfsize; r+= halfsize * 2){
 
