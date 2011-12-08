@@ -126,7 +126,7 @@ public class VisionImageTransform implements ImageTransform {
 
 			if(rightFrontier+1 < orig.getWidth() && 
 					differenceSum(averageRegion, divideBy(totalRight, regionHeight)) <= changeThreshold) {
-				rightFrontier--;
+				rightFrontier++;
 				changed = true;
 			}
 

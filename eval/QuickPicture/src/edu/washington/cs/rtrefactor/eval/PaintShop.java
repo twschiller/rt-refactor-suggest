@@ -54,7 +54,7 @@ public class PaintShop extends JFrame{
 		addTransform("Vision", new VisionImageTransform(50, 50, 500));
 		addTransform("Underwater", new UnderwaterTransform(false));
 		//TODO:Bugs
-		//addTransform("Cinematic", new CinematicImageTransform());
+		addTransform("Cinematic", new CinematicImageTransform());
 		addTransform("Photo", new PhotographicImageTransform(new PhotoMode [] 
 				{PhotoMode.FIRST, PhotoMode.SECOND}));
 		addTransform("Random", new RandomSceneGenerator(new QuickColor(400,-400,400,0), 100, 100, 200000));

@@ -7,29 +7,29 @@ public class CinematicImageTransform implements ImageTransform {
 
 	@Override
 	public QuickPicture transform(QuickPicture old) {
+		//odd, square sam size kernels only
+		double[]  kernel = {0.05, 0.1, 0.05,
+							0.1, 0.4, 0.1,
+							0.05, 0.1, 0.05};
 		
-		double[]  kernel = {0.3, 0.5, 0.3,
-							0.5, 1.0, 0.5,
-							0.3, 0.5, 0.3};
-		
-		double[]  kernel2 = {0, 0.3, 0,
-							0, 0.5, 0,
-							0, 1.0, 0,
+		double[]  kernel2 = {0, 0.5, 0,
+							0, -1, 0,
 							0, 0.5, 0};
 		
 		QuickPicture result = new QuickPicture(old.getWidth(), old.getHeight());
 		
 		int len = (int)Math.sqrt(kernel2.length);
+		int sideoff =  (len-1)/2;
 		
 		for (int r = 0 ; r < old.getHeight(); r++){
 			for (int c = 0; c < old.getWidth() ; c ++){
 				double totalColor=0;
-				for (int ro = Math.max(r-len, 0); ro < Math.min(r+len, old.getHeight()); ro++){
-					for (int co = Math.max(c-len, 0); co < Math.min(c+len, old.getHeight()); co++){
+				for (int ro = Math.max(r-sideoff, 0); ro <= Math.min(r+sideoff, old.getHeight()-1); ro++){
+					for (int co = Math.max(c-sideoff, 0); co <= Math.min(c+sideoff, old.getHeight()-1); co++){
 						QuickColor color = old.getColor(ro, co);
-						int kernelr = ro -(r-len);
-						int kernelc = co - (c-len);
-						System.out.println(kernelr + " " + kernelc);
+						int kernelr = ro -(r-sideoff);
+						int kernelc = co - (c-sideoff);
+						//System.out.println(kernelr + " " + kernelc);
 						double kFactor = kernel2[kernelr*len + kernelc];
 						totalColor += kFactor *color.getRed();
 						totalColor += kFactor *color.getGreen();
@@ -37,6 +37,7 @@ public class CinematicImageTransform implements ImageTransform {
 					}
 				}
 				
+				//totalColor = 1;
 				if(totalColor > 0){
 					result.setColor(r,c, old.getColor(r, c));
 				} else {
@@ -51,11 +52,11 @@ public class CinematicImageTransform implements ImageTransform {
 		for (int r = 0 ; r < result.getHeight(); r++){
 			for (int c = 0; c < result.getWidth() ; c ++){
 				double totalRed =0, totalGreen=0, totalBlue=0;
-				for (int ro = Math.max(r-len, 0); ro < Math.min(r+len, result.getHeight()); ro++){
-					for (int co = Math.max(c-len, 0); co < Math.min(c+len, result.getHeight()); co++){
+				for (int ro = Math.max(r-sideoff, 0); ro <= Math.min(r+sideoff, result.getHeight()-1); ro++){
+					for (int co = Math.max(c-sideoff, 0); co <= Math.min(c+sideoff, result.getHeight()-1); co++){
 						QuickColor color = result.getColor(ro, co);
-						int kernelr = ro -(r-len);
-						int kernelc = co - (c-len);
+						int kernelr = ro -(r-sideoff);
+						int kernelc = co - (c-sideoff);
 						double kFactor = kernel[kernelr*len + kernelc];
 						totalRed += kFactor *color.getRed();
 						totalGreen += kFactor *color.getGreen();
