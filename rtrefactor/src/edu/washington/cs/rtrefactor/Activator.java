@@ -1,7 +1,11 @@
 package edu.washington.cs.rtrefactor;
 
+import java.io.File;
 import java.net.URL;
 
+import org.apache.log4j.FileAppender;
+import org.apache.log4j.Logger;
+import org.apache.log4j.xml.XMLLayout;
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
@@ -19,14 +23,24 @@ import org.osgi.framework.BundleContext;
  */
 public class Activator extends AbstractUIPlugin implements IStartup{
 
-	// The plug-in ID
+	/**
+	 *  The plug-in ID
+	 */
 	public static final String PLUGIN_ID = "edu.washington.cs.rtrefactor"; //$NON-NLS-1$
+	
+	/**
+	 * Logger for the user evaluation
+	 */
+	public static Logger evaluationLog = Logger.getLogger("evaluation");
 	
 	public static final String[] IMAGE_IDS = {"rtrefactor.fix.image1", 
 		"rtrefactor.fix.image2", "rtrefactor.fix.image3",
 		"rtrefactor.fix.image4", "rtrefactor.fix.image5", "rtrefactor.fix.image6",
 		"rtrefactor.fix.image7", "rtrefactor.fix.image8"};
-	// The shared instance
+	
+	/**
+	 * The shared instance
+	 */
 	private static Activator plugin;
 	
 	/**
@@ -35,19 +49,17 @@ public class Activator extends AbstractUIPlugin implements IStartup{
 	public Activator() {
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
+
+	@Override
 	public void start(BundleContext context) throws Exception {
 		//this method is called when the plugin is loaded on-demand
 		
 		super.start(context);
 		plugin = this;
+		
+		evaluationLog.addAppender(new FileAppender(new XMLLayout(), new File(System.getProperty("user.home"),"clone-eval.xml").getAbsolutePath(), true));
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
 	@Override
 	public void earlyStartup() {
 		//this method is called when Eclipse starts
@@ -58,9 +70,7 @@ public class Activator extends AbstractUIPlugin implements IStartup{
 		service.addExecutionListener(new EclipseActionLogger());
 	}
 	
-	/**
-	 * {@inheritDoc}
-	 */
+	@Override
 	public void stop(BundleContext context) throws Exception {
 		plugin = null;
 		super.stop(context);
@@ -87,14 +97,14 @@ public class Activator extends AbstractUIPlugin implements IStartup{
 	}
 	
 	@Override
-	 protected void initializeImageRegistry(ImageRegistry registry) {
-         Bundle bundle = Platform.getBundle(PLUGIN_ID);
-         for(int i=0; i<IMAGE_IDS.length; i++)
-         {
-        	 IPath path = new Path("icons/CloneFix"+(i+1)+".png");
-        	 URL url = FileLocator.find(bundle, path, null);
-        	 ImageDescriptor desc = ImageDescriptor.createFromURL(url);
-        	 registry.put(IMAGE_IDS[i], desc);
-         }
-      }
+	protected void initializeImageRegistry(ImageRegistry registry) {
+		Bundle bundle = Platform.getBundle(PLUGIN_ID);
+		for(int i=0; i<IMAGE_IDS.length; i++)
+		{
+			IPath path = new Path("icons/CloneFix"+(i+1)+".png");
+			URL url = FileLocator.find(bundle, path, null);
+			ImageDescriptor desc = ImageDescriptor.createFromURL(url);
+			registry.put(IMAGE_IDS[i], desc);
+		}
+	}
 }

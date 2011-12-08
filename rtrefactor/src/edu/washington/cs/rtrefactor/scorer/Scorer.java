@@ -1,5 +1,6 @@
 package edu.washington.cs.rtrefactor.scorer;
 
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -11,6 +12,8 @@ import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.Document;
 import org.eclipse.ui.IMarkerResolution;
 
+import com.google.common.base.Function;
+import com.google.common.base.Joiner;
 import com.google.common.base.Predicate;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Iterables;
@@ -19,11 +22,10 @@ import com.google.common.collect.Multiset;
 import com.google.common.collect.Sets;
 
 import edu.washington.cs.rtrefactor.Activator;
-import edu.washington.cs.rtrefactor.detect.SourceLocation;
 import edu.washington.cs.rtrefactor.detect.SourceRegion;
 import edu.washington.cs.rtrefactor.preferences.PreferenceConstants;
 import edu.washington.cs.rtrefactor.quickfix.CloneFix;
-import edu.washington.cs.rtrefactor.quickfix.CloneFixer;
+import edu.washington.cs.rtrefactor.quickfix.CloneResolutionGenerator;
 import edu.washington.cs.rtrefactor.quickfix.CopyPasteFix;
 import edu.washington.cs.rtrefactor.quickfix.ExtractMethodFix;
 import edu.washington.cs.rtrefactor.quickfix.FindBlock;
@@ -124,6 +126,12 @@ strictfp public class Scorer {
 	private static double NONLOCAL_PENALTY = 0.05;
 	
 	/**
+	 * Penalty incurred for identifier mismatches when scoring
+	 * a Paste action
+	 */
+	private static double MISMATCH_PENALTY = 0.05;
+	
+	/**
 	 * Penalty incurred when scoring a Jump To action in Development mode
 	 */
 	private static double DEV_PENALTY = 0.35;
@@ -143,6 +151,10 @@ strictfp public class Scorer {
 	 */
 	private final Multiset<Integer> developmentDecayCnt = HashMultiset.create();
 	
+	/**
+	 * the last marker resolutions displayed in a QuickFix window
+	 */
+	private IMarkerResolution[] lastSeen = null;
 	
 	/**
 	 * The singleton instance
@@ -194,6 +206,10 @@ strictfp public class Scorer {
 			double old = preferences[fix];
 			preferences[fix] = preferences[fix] * (1. + (MAX_SCORE - relevance) / (double) THRESHOLD);
 			
+			
+			Activator.evaluationLog.info("Fix " + f.getClass().getSimpleName() +  "(#" + f.getCloneNumber() + ") selected with score " + relevance + ". "
+					+ "Others: " + fixList(fixes));
+			
 			scoreLog.debug("Fix " + f.getClass().getCanonicalName() + " selected with score " + relevance + 
 					" (max score: " + max + ")");
 			
@@ -201,6 +217,23 @@ strictfp public class Scorer {
 			
 		}
 	}
+	
+	/**
+	 * Comma-separated list of clone fixes and relevances
+	 * @param fixes the marker fixes
+	 * @return comma-separated list of clone fixes and relevances
+	 */
+	private static String fixList(IMarkerResolution[] fixes){
+		return "[" + Joiner.on(", ").join(
+				Iterables.transform(Iterables.filter(Lists.newArrayList(fixes), CloneFix.class),
+						new Function<CloneFix, String>(){
+					@Override
+					public String apply(CloneFix fix) {
+						return fix.getClass().getSimpleName() + "(#" + fix.getCloneNumber() + ") : " + + fix.getRelevance();
+					}
+				})) + "]";
+	}
+	
 	
 	/**
 	 * Record that the activation of the quick fix window
@@ -214,17 +247,21 @@ strictfp public class Scorer {
 		
 		scoreLog.debug("QuickFix activated with " + fixes.length + " fixes.");
 		
+		Activator.evaluationLog.info("QuickFix activated with " + fixes.length + " fixes: " + fixList(fixes));
+		
 		for (Integer c : cs){
 			activationCnt.add(c);
 			since.add(c);
 			scoreLog.debug("Clone #" + c + " has been activated " + activationCnt.count(c) + " time(s)");
 		}
+		
+		lastSeen = fixes;
 	}
 	
 	/**
 	 * Generate the marker resolutions for the given code clone <code>pair</code>.
 	 * @param pair the code clone pair
-	 * @see {@link Scorer#calculateResolutions(ClonePairData, CloneFixer)}
+	 * @see {@link Scorer#calculateResolutions(ClonePairData, CloneResolutionGenerator)}
 	 * @return the marker resolutions
 	 */
 	public List<CloneFix> calculateResolutions(ClonePairData pair) {
@@ -242,7 +279,7 @@ strictfp public class Scorer {
 	 * @param parent the parent Clonefixer (can be null)
 	 * @return the marker resolutions
 	 */
-	public List<CloneFix> calculateResolutions(ClonePairData pair, CloneFixer parent){
+	public List<CloneFix> calculateResolutions(ClonePairData pair, CloneResolutionGenerator parent){
 		List<CloneFix> rs = Lists.newArrayList();
 		
 		rs.addAll(generateJumpToCloneFixes(pair, parent));
@@ -263,7 +300,7 @@ strictfp public class Scorer {
 		}));
 	}
 	
-	private List<CloneFix> generateJumpToCloneFixes(ClonePairData pair, CloneFixer parent){
+	private List<CloneFix> generateJumpToCloneFixes(ClonePairData pair, CloneResolutionGenerator parent){
 		IPreferenceStore store = Activator.getDefault().getPreferenceStore();	
 	
 		double base = truncate(pair.getSimilarity() * 
@@ -279,7 +316,7 @@ strictfp public class Scorer {
 	 * @param pair the clone pair
 	 * @return scored insert method call fixes
 	 */
-	private List<CloneFix> generateInsertMethodCallFixes(ClonePairData pair, CloneFixer parent){
+	private List<CloneFix> generateInsertMethodCallFixes(ClonePairData pair, CloneResolutionGenerator parent){
 		IMethod m;
 		try {
 			m = FindMethod.findMethod(pair.getOtherRegion());
@@ -300,7 +337,7 @@ strictfp public class Scorer {
 		return Lists.<CloneFix>newArrayList(new InsertCallFix(pair, score, parent));
 	}
 	
-	private List<CloneFix> generateExtractMethodFixes(ClonePairData pair, CloneFixer parent){
+	private List<CloneFix> generateExtractMethodFixes(ClonePairData pair, CloneResolutionGenerator parent){
 		BlockInfo b;
 		try {
 			b = FindBlock.findLargestBlock(pair.getOtherRegion());
@@ -317,13 +354,9 @@ strictfp public class Scorer {
 		
 		int score = calc(base, EXTRACT, pair.getCloneNumber());
 		
-		Document document = new Document(pair.getOtherContents());
-		
 		SourceRegion region;
 		try {
-			region = new SourceRegion(
-				new SourceLocation(pair.getOtherRegion().getFile(), b.getStart(), document),
-				new SourceLocation(pair.getOtherRegion().getFile(), b.getEnd(), document));
+			region = new SourceRegion(pair.getOtherRegion().getFile(), new Document(pair.getOtherContents()), b.getStart(), b.getEnd());
 		} catch (BadLocationException e) {
 			throw new RuntimeException(e);
 		}
@@ -331,11 +364,32 @@ strictfp public class Scorer {
 		return Lists.<CloneFix>newArrayList(new ExtractMethodFix(pair, score, parent, region));
 	}
 	
-	private List<CloneFix> generatePasteCloneFixes(ClonePairData pair, CloneFixer parent){
-		double score = calc(pair.getSimilarity(), PASTE, pair.getCloneNumber());
-		return Lists.<CloneFix>newArrayList(new CopyPasteFix(pair, truncate(score), parent));
+	private List<CloneFix> generatePasteCloneFixes(ClonePairData pair, CloneResolutionGenerator parent){
+		BlockInfo copyBlock;
+		BlockInfo pasteBlock;
+		
+		try {
+			copyBlock = FindBlock.findLargestBlock(pair.getOtherRegion());
+			pasteBlock = FindBlock.findLargestBlock(pair.getSourceRegion());
+		} catch (CoreException e) {
+			scoreLog.error("Error accessing block for clone pair", e);
+			return Lists.newArrayList();
+		}
+		if (copyBlock == null || pasteBlock == null){
+			return Lists.newArrayList();
+		}
+		
+		LinkedHashSet<String> copyIds = copyBlock.getCapturedVariables();
+		LinkedHashSet<String> pasteIds = pasteBlock.getCapturedVariables();
+		
+		int unmatched = Math.max(0, pasteIds.size() - copyIds.size());
+		
+		double base = truncate(pair.getSimilarity() * Math.pow(MISMATCH_PENALTY, unmatched));
+		int score = calc(base, EXTRACT, pair.getCloneNumber());
+		
+		return Lists.<CloneFix>newArrayList(new CopyPasteFix(pair, score, parent, pasteBlock, copyBlock));
 	}
-	
+		
 	/**
 	 * Force the relevance score to be an integer between {@link Scorer#MIN_SCORE} and {@link Scorer#MAX_SCORE}
 	 * @param x the score
@@ -351,10 +405,15 @@ strictfp public class Scorer {
 	private void onDevelopment(){
 		if (!since.isEmpty()){
 			scoreLog.debug("Development decay for clones " + since.toString());
+		
+			if (lastSeen != null){
+				Activator.evaluationLog.info("User ignored fixes (with development): " + fixList(lastSeen));
+			}
 		}
 	
 		developmentDecayCnt.addAll(since);
 		since.clear();
+		lastSeen = null;
 	}
 	
 	/**

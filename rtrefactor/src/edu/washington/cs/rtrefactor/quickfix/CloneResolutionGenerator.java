@@ -12,7 +12,6 @@ import org.eclipse.ui.IMarkerResolution;
 import org.eclipse.ui.IMarkerResolutionGenerator;
 
 import edu.washington.cs.rtrefactor.Activator;
-import edu.washington.cs.rtrefactor.detect.SourceLocation;
 import edu.washington.cs.rtrefactor.detect.SourceRegion;
 import edu.washington.cs.rtrefactor.preferences.PreferenceConstants;
 import edu.washington.cs.rtrefactor.reconciler.ClonePairData;
@@ -34,7 +33,7 @@ import edu.washington.cs.rtrefactor.util.FileUtil;
  * @author Travis Mandel
  *
  */
-public class CloneFixer implements IMarkerResolutionGenerator {
+public class CloneResolutionGenerator implements IMarkerResolutionGenerator {
 	public static final String CLONE_NUMBER = "cloneNumber";
 	public static final String CLONE_SIMILARITY = "similarity";
 	
@@ -49,7 +48,7 @@ public class CloneFixer implements IMarkerResolutionGenerator {
 	private IMarkerResolution[] lastFixes;
 	private boolean hasActivated;
 	
-	public CloneFixer()
+	public CloneResolutionGenerator()
 	{
 		lastFixes = null;
 		hasActivated = false;
@@ -65,9 +64,10 @@ public class CloneFixer implements IMarkerResolutionGenerator {
 	@Override
 	public IMarkerResolution[] getResolutions(IMarker marker) {
 		//Called twice, should not happen
-		if(lastFixes != null)
+		if(lastFixes != null){
 			throw new RuntimeException("Single CloneFixer instance called twice!");
-		
+		}
+			
 		File sourceFile = marker.getResource().getRawLocation().makeAbsolute().toFile();
 		
 		int cloneNumber = -1;
@@ -119,9 +119,7 @@ public class CloneFixer implements IMarkerResolutionGenerator {
 
 		SourceRegion sourceClone;
 		try {
-			sourceClone = new SourceRegion(
-					new SourceLocation(sourceFile, sourceStart, sourceDoc), 
-					new SourceLocation(sourceFile, sourceEnd, sourceDoc));
+			sourceClone = new SourceRegion(sourceFile, sourceDoc, sourceStart, sourceEnd);
 		} catch (BadLocationException e) {
 			CloneReconciler.reconcilerLog.error("Bad clone location for source clone in file " + sourceFile.getName(), e);
 			return new IMarkerResolution[]{};
@@ -129,9 +127,7 @@ public class CloneFixer implements IMarkerResolutionGenerator {
 		
 		SourceRegion otherClone;
 		try{
-			otherClone = new SourceRegion(
-					new SourceLocation(otherFile, otherStart, otherDoc), 
-					new SourceLocation(otherFile, otherEnd, otherDoc));
+			otherClone = new SourceRegion(otherFile, otherDoc, otherStart, otherEnd);
 		}catch (BadLocationException e) {
 			CloneReconciler.reconcilerLog.error("Bad clone location for system (other) clone in file " + otherFile.getName(), e);
 			return new IMarkerResolution[]{};

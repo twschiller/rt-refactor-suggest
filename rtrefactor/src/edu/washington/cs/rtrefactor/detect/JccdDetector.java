@@ -23,9 +23,7 @@ import org.eposoft.jccd.detectors.APipeline;
 import org.eposoft.jccd.detectors.ASTDetector;
 import org.eposoft.jccd.preprocessors.APreprocessor;
 
-import com.google.common.base.Function;
 import com.google.common.collect.BiMap;
-import com.google.common.collect.Collections2;
 import com.google.common.collect.Sets;
 
 import edu.washington.cs.rtrefactor.Activator;
@@ -110,7 +108,7 @@ public class JccdDetector implements IActiveDetector, IDetector{
 			return false;
 		}
 	}
-	private Class getClass(String pkg, String name){
+	private Class<?> getClass(String pkg, String name){
 		try {
 			return Class.forName(pkg + "." + name);
 		} catch (ClassNotFoundException e) {

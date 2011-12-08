@@ -20,7 +20,10 @@ public class CloneViewerConfiguration extends JavaSourceViewerConfiguration {
 
 	}
 
-	//This method is overridden to return our reconciler and strategy
+	/**
+	 * Get the code clone reconciler
+	 * @return the code clone reconciler
+	 */
 	@Override
 	public IReconciler getReconciler(ISourceViewer sourceViewer) {
 		final ITextEditor editor= getEditor();

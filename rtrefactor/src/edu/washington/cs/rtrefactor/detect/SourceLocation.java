@@ -119,9 +119,6 @@ public class SourceLocation implements Comparable<SourceLocation>{
 
 
 	@Override
-	/**
-	 * {@inheritDoc}
-	 */
 	public int compareTo(SourceLocation o) {
 		if (o == null){
 			throw new NullPointerException("Attempt to compare source location to null");
@@ -193,4 +190,6 @@ public class SourceLocation implements Comparable<SourceLocation>{
 		int lineOff = (line == 0) ? 0 : doc.getLineOffset(line - 1);
 		this.lineOffset = globalOffset - lineOff;
 	}
+	
+	
 }
