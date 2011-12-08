@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.log4j.Level;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
@@ -282,7 +283,7 @@ public class CloneReconcilingStrategy implements IReconcilingStrategy,IReconcili
 	private void addAnnotation(SourceRegion source, SourceRegion other, int cloneNumber,
 			 double similarity)
 	{
-		CloneReconciler.reconcilerLog.debug("Adding annotation to source region");
+		CloneReconciler.reconcilerLog.log(Level.OFF, "Adding annotation to source region");
 		
 		IResource res = getResource();
 

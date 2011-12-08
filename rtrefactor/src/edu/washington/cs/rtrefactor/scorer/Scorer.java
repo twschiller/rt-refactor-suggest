@@ -12,6 +12,8 @@ import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.Document;
 import org.eclipse.ui.IMarkerResolution;
 
+import com.google.common.base.Function;
+import com.google.common.base.Joiner;
 import com.google.common.base.Predicate;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Iterables;
@@ -149,6 +151,10 @@ strictfp public class Scorer {
 	 */
 	private final Multiset<Integer> developmentDecayCnt = HashMultiset.create();
 	
+	/**
+	 * the last marker resolutions displayed in a QuickFix window
+	 */
+	private IMarkerResolution[] lastSeen = null;
 	
 	/**
 	 * The singleton instance
@@ -200,6 +206,10 @@ strictfp public class Scorer {
 			double old = preferences[fix];
 			preferences[fix] = preferences[fix] * (1. + (MAX_SCORE - relevance) / (double) THRESHOLD);
 			
+			
+			Activator.evaluationLog.info("Fix " + f.getClass().getSimpleName() +  "(#" + f.getCloneNumber() + ") selected with score " + relevance + ". "
+					+ "Others: " + fixList(fixes));
+			
 			scoreLog.debug("Fix " + f.getClass().getCanonicalName() + " selected with score " + relevance + 
 					" (max score: " + max + ")");
 			
@@ -207,6 +217,23 @@ strictfp public class Scorer {
 			
 		}
 	}
+	
+	/**
+	 * Comma-separated list of clone fixes and relevances
+	 * @param fixes the marker fixes
+	 * @return comma-separated list of clone fixes and relevances
+	 */
+	private static String fixList(IMarkerResolution[] fixes){
+		return "[" + Joiner.on(", ").join(
+				Iterables.transform(Iterables.filter(Lists.newArrayList(fixes), CloneFix.class),
+						new Function<CloneFix, String>(){
+					@Override
+					public String apply(CloneFix fix) {
+						return fix.getClass().getSimpleName() + "(#" + fix.getCloneNumber() + ") : " + + fix.getRelevance();
+					}
+				})) + "]";
+	}
+	
 	
 	/**
 	 * Record that the activation of the quick fix window
@@ -220,11 +247,15 @@ strictfp public class Scorer {
 		
 		scoreLog.debug("QuickFix activated with " + fixes.length + " fixes.");
 		
+		Activator.evaluationLog.info("QuickFix activated with " + fixes.length + " fixes: " + fixList(fixes));
+		
 		for (Integer c : cs){
 			activationCnt.add(c);
 			since.add(c);
 			scoreLog.debug("Clone #" + c + " has been activated " + activationCnt.count(c) + " time(s)");
 		}
+		
+		lastSeen = fixes;
 	}
 	
 	/**
@@ -374,10 +405,15 @@ strictfp public class Scorer {
 	private void onDevelopment(){
 		if (!since.isEmpty()){
 			scoreLog.debug("Development decay for clones " + since.toString());
+		
+			if (lastSeen != null){
+				Activator.evaluationLog.info("User ignored fixes (with development): " + fixList(lastSeen));
+			}
 		}
 	
 		developmentDecayCnt.addAll(since);
 		since.clear();
+		lastSeen = null;
 	}
 	
 	/**
