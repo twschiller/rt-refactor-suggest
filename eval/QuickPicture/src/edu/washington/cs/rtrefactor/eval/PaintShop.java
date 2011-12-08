@@ -14,12 +14,16 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 
-import edu.washington.cs.rtrefactor.eval.transform.Alpha;
-import edu.washington.cs.rtrefactor.eval.transform.Blocky;
-import edu.washington.cs.rtrefactor.eval.transform.Blur;
-import edu.washington.cs.rtrefactor.eval.transform.Colorize;
-import edu.washington.cs.rtrefactor.eval.transform.Flip;
+import edu.washington.cs.rtrefactor.eval.transform.CartoonifyImageTransform;
+import edu.washington.cs.rtrefactor.eval.transform.CartoonifyImageTransform.CartoonStyle;
+import edu.washington.cs.rtrefactor.eval.transform.CinematicImageTransform;
 import edu.washington.cs.rtrefactor.eval.transform.ImageTransform;
+import edu.washington.cs.rtrefactor.eval.transform.PhotographicImageTransform;
+import edu.washington.cs.rtrefactor.eval.transform.PhotographicImageTransform.PhotoMode;
+import edu.washington.cs.rtrefactor.eval.transform.RandomSceneGenerator;
+import edu.washington.cs.rtrefactor.eval.transform.UnderwaterTransform;
+import edu.washington.cs.rtrefactor.eval.transform.VisionImageTransform;
+import edu.washington.cs.rtrefactor.eval.util.ImageUtil;
 
 @SuppressWarnings("serial")
 public class PaintShop extends JFrame{
@@ -44,12 +48,16 @@ public class PaintShop extends JFrame{
 	}
 
 	private void addTransforms(){
-		addTransform("Flip", new Flip());
-		addTransform("Casper", new Alpha.Ghost25());
-		addTransform("Casper++", new Alpha.Ghost50());
-		addTransform("Referee", new Colorize.Zebra());
-		addTransform("Blur", new Blur());
-		addTransform("Blockify", new Blocky());
+		addTransform("Flip", new ImageUtil.Flip());
+		addTransform("Cartoon", new CartoonifyImageTransform(CartoonStyle.EXPERIMENTAL));
+		addTransform("Shrink", new ImageUtil.ShrinkImage(1));
+		addTransform("Vision", new VisionImageTransform(50, 50, 500));
+		addTransform("Underwater", new UnderwaterTransform(false));
+		//TODO:Bugs
+		//addTransform("Cinematic", new CinematicImageTransform());
+		addTransform("Photo", new PhotographicImageTransform(new PhotoMode [] 
+				{PhotoMode.FIRST, PhotoMode.SECOND}));
+		addTransform("Random", new RandomSceneGenerator(new QuickColor(400,-400,400,0), 100, 100, 200000));
 	}
 	
 	private PaintShop() throws IOException{

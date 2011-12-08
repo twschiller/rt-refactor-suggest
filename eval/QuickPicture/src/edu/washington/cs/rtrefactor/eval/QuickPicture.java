@@ -69,45 +69,35 @@ public class QuickPicture extends java.awt.Image {
 	public int getWidth(ImageObserver observer) {
 		return getWidth();
 	}
+	
+	public QuickColor getColor(int x, int y){
+		if(x < 0 || x >= raw.getWidth() || y< 0 || y >= raw.getHeight())
+			return null;
+		Color rawColor = new Color(raw.getRGB(x, y));
+		return new QuickColor(fromRGBVal(rawColor.getRed()), fromRGBVal(rawColor.getGreen()), 
+				fromRGBVal(rawColor.getBlue()), fromRGBVal(rawColor.getAlpha()));
+	}
 
-	public int getRed(int x, int y){
-		Color color = new Color(raw.getRGB(x, y));
-		return color.getRed();
+	public void setColor(int x, int y, QuickColor color) {
+		Color rawColor  = new Color(toRGBVal(color.getRed()), toRGBVal(color.getGreen()), 
+				toRGBVal(color.getBlue()), toRGBVal(color.getAlpha()));
+		raw.setRGB(x, y, rawColor.getRGB());
+		//TODO: alpha?
 	}
 	
-	public int getBlue(int x, int y){
-		Color color = new Color(raw.getRGB(x, y));
-		return color.getBlue();
+	private int fromRGBVal(int val) {
+		return  (val * 4) - 500;
 	}
 	
-	public int getGreen(int x, int y){
-		Color color = new Color(raw.getRGB(x, y));
-		return color.getGreen();
-	}
+	private int toRGBVal(int val) {
 	
-	public int getAlpha(int x, int y){
-		Color color = new Color(raw.getRGB(x, y));
-		return color.getAlpha();
-	}
-	
-	public void setRed(int x, int y, int r){
-		Color color = new Color(raw.getRGB(x, y));
-		raw.setRGB(x, y, new Color(r, color.getGreen(), color.getBlue(),color.getAlpha()).getRGB());
-	}
-	
-	public void setBlue(int x, int y, int b){
-		Color color = new Color(raw.getRGB(x, y));
-		raw.setRGB(x, y, new Color(color.getRed(), color.getGreen(), b, color.getAlpha()).getRGB());
-	}
-	
-	public void setGreen(int x, int y, int g){
-		Color color = new Color(raw.getRGB(x, y));
-		raw.setRGB(x, y, new Color(color.getRed(), g, color.getBlue(), color.getAlpha()).getRGB());
-	}
-	
-	public void setAlpha(int x, int y, int a){
-		Color color = new Color(raw.getRGB(x, y));
-		raw.setRGB(x, y, new Color(color.getRed(), color.getGreen(),  color.getBlue(), a).getRGB());
+		int newVal =   (val +500) /4;
+		if(newVal < 0)
+			return 0;
+		if(newVal > 255)
+			return 255;
+		
+		return newVal;
 	}
 	
 	/**
