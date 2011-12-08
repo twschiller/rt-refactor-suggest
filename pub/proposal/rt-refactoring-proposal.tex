@@ -3,6 +3,7 @@
 \usepackage{url}
 \usepackage{amsmath}
 \usepackage{graphicx}
+\usepackage{multirow}
 
 \newcommand{\todo}[1]{{\bfseries [[#1]]}}
 %% To disable, just uncomment this line
@@ -97,9 +98,9 @@ associated with duplicated code from ever arising, reducing development time.
 The tool suggests two actions that eliminate code duplication:
 
 \begin{enumerate}
-  \item \textsc{InsertCall}: Replacing the code under development with a call to an existing method
-  \item \textsc{Extract}: Extracting all, or part, of the system clone as a method;
-    replacing the code under development with a call to the extracted
+  \item \textsc{InsertCall}: Replace the code under development with a call to an existing method
+  \item \textsc{Extract}: Extract all, or part, of the system clone as a method;
+    replace the code under development with a call to the extracted
     method.
 \end{enumerate}
 
@@ -108,11 +109,11 @@ develop or maintain code with duplication:
 
 \begin{enumerate}
 \setcounter{enumi}{2}
-  \item \textsc{JumpTo}: Aiding the user making analogous changes to the system clones
-    by opening the relevant sections of code; 
+  \item \textsc{JumpTo}: Open the relevant section of code to aide the
+    developer in making analogous changes to the system clone;
     %, and potentially
     %supporting ``simultaneous editing''~\cite{Miller2002};
-  \item \textsc{Paste}: Copying the system clone to the code under development,
+  \item \textsc{Paste}: Copy and paste the system clone to the code under development,
     substituting identifiers as needed.
 \end{enumerate}
 
@@ -315,11 +316,11 @@ distance from the threshold:
 score. If the user selects an action with a score close to, or at, the
 threshold, it has a greater positive effect on the preference than
 when the user selects a ``perfect'' action.
-Time permitting, we also plan to investigate simple machine learning
-strategies to base the preference terms $\textsc{Pref}$ on the features of the
-clone pair as well. The learner may
-be trained on each individual user to
-account for different programming styles.
+%Time permitting, we also plan to investigate simple machine learning
+%strategies to base the preference terms $\textsc{Pref}$ on the features of the
+%clone pair as well. The learner may
+%be trained on each individual user to
+%account for different programming styles.
 While a developer's preference for an action may be low, it cannot be
 negative. Therefore, preference alone cannot preclude a suggestion
 from being shown to the developer: $\textsc{Pref}_{action} > 0 \Rightarrow
@@ -523,6 +524,36 @@ questions:
   \item Did you find the tool's suggestions helpful? If not, why?
   \item Was the ordering of the tool's suggestions valid? If not, why?
 \end{itemize}
+
+\subsection{Results}
+
+Table \ref{table:actioncnt} shows a quantitative summary of each
+developers interactions with the tool.
+
+\begin{table*}[t]
+\begin{center}
+\begin{tabular}{ccc|c|c|c|c|c|}
+\cline{4-7}
+& & & \multicolumn{4}{|c|}{Actions} \\ \cline{2-8}
+& \multicolumn{1}{|c|}{Phase} & \multicolumn{1}{|c|}{\# Views} & \textsc{InsertCall} & \textsc{Extract} & \textsc{JumpTo} & \textsc{Paste} & \multicolumn{1}{|c|}{Develop} \\ \cline{1-8}
+\multicolumn{1}{|c|}{\multirow{2}{*}{Developer 1}} &
+\multicolumn{1}{|c|}{Development} & X & X & X & X & X & X    \\ \cline{2-8}
+\multicolumn{1}{|c|}{}                        &
+\multicolumn{1}{|c|}{Maintenance} & X & X & X & X & X & X  \\ \cline{1-8}
+\multicolumn{1}{|c|}{\multirow{2}{*}{Developer 2}} &
+\multicolumn{1}{|c|}{Development} & X & X & X & X & X & X\\ \cline{2-8}
+\multicolumn{1}{|c|}{}                        &
+\multicolumn{1}{|c|}{Maintenance} & X & X & X & X & X & X\\ \cline{1-8}
+\end{tabular}
+\end{center}
+\caption{Developer actions during the development and maintenance
+  phases of the evaluation. ``\# Views'' is the number of times the
+  developer invoked QuickFix on marker with code clone
+  suggestions. ``Develop'' is the number of times the developer
+  ignored the QuickFix suggestions and then performed a development
+  action.}
+\label{table:actioncnt}
+\end{table*}
 
 \subsection{Threats to Validity}
 The evaluation outline in this section is meant as a preliminary study
