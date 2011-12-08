@@ -160,7 +160,7 @@ public class VisionImageTransform implements ImageTransform {
 			}
 
 			if(bottomFrontier+1 < orig.getHeight() &&
-					differenceSum(averageRegion, divideBy(totalTop, regionWidth)) <= changeThreshold) {
+					differenceSum(averageRegion, divideBy(totalBottom, regionWidth)) <= changeThreshold) {
 				bottomFrontier++;
 				changed = true;
 			}
@@ -200,11 +200,11 @@ public class VisionImageTransform implements ImageTransform {
 		
 		for(int r=leftFrontier; r<=rightFrontier; r++)
 		{
-			result.setColor(r, topFrontier, new QuickColor(0,0,0,
-					orig.getColor(r, topFrontier).getAlpha()));
+			result.setColor(topFrontier, r, new QuickColor(0,0,0,
+					orig.getColor(topFrontier, r).getAlpha()));
 
-			result.setColor(r, bottomFrontier, new QuickColor(0,0,0,
-					orig.getColor(r,  bottomFrontier).getAlpha()));
+			result.setColor(bottomFrontier, r, new QuickColor(0,0,0,
+					orig.getColor(bottomFrontier, r).getAlpha()));
 
 		}
 
