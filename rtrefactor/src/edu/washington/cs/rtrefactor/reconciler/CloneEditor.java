@@ -31,19 +31,18 @@ public class CloneEditor extends CompilationUnitEditor {
 	
 	//These are copied for use in handlePreferenceStoreChanged
 	/** Preference key for code formatter tab size */
-	    private final static String CODE_FORMATTER_TAB_SIZE= DefaultCodeFormatterConstants.FORMATTER_TAB_SIZE;
-	     /** Preference key for inserting spaces rather than tabs */
-	     private final static String SPACES_FOR_TABS= DefaultCodeFormatterConstants.FORMATTER_TAB_CHAR;
-	     /** Preference key for automatically closing strings */
-	     private final static String CLOSE_STRINGS= PreferenceConstants.EDITOR_CLOSE_STRINGS;
-	     /** Preference key for automatically closing brackets and parenthesis */
-	     private final static String CLOSE_BRACKETS= PreferenceConstants.EDITOR_CLOSE_BRACKETS;
-	     
-	     //overriden, can;t access in handlePreferenceStoreChanged()
-	   //  private BracketInserter fBracketInserter= new BracketInserter();
+	private final static String CODE_FORMATTER_TAB_SIZE= DefaultCodeFormatterConstants.FORMATTER_TAB_SIZE;
+	/** Preference key for inserting spaces rather than tabs */
+	private final static String SPACES_FOR_TABS= DefaultCodeFormatterConstants.FORMATTER_TAB_CHAR;
+	/** Preference key for automatically closing strings */
+	private final static String CLOSE_STRINGS= PreferenceConstants.EDITOR_CLOSE_STRINGS;
+	/** Preference key for automatically closing brackets and parenthesis */
+	private final static String CLOSE_BRACKETS= PreferenceConstants.EDITOR_CLOSE_BRACKETS;
+
+	//overriden, can't access in handlePreferenceStoreChanged()
+	//  private BracketInserter fBracketInserter= new BracketInserter();
 
 	
-
 	public CloneEditor() {
 		super();
 	}
@@ -70,12 +69,13 @@ public class CloneEditor extends CompilationUnitEditor {
 			IReconciler reconciler= tc.getReconciler(sourceViewer);
 			if (reconciler != null) {
 				reconciler.install(sourceViewer);
-				/* We know it is our own viewer because we override 
-				 *  createJavaSourceViewer().
-				 *  
-				 *  A normal sourceViewer does not make setReconciler visible,
-				 *  	but ours does.
-				 */
+				
+				// We know it is our own viewer because we override 
+				// createJavaSourceViewer().
+				//				   
+				// A normal sourceViewer does not make setReconciler visible,
+				// but ours does.
+
 				((CloneSourceViewer)sourceViewer).setReconciler(reconciler);
 			}
 		}
@@ -92,65 +92,62 @@ public class CloneEditor extends CompilationUnitEditor {
 	
 	// This contains an explicit cast, must override
 	protected void handlePreferenceStoreChanged(PropertyChangeEvent event) {
-		
-		        try {
-		
-		            CloneSourceViewer asv= (CloneSourceViewer) getSourceViewer();
-		            if (asv != null) {
-		
-		                String p= event.getProperty();
-		                //way too messy to handle these preferences for now: private bracketinserter (instance of private class)
-		              /*  if (CLOSE_BRACKETS.equals(p)) {
-		                    fBracketInserter.setCloseBracketsEnabled(getPreferenceStore().getBoolean(p));
-		                    return;
-		                }
-		
-		                if (CLOSE_STRINGS.equals(p)) {
-		                    fBracketInserter.setCloseStringsEnabled(getPreferenceStore().getBoolean(p));
-		                    return;
-		                }
-		
-		                if (JavaCore.COMPILER_SOURCE.equals(p)) {
-		                    boolean closeAngularBrackets= JavaCore.VERSION_1_5.compareTo(getPreferenceStore().getString(p)) <= 0;
-		                    fBracketInserter.setCloseAngularBracketsEnabled(closeAngularBrackets);
-		                } */
-		
-		                if (SPACES_FOR_TABS.equals(p)) {
-		                    if (isTabsToSpacesConversionEnabled())
-		                        installTabsToSpacesConverter();
-		                    else
-		                        uninstallTabsToSpacesConverter();
-		                    return;
-		                }
-		
-		                if (PreferenceConstants.EDITOR_SMART_TAB.equals(p)) {
-		                    if (getPreferenceStore().getBoolean(PreferenceConstants.EDITOR_SMART_TAB)) {
-		                        setActionActivationCode("IndentOnTab", '\t', -1, SWT.NONE); //$NON-NLS-1$
-		 } else {
-		                        removeActionActivationCode("IndentOnTab"); //$NON-NLS-1$
-		 }
-		                }
-		
-		                IContentAssistant c= asv.getContentAssistant();
-		                
-		                if (c instanceof ContentAssistant)
-		                    ContentAssistPreference.changeConfiguration((ContentAssistant) c, getPreferenceStore(), event);
-		
-		                if (CODE_FORMATTER_TAB_SIZE.equals(p) && isTabsToSpacesConversionEnabled()) {
-		                    uninstallTabsToSpacesConverter();
-		                    installTabsToSpacesConverter();
-		                }
-		            }
-		
-		        } finally {
-		        	try{
-		        		super.handlePreferenceStoreChanged(event);
-		        	} catch (Exception e){
-		        		System.out.println("moving on after error");
-		        	}
-		        }
-		    }
 
+		try {
 
+			CloneSourceViewer asv= (CloneSourceViewer) getSourceViewer();
+			if (asv != null) {
 
+				String p= event.getProperty();
+				//way too messy to handle these preferences for now: private bracketinserter (instance of private class)
+//				if (CLOSE_BRACKETS.equals(p)) {
+//					fBracketInserter.setCloseBracketsEnabled(getPreferenceStore().getBoolean(p));
+//					return;
+//				}
+//
+//				if (CLOSE_STRINGS.equals(p)) {
+//					fBracketInserter.setCloseStringsEnabled(getPreferenceStore().getBoolean(p));
+//					return;
+//				}
+//
+//				if (JavaCore.COMPILER_SOURCE.equals(p)) {
+//					boolean closeAngularBrackets= JavaCore.VERSION_1_5.compareTo(getPreferenceStore().getString(p)) <= 0;
+//					fBracketInserter.setCloseAngularBracketsEnabled(closeAngularBrackets);
+//				} 
+
+				if (SPACES_FOR_TABS.equals(p)) {
+					if (isTabsToSpacesConversionEnabled())
+						installTabsToSpacesConverter();
+					else
+						uninstallTabsToSpacesConverter();
+					return;
+				}
+
+				if (PreferenceConstants.EDITOR_SMART_TAB.equals(p)) {
+					if (getPreferenceStore().getBoolean(PreferenceConstants.EDITOR_SMART_TAB)) {
+						setActionActivationCode("IndentOnTab", '\t', -1, SWT.NONE); //$NON-NLS-1$
+					} else {
+						removeActionActivationCode("IndentOnTab"); //$NON-NLS-1$
+					}
+				}
+
+				IContentAssistant c= asv.getContentAssistant();
+
+				if (c instanceof ContentAssistant)
+					ContentAssistPreference.changeConfiguration((ContentAssistant) c, getPreferenceStore(), event);
+
+				if (CODE_FORMATTER_TAB_SIZE.equals(p) && isTabsToSpacesConversionEnabled()) {
+					uninstallTabsToSpacesConverter();
+					installTabsToSpacesConverter();
+				}
+			}
+
+		} finally {
+			try{
+				super.handlePreferenceStoreChanged(event);
+			} catch (Exception e){
+				System.err.println("Ignoring exception " + e.getMessage());
+			}
+		}
+	}
 }

@@ -2,6 +2,9 @@ package edu.washington.cs.rtrefactor.detect;
 
 import java.io.File;
 
+import org.eclipse.jface.text.BadLocationException;
+import org.eclipse.jface.text.Document;
+
 /**
  * A record describing a region in a file
  * @author Todd Schiller
@@ -29,6 +32,18 @@ public class SourceRegion implements Comparable<SourceRegion>{
 		
 		this.start = start;
 		this.end = end;
+	}
+	
+	/**
+	 * Construct a source region
+	 * @param file the source file containing the region
+	 * @param document the contents of <code>file</code>
+	 * @param start the start global offset
+	 * @param end the end global offset
+	 * @throws BadLocationException iff <code>start</code> or <code>end</code> is not valid
+	 */
+	public SourceRegion(File file, Document document, int start, int end) throws BadLocationException{
+		this(new SourceLocation(file, start, document), new SourceLocation(file, end, document));
 	}
 	
 	/**
@@ -122,5 +137,10 @@ public class SourceRegion implements Comparable<SourceRegion>{
 		return true;
 	}
 
-	
+	@Override
+	public String toString() {
+		return getFile().getName() + " " 
+				+ start.getLine() + ":" + start.getLineOffset() + " - "
+				+ end.getLine() + ":" + end.getLineOffset();
+	}
 }

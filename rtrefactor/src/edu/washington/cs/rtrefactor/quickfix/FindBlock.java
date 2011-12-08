@@ -1,10 +1,7 @@
 package edu.washington.cs.rtrefactor.quickfix;
 
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Map;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IWorkspace;
@@ -29,8 +26,6 @@ import org.eclipse.jdt.core.dom.SimpleName;
 import org.eclipse.jdt.core.dom.Statement;
 import org.eclipse.jdt.core.dom.VariableDeclarationFragment;
 import org.eclipse.jdt.core.dom.VariableDeclarationStatement;
-import org.eclipse.jface.text.IDocument;
-import org.eclipse.text.edits.TextEdit;
 
 import soot.Modifier;
 
@@ -38,8 +33,6 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
 import edu.washington.cs.rtrefactor.detect.SourceRegion;
-import edu.washington.cs.rtrefactor.reconciler.CloneReconciler;
-import edu.washington.cs.rtrefactor.util.ASTUtil;
 
 // TODO we need to penalize for occurrences of local variables use a variable that would be 
 // defined locally in the extracted method
@@ -55,15 +48,18 @@ public class FindBlock {
 	 * @author Todd Schiller
 	 */
 	public static class BlockInfo{
-		private List<Statement> statements;
-		private CompilationUnit cUnit;
+		private final List<Statement> statements;
+		private final CompilationUnit cu;
 
-		protected BlockInfo(List<Statement> statements) {
+		protected BlockInfo(List<Statement> statements, CompilationUnit cu) {
 			if (statements.isEmpty()){
 				throw new IllegalArgumentException("Block cannot be empty");
+			}else if (cu == null){
+				throw new NullPointerException("Compilation Unit cannot be null");
 			}
 			
 			this.statements = Lists.newArrayList(statements);
+			this.cu = cu;
 		}
 		
 		/**
@@ -79,16 +75,9 @@ public class FindBlock {
 		 * @return the compilation unit in which this block resides.
 		 */
 		public CompilationUnit getCompilationUnit() {
-			return cUnit;
+			return cu;
 		}
-		
-		/**
-		 * Set the compilation unit in which this block resides.
-		 */
-		public void setCompilationUnit(CompilationUnit compUnit) {
-			cUnit = compUnit;
-		}
-		
+			
 		/**
 		 * Get the ending global file offset
 		 * @return the ending global file offset
@@ -122,56 +111,16 @@ public class FindBlock {
 			return counter.captured;
 		}
 		
-		
 		/**
-		 * Replace any names in this block matching the external variables in the other block 
-		 * 	with the specified variables names.
-		 * 
-		 * The variables to be replaced in this block do not need to be properly bound.
-		 * 
-		 * Currently order is used to determine the mapping between the two sets of variables.
-		 * 
-		 * @param replaceVars Variable name replacements to be used.
-		 * @param other The other block to read external variable names from
-		 * @param original The document in which this block resides
-		 * @return An edit to this document with the requested replacements.
+		 * Get a shallow reference to the statements
+		 * @return  a shallow reference to the statements
 		 */
-		public TextEdit replaceWithVariablesFrom(LinkedHashSet<String> replaceVars, 
-				BlockInfo other, IDocument original)
-		{
-			//Find external dependencies in the other block to know which variables to replace.
-			VariableCaptureCounter otherCounter = new VariableCaptureCounter();
-			for (Statement s : other.statements){
-				s.accept(otherCounter);
-			}
-			
-			//Create the mapping between variables.  Currently only order is used.
-			HashMap<String, String> variableReplacements = new HashMap<String, String>();
-			Iterator<String> otherVars =  otherCounter.captured.iterator();
-			for(String sourceVar : replaceVars){
-				String otherVar = otherVars.next();
-				CloneReconciler.reconcilerLog.debug("Replacing " + otherVar + " with " + sourceVar);
-				variableReplacements.put(otherVar, sourceVar);
-			}
-			
-			CompilationUnit myUnit = this.getCompilationUnit();
-			
-			//start recording modifications
-			myUnit.recordModifications();
-			
-			//Modify the AST with the name replacements
-			VariableReferenceReplacer replacer = 
-					new VariableReferenceReplacer(variableReplacements);
-			for (Statement s : statements){
-				s.accept(replacer);
-			}
-			
-			return myUnit.rewrite(original, null);
-			
-			
+		public List<Statement> getStatements(){
+			return statements;
 		}
-	}
-
+	}	
+		
+	
 	/**
 	 * Find the largest block (list of statements) that overlaps <code>region</code> in the Eclipse
 	 * workspace. Returns <code>null</code> if the region does not correspond to 
@@ -216,9 +165,8 @@ public class FindBlock {
 		
 		CompilationUnit unit = parse(cu);
 		
-		RegionFinder f = new RegionFinder(region);
+		RegionFinder f = new RegionFinder(region, unit);
 		unit.accept(f);
-		f.maxRegion.setCompilationUnit(unit);
 		
 		return f.maxRegion;
 	}
@@ -251,25 +199,27 @@ public class FindBlock {
 	
 	/**
 	 * Class to traverse the AST and find the largest block (list of consecutive statements
-	 * covered by the specified source region. 
+	 * covered by the specified source region). 
 	 * @author Todd Schiller
 	 */
 	private static class RegionFinder extends ASTVisitor{
 		private int max = Integer.MIN_VALUE;
 		private final SourceRegion query;
-	
+		private final CompilationUnit cu;
+		
 		/**
 		 * The longest block (list of consecutive statements) covered by the region
 		 */
-		protected BlockInfo maxRegion = null;
+		private BlockInfo maxRegion = null;
 		
 		/**
 		 * Constructor taking a query region
 		 * @param query the query region
 		 */
-		protected RegionFinder(SourceRegion query) {
+		protected RegionFinder(SourceRegion query, CompilationUnit cu) {
 			super();
 			this.query = query;
+			this.cu = cu;
 		}
 
 		@Override
@@ -285,7 +235,7 @@ public class FindBlock {
 			if (!inc.isEmpty()){
 				if (inc.size() > max){
 					max = inc.size();
-					maxRegion = new BlockInfo(inc);
+					maxRegion = new BlockInfo(inc, cu);
 				}
 			}
 			
@@ -294,56 +244,12 @@ public class FindBlock {
 	}
 	
 	
-	/**
-	 * Replaces one set of variable names in the AST with another
-	 * @author Travis Mandel
-	 */
-	private static class VariableReferenceReplacer extends ASTVisitor{
-		
-		Map<String, String> replacements;
-		/**
-		 * Constructor taking a replacement map
-		 * @param refs A mapping from original variable names to replacements. 
-		 */
-		public VariableReferenceReplacer(Map<String, String> refs) {
-			replacements = refs;
-		}
-		
-		
-		@Override
-		public boolean visit(SimpleName name){
-			doName(name);
-			return false;
-		}
-		
-		@Override
-		public boolean visit(QualifiedName name){
-			doName(name);
-			return false;
-		}
-		
-		/**
-		 * Replaces the variable name with the new name if it is in our map.  
-		 * @param name the name of variable
-		 */
-		private void doName(Name name){
-			if (!(name.getParent() instanceof VariableDeclarationFragment)){
-				//May not have any binding info, so no reason to do further checks
-				String replacementName = replacements.get(name.getFullyQualifiedName());
-				if (replacementName != null){
-					ASTUtil.replace(name, name.getAST().newName(replacementName));
-				}
-				
-			}
-
-		}
-	}
-
+	
 	/**
 	 * Collects the set of captured variables, pass in a sequence of statements.
 	 * @author Todd Schiller
 	 */
-	private static class VariableCaptureCounter extends ASTVisitor{
+	protected static class VariableCaptureCounter extends ASTVisitor{
 		
 		/**
 		 * Variable ID of the first seen variable. <code>id < first</code> implies
@@ -398,5 +304,4 @@ public class FindBlock {
 
 		}
 	}
-
 }

@@ -21,14 +21,15 @@ import edu.washington.cs.rtrefactor.reconciler.ClonePairData;
 public class InsertCallFix extends CloneFix {
 
 	
-	public InsertCallFix(ClonePairData pairData, int relevance, CloneFixer parent){
+	public InsertCallFix(ClonePairData pairData, int relevance, CloneResolutionGenerator parent){
 		super(pairData, relevance, parent);
 	}
 
-	@Override
+	
 	/**
-	 * Requires a valid parent
+	 * Requires a valid parent. {@inheritDoc}
 	 */
+	@Override
 	public String getLabel() {
 		getParent().notifyFixesActivated();
 		if(isSameFile()) {
@@ -41,7 +42,7 @@ public class InsertCallFix extends CloneFix {
 	
 	@Override
 	/**
-	 * Requires a valid parent
+	 * Requires a valid parent. {@inheritDoc}
 	 */
 	public void run(IMarker marker) {
 		
@@ -69,11 +70,16 @@ public class InsertCallFix extends CloneFix {
 		}
 	}
 
+	
+	/**
+	 * The method to call. {@inheritDoc}
+	 */
 	@Override
 	public String getDescription() {
 		IMethod m;
 		String source;
 		String name;
+		
 		try {
 			m = FindMethod.findMethod(this.getOtherRegion());
 			name = m.getElementName();
@@ -82,6 +88,7 @@ public class InsertCallFix extends CloneFix {
 			return "An error occured when locating the method: " + e.getMessage();
 		}
 	
+		// TODO bold clone in insert call fix description
 		
 		source = source.replaceAll("[\r\n]+", "<br/>")
 				.replaceAll(" ", "&#160;")

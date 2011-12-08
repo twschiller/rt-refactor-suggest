@@ -29,15 +29,15 @@ public class ExtractMethodFix extends CloneFix {
 	 * @param parent The parent CloneFixer (can be null)
 	 * @param extractRegion the source region to extract
 	 */
-	public ExtractMethodFix(ClonePairData pairData, int relevance, CloneFixer parent, SourceRegion extractRegion){
+	public ExtractMethodFix(ClonePairData pairData, int relevance, CloneResolutionGenerator parent, SourceRegion extractRegion){
 		super(pairData, relevance, parent);
 		this.extractRegion = extractRegion;
 	}
 	
-	@Override
 	/**
-	 * Requires a valid parent
+	 * Requires a valid parent. {@inheritDoc}
 	 */
+	@Override
 	public String getLabel() {
 		getParent().notifyFixesActivated();
 		if(isSameFile()) {
@@ -48,10 +48,10 @@ public class ExtractMethodFix extends CloneFix {
 		}
 	}
 	
-	@Override
 	/**
-	 * Requires a valid parent
+	 * Requires a valid parent. {@inheritDoc}
 	 */
+	@Override
 	public void run(IMarker marker) {
 		getParent().notifyFixSelected(this);
 		
@@ -76,14 +76,19 @@ public class ExtractMethodFix extends CloneFix {
 
 	@Override
 	public String getDescription() {
+		String description = CloneResolutionGenerator.getCloneString(
+				extractRegion.getStart().getGlobalOffset(), 
+				extractRegion.getEnd().getGlobalOffset(), 
+				super.getOtherContents());
+		
 		if(isSameFile()) {
 			return "Extracts this code to a method with the following clone " +
 					"(from the same file): <br/>" 
-			+ super.getDescription();
+					+ description;
 		} else {
 			return "Extracts this code to a method with the following clone (from "+ 
-			getOtherRegion().getFile().getName()+  "):<br/>" 
-			+ super.getDescription();
+					getOtherRegion().getFile().getName()+  "):<br/>" 
+					+ description;
 		}
 	}
 

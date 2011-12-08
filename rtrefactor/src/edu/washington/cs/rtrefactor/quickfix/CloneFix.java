@@ -28,7 +28,7 @@ public abstract class CloneFix implements IMarkerResolution, IJavaCompletionProp
 
 	private final ClonePairData pairData;
 	private final int relevance;
-	private final CloneFixer parent;
+	private final CloneResolutionGenerator parent;
 	
 	
 	/**
@@ -37,7 +37,7 @@ public abstract class CloneFix implements IMarkerResolution, IJavaCompletionProp
 	 * @param relevance A score from 10-100 indicating the relevance of this suggestion
 	 * @param parent The parent CloneFixer (can be null)
 	 */
-	public CloneFix(ClonePairData pairData, int relevance, CloneFixer parent){
+	public CloneFix(ClonePairData pairData, int relevance, CloneResolutionGenerator parent){
 		if (relevance < 10 || relevance > 100){
 			throw new IllegalArgumentException("Illegal relevance value " + relevance);
 		}
@@ -51,7 +51,7 @@ public abstract class CloneFix implements IMarkerResolution, IJavaCompletionProp
 	 * @return A string displaying the clone
 	 */
 	public String getDescription() {
-		return CloneFixer.getCloneString(pairData.getOtherRegion().getStart().getGlobalOffset(), 
+		return CloneResolutionGenerator.getCloneString(pairData.getOtherRegion().getStart().getGlobalOffset(), 
 				pairData.getOtherRegion().getEnd().getGlobalOffset(), pairData.getOtherContents());
 	}
 
@@ -168,7 +168,7 @@ public abstract class CloneFix implements IMarkerResolution, IJavaCompletionProp
 	 * Returns the parent, or null if there is none
 	 * @return the parent, or null if there is none
 	 */
-	protected CloneFixer getParent() {
+	protected CloneResolutionGenerator getParent() {
 		return parent;
 	}
 }
