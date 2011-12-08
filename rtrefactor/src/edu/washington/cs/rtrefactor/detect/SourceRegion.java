@@ -137,5 +137,10 @@ public class SourceRegion implements Comparable<SourceRegion>{
 		return true;
 	}
 
-	
+	@Override
+	public String toString() {
+		return getFile().getName() + " " 
+				+ start.getLine() + ":" + start.getLineOffset() + " - "
+				+ end.getLine() + ":" + end.getLineOffset();
+	}
 }
