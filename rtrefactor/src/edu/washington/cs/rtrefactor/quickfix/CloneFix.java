@@ -25,7 +25,8 @@ import edu.washington.cs.rtrefactor.reconciler.ClonePairData;
  */
 public abstract class CloneFix implements IMarkerResolution, IJavaCompletionProposal{
 
-
+    protected static boolean DEBUG_MODE = true;
+    
 	private final ClonePairData pairData;
 	private final int relevance;
 	private final CloneResolutionGenerator parent;
@@ -170,5 +171,14 @@ public abstract class CloneFix implements IMarkerResolution, IJavaCompletionProp
 	 */
 	protected CloneResolutionGenerator getParent() {
 		return parent;
+	}
+	
+	/**
+	 * Returns details to display iff {@link DEBUG_MODE} is set, otherwise
+	 * returns an empty string.
+	 * @return Returns details to display iff {@link DEBUG_MODE} is set, otherwise returns an empty string.
+	 */
+	protected String getLabelDetails(){
+	    return DEBUG_MODE ? " (raw: " + pairData.getSimilarity() + " adj: " + relevance + ")" : "";
 	}
 }
