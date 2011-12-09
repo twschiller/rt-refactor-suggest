@@ -10,7 +10,7 @@ import edu.washington.cs.rtrefactor.eval.QuickPicture;
  * @author Travis
  *
  */
-public class CinematicImageTransform implements ImageTransform {
+public strictfp class CinematicImageTransform implements ImageTransform {
 
 	
 	/**

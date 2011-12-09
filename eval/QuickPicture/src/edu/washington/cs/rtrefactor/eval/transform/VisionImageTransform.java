@@ -10,7 +10,7 @@ import edu.washington.cs.rtrefactor.eval.QuickPicture;
  * @author Travis Mandel
  *
  */
-public class VisionImageTransform implements ImageTransform {
+public strictfp class VisionImageTransform implements ImageTransform {
 	private int interestX;
 	private int interestY;
 	private int changeThreshold;
