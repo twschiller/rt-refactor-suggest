@@ -123,4 +123,23 @@ public abstract class DetectorUtil {
 			return active.overlaps(pair.getFirst()) || active.overlaps(pair.getSecond());
 		}
 	}
+	
+	/**
+	 * Calculate clone length, ignoring <i>Javadoc</i> comments and whitespace.
+	 * @param content
+	 */
+	public static int cloneLength(String content){
+	    String nws = content.replaceAll("\\s", "");
+	    
+	    while (nws.indexOf("/**") > 0){
+	        int start = nws.indexOf("/**");
+	        int end = nws.indexOf("*/", start);
+	        
+	        nws = end >= 0 
+	                ? nws.substring(0, start) + nws.substring(end + "*/".length())
+	                : nws.substring(0, start);
+	    }
+	    
+	    return nws.length();
+	}
 }

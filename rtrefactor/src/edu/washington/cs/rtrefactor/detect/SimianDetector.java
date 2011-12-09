@@ -150,9 +150,9 @@ public class SimianDetector extends BaseCheckStyleDetector<SimianCheck> {
 	}
 	
 	private double quality(StringBuilder source, StringBuilder other){
-		int sourceLen = source.toString().replaceAll("\\S", "").length();
-		int otherLen = other.toString().replaceAll("\\S", "").length();
-		
+		int sourceLen = DetectorUtil.cloneLength(source.toString());
+		int otherLen = DetectorUtil.cloneLength(other.toString());
+        
 		double avg = (sourceLen + otherLen) / 2.0;
 	
 		// after 150 non-whitespace chars, we don't care how long the clone section is
@@ -160,9 +160,6 @@ public class SimianDetector extends BaseCheckStyleDetector<SimianCheck> {
 	}
 	
 	@Override
-	/**
-	 * {@inheritDoc}
-	 */
 	protected ClonePair makeClonePair(BiMap<File, File> files, AuditEvent e) {
 		Matcher m = EN_REGEX.matcher(e.getMessage());
 		
