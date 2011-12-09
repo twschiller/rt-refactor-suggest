@@ -122,8 +122,9 @@ public class QuickPicture extends java.awt.Image {
 	public QuickColor getColor(int x, int y){
 		if(x < 0 || x >= raw.getWidth() || y< 0 || y >= raw.getHeight())
 			return null;
-		Color rawColor = new Color(raw.getRGB(x, y));
-		return new QuickColor(fromRGBVal(rawColor.getRed()), fromRGBVal(rawColor.getGreen()), 
+		Color rawColor = new Color(raw.getRGB(x, y), true);
+		
+		return  new QuickColor(fromRGBVal(rawColor.getRed()), fromRGBVal(rawColor.getGreen()), 
 				fromRGBVal(rawColor.getBlue()), fromRGBVal(rawColor.getAlpha()));
 	}
 
