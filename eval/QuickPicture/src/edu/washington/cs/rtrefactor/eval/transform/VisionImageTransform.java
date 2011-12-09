@@ -14,7 +14,7 @@ public strictfp class VisionImageTransform implements ImageTransform {
 	private int interestX;
 	private int interestY;
 	private int changeThreshold;
-	
+
 	/**
 	 * Initializes the transformation
 	 * @param interestX  The x-coordinate of the primary interest point
@@ -208,7 +208,7 @@ public strictfp class VisionImageTransform implements ImageTransform {
 				result.setColor(r, c, orig.getColor(r, c));
 			}
 		}
-		
+
 		//mark border
 
 		for(int r=topFrontier; r<=bottomFrontier; r++)
@@ -220,7 +220,7 @@ public strictfp class VisionImageTransform implements ImageTransform {
 					orig.getColor(r,  rightFrontier).getAlpha()));
 
 		}
-		
+
 		for(int r=leftFrontier; r<=rightFrontier; r++)
 		{
 			result.setColor(topFrontier, r, new QuickColor(0,0,0,

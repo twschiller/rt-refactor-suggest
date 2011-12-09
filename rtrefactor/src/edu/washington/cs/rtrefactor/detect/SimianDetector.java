@@ -66,14 +66,11 @@ public class SimianDetector extends BaseCheckStyleDetector<SimianCheck> {
 	}	
 	
 	@Override
-	/**
-	 * {@inheritDoc}
-	 */
 	public String getName(){
 		return NAME;
 	}
 
-	private SourceRegion mkRegion(BiMap<File, File> files, AuditEvent e, Matcher m){
+	private SourceRegion mkRegion(BiMap<File, File> files, AuditEvent e, Matcher m, StringBuilder content){
 		int endLine = Integer.parseInt(m.group(2).replace(",",""));
 		
 		File abs = super.absolutePath(super.absolutePath(new File(e.getFileName())));
@@ -83,8 +80,10 @@ public class SimianDetector extends BaseCheckStyleDetector<SimianCheck> {
 			File underlier = files.get(abs);
 			
 			Document underlierDoc;
+			String source;
 			try {
-				underlierDoc = new Document(FileUtil.read(abs));
+				source = FileUtil.read(abs);
+				underlierDoc = new Document(source);
 			} catch (IOException ex) {
 				throw new RuntimeException("Problem reading file " + abs.getName() + " when parsing Simian message " + ex.getMessage());
 			}
@@ -102,13 +101,15 @@ public class SimianDetector extends BaseCheckStyleDetector<SimianCheck> {
 				throw new RuntimeException("Bad location in file " + abs.getName() + " (Line: " + endLine  + ")", ex);
 			}
 			
+			content.append(source.substring(start.getGlobalOffset(), end.getGlobalOffset()));
+			
 			return new SourceRegion(start, end);
 		}else{
 			throw new RuntimeException("Internal error: temporary source file " + abs.getAbsolutePath() + " is not registered");
 		}
 	}
 	
-	private SourceRegion mkOtherRegion(BiMap<File, File> files, AuditEvent e, Matcher m){
+	private SourceRegion mkOtherRegion(BiMap<File, File> files, AuditEvent e, Matcher m, StringBuilder content){
 		File src = new File(m.group(3));
 		int otherStart = Integer.parseInt(m.group(4).replace(",",""));
 		int otherEnd = Integer.parseInt(m.group(5).replace(",",""));
@@ -119,8 +120,10 @@ public class SimianDetector extends BaseCheckStyleDetector<SimianCheck> {
 			File underlier = files.get(abs);
 			
 			Document underlierDoc;
+			String source;
 			try {
-				underlierDoc = new Document(FileUtil.read(abs));
+				source = FileUtil.read(abs);
+				underlierDoc = new Document(source);
 			} catch (IOException ex) {
 				throw new RuntimeException("Problem reading file " + abs.getName() + " when parsing Simian message " + ex.getMessage());
 			}
@@ -138,20 +141,22 @@ public class SimianDetector extends BaseCheckStyleDetector<SimianCheck> {
 				throw new RuntimeException("Bad location in file " + abs.getName() + " (Line: " + otherEnd + ")", ex);
 			}
 			
+			content.append(source.substring(start.getGlobalOffset(), end.getGlobalOffset()));
+			
 			return new SourceRegion(start, end);		
 		}else{
 			throw new RuntimeException("Internal error: temporary source file " + abs.getAbsolutePath() + " is not registered");
 		}
 	}
 	
-	private double quality(AuditEvent e, Matcher m){
-		int numLines = Integer.parseInt(m.group(1).replace(",",""));
-		int otherStart = Integer.parseInt(m.group(4).replace(",",""));
-		int otherEnd = Integer.parseInt(m.group(5).replace(",",""));
+	private double quality(StringBuilder source, StringBuilder other){
+		int sourceLen = source.toString().replaceAll("\\S", "").length();
+		int otherLen = source.toString().replaceAll("\\S", "").length();
 		
-		double avg = (numLines + (otherEnd - otherStart + 1)) / 2.0;
+		double avg = (sourceLen + otherLen) / 2.0;
 	
-		return Scorer.scale(Math.min(avg, 5), 0, 5, 50, 100);
+		// after 150 non-whitespace chars, we don't care how long the clone section is
+		return Scorer.scale(Math.min(avg, 150), 0, 100, 50, 100);
 	}
 	
 	@Override
@@ -161,8 +166,14 @@ public class SimianDetector extends BaseCheckStyleDetector<SimianCheck> {
 	protected ClonePair makeClonePair(BiMap<File, File> files, AuditEvent e) {
 		Matcher m = EN_REGEX.matcher(e.getMessage());
 		
+		StringBuilder sourceContent = new StringBuilder();
+		StringBuilder otherContent = new StringBuilder();
+		
 		if (m.matches()){
-			return new ClonePair(mkRegion(files, e, m), mkOtherRegion(files, e, m), quality(e,m));
+			SourceRegion source = mkRegion(files, e, m, sourceContent);
+			SourceRegion other = mkOtherRegion(files, e, m, otherContent);
+			
+			return new ClonePair(source, other , quality(sourceContent,otherContent));
 		}else{
 			throw new RuntimeException("Internal error parsing Simian message: " + e.getMessage());	
 		}

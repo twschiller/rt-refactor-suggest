@@ -14,11 +14,14 @@ import edu.washington.cs.rtrefactor.eval.transform.VisionImageTransform;
 import edu.washington.cs.rtrefactor.eval.transform.CartoonifyImageTransform.CartoonStyle;
 import edu.washington.cs.rtrefactor.eval.util.ImageUtil;
 
+// TODO EVAL: delete this class
+
 public class GenerateTargets {
 
 	private static QuickPicture astronaut;
     private static QuickPicture puppy;
     private static QuickPicture ghost;
+    private static QuickPicture patchyGhost;
 	
     private static void writeTarget(QuickPicture original, ImageTransform transform, String target) throws IOException{
     	 transform.transform(original).write(new File(Common.IMAGE_DIR, target));
@@ -33,11 +36,12 @@ public class GenerateTargets {
 	    astronaut = QuickPicture.read(new File(Common.IMAGE_DIR, "Astronaut_small.jpg"));
         puppy = QuickPicture.read(new File(Common.IMAGE_DIR, "Puppy_small.jpg"));
         ghost = QuickPicture.read(new File(Common.IMAGE_DIR, "Ghost.png"));
+        patchyGhost = QuickPicture.read(new File(Common.IMAGE_DIR, "ghost_try.png"));
 	
         writeTarget(astronaut, new NewImageTransform(17, new QuickColor(-400, 400, -400, 0)), "Astronaut_new.jpg");
         writeTarget(puppy, new NewImageTransform(10, new QuickColor(-400, 400, 400, 0)), "Puppy_new.jpg");
 
-        writeTarget(ghost, new ImageUtil.ShrinkImage(2), "Ghost_shrink.png");
+        writeTarget(patchyGhost, new ImageUtil.ShrinkImage(2), "Ghost_shrink.png");
         
         writeTarget(puppy, new UnderwaterTransform(false), "Puppy_underwater.jpg");            
         writeTarget(astronaut, new UnderwaterTransform(false), "Astronaut_underwater.jpg");
@@ -49,7 +53,7 @@ public class GenerateTargets {
 	
         // HIDDEN TESTS
         
-        writeTarget(ghost, new UnderwaterTransform(true), "Ghost_foo.png");           
-        writeTarget(ghost, new CartoonifyImageTransform(CartoonStyle.RETRO), "Ghost_bar.png");
+        writeTarget(patchyGhost, new UnderwaterTransform(true), "Ghost_foo.png");           
+        writeTarget(patchyGhost, new CartoonifyImageTransform(CartoonStyle.RETRO), "Ghost_bar.png");
 	}
 }
