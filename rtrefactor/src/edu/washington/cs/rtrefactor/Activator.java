@@ -36,7 +36,8 @@ public class Activator extends AbstractUIPlugin implements IStartup{
 	public static final String[] IMAGE_IDS = {"rtrefactor.fix.image1", 
 		"rtrefactor.fix.image2", "rtrefactor.fix.image3",
 		"rtrefactor.fix.image4", "rtrefactor.fix.image5", "rtrefactor.fix.image6",
-		"rtrefactor.fix.image7", "rtrefactor.fix.image8"};
+		"rtrefactor.fix.image7", "rtrefactor.fix.image8", "rtrefactor.fix.image9",
+		"rtrefactor.fix.image10", "rtrefactor.fix.image11"};
 	
 	/**
 	 * The shared instance
