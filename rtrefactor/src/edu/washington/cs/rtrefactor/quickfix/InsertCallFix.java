@@ -12,6 +12,7 @@ import com.google.common.base.Joiner;
 
 import edu.washington.cs.rtrefactor.reconciler.CloneEditor;
 import edu.washington.cs.rtrefactor.reconciler.ClonePairData;
+import edu.washington.cs.rtrefactor.util.FileUtil;
 
 /**
  * The quickfix which inserts a call to the system (other) clone
@@ -89,10 +90,11 @@ public class InsertCallFix extends CloneFix {
 		}
 	
 		// TODO bold clone in insert call fix description
-		
+		source = FileUtil.shiftLeft(source);
 		source = source.replaceAll("[\r\n]+", "<br/>")
-				.replaceAll(" ", "&#160;")
+				.replaceAll("  ", "&#160;&#160;")
 				.replaceAll("\t", "&#160;&#160;&#160;&#160;"); 
+		
 	
 		if(isSameFile()) {
 			return "Replaces code with a call to " + name + " in this file:<br/><br/>" + source;
