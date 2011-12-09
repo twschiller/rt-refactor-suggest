@@ -4,8 +4,9 @@ import java.io.File;
 import java.io.IOException;
 
 import junit.framework.Assert;
-import edu.washington.cs.rtrefactor.eval.QuickPicture;
+import junit.framework.AssertionFailedError;
 import edu.washington.cs.rtrefactor.eval.ImageTransform;
+import edu.washington.cs.rtrefactor.eval.QuickPicture;
 
 /**
  * Common testing functions
@@ -50,10 +51,11 @@ public class Common {
 	public static void assertEquals(QuickPicture expected, QuickPicture actual){
 		Assert.assertEquals("Unexpected image width", expected.getWidth(), actual.getWidth());
 		Assert.assertEquals("Unexpected image height", expected.getHeight(), actual.getHeight());
-
+		
 		for (int r = 0; r < expected.getHeight(); r++){
 			for (int c = 0; c < expected.getWidth(); c++){
-				Assert.assertEquals("Unexpected color at x:" + c + " y:" + r, expected.getColor(c, r), actual.getColor(c, r));
+				Assert.assertTrue("Unexpected color <" + actual.getColor(c, r) + "> at x:" + c + " y:" + r + ". Expected: <" +  expected.getColor(c, r) + ">", 
+						expected.getColor(c, r).equals(actual.getColor(c, r), 4));
 			}
 		}               
 	}
