@@ -28,8 +28,9 @@ public class ImageUtil {
 	}
 
 
-	/** Shrinks the image
-	 * */
+	/** 
+	 * Shrinks the image
+	 */
 	public static class ShrinkImage implements ImageTransform {
 		
 		int shrinkFactor;
