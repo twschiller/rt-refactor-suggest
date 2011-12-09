@@ -126,7 +126,8 @@ public abstract class DetectorUtil {
 	
 	/**
 	 * Calculate clone length, ignoring <i>Javadoc</i> comments and whitespace.
-	 * @param content
+	 * @param content the clone text
+	 * @return the clone length
 	 */
 	public static int cloneLength(String content){
 	    String nws = content.replaceAll("\\s", "");
