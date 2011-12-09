@@ -12,13 +12,14 @@ import edu.washington.cs.rtrefactor.eval.QuickPicture;
  */
 public class CinematicImageTransform implements ImageTransform {
 
-	@Override
+	
 	/**
 	 * Transforms the image to make it more cinematic:
 	 * 
 	 * This is a two-phase process, with the first phase changing the focus,
 	 * and the second phase swapping out colors to give it that old-timey video feel.
 	 */
+	@Override
 	public QuickPicture transform(QuickPicture old) {
 		//odd, square same size kernels only
 		double[]  kernel = {0.05, 0.1, 0.05,

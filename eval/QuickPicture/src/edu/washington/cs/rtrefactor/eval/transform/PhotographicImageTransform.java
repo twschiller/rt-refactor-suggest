@@ -18,8 +18,8 @@ public class PhotographicImageTransform implements ImageTransform{
 	
 	/**
 	 * Initialize the transformation with the necessary data to use.
-	 * @param modes  The ist of modes inidcating the sequence of annotations to add to the image
-	 * @param qc The mmain color to use when transforming the image
+	 * @param modes  The list of modes indicating the sequence of annotations to add to the image
+	 * @param qc The main color to use when transforming the image
 	 */
 	public PhotographicImageTransform(PhotoMode[] modes, QuickColor qc, int offX, int offY)
 	{
