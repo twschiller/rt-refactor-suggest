@@ -151,7 +151,7 @@ public class SimianDetector extends BaseCheckStyleDetector<SimianCheck> {
 	
 	private double quality(StringBuilder source, StringBuilder other){
 		int sourceLen = source.toString().replaceAll("\\S", "").length();
-		int otherLen = source.toString().replaceAll("\\S", "").length();
+		int otherLen = other.toString().replaceAll("\\S", "").length();
 		
 		double avg = (sourceLen + otherLen) / 2.0;
 	
