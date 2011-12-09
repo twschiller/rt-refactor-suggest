@@ -37,5 +37,64 @@ public abstract class FileUtil {
 		return content.substring(region.getStart().getGlobalOffset(), region.getEnd().getGlobalOffset());
 	}
 	
+	public static String shiftLeft(String orig)
+	{
+		//String stripped = orig.r
+		String[] lines = orig.split("\n");
+		int minSpaces = -1;
+		for(int i=0; i<lines.length; i++) {
+			int spaces = 0;
+			if(lines[i].trim().length() == 0) {
+				continue;
+			}
+			lines[i] = shiftTagToEnd(lines[i]);
+			while(spaces < lines[i].length() &&
+					Character.isWhitespace(lines[i].charAt(spaces)) ) {
+				spaces++;
+				
+			}
+			minSpaces = (spaces < minSpaces || (minSpaces < 0)) ? spaces : minSpaces;
+		}
+		String result = "";
+		for(int i=0; i<lines.length; i++) {
+			
+			if(lines[i].trim().length() == 0) {
+				result += lines[i] + "\n";
+			} else {
+				result += lines[i].substring(minSpaces) + "\n";
+			}
+		}
+		
+		return result;
+		
+	}
+	
+	private static String shiftTagToEnd(String s){
+		int off = 0;
+		while(off < s.length() &&
+				Character.isWhitespace(s.charAt(off)) ) {
+			off++;
+		}
+		int startOff = off;
+		if(s.charAt(off) == '<')
+		{
+			off++;
+			while(s.charAt(off) != '>')
+				off++;
+			int tagEndOff = off;
+			off++;
+			
+			while(off < s.length() &&
+					Character.isWhitespace(s.charAt(off)) ) {
+				off++;
+			}
+			String ret = s.substring(0, startOff) +  s.substring(tagEndOff+1, off) + 
+					s.substring(startOff, tagEndOff+1) + s.substring(off);
+			return ret;
+		}
+		
+		return s;
+	}
+	
 }
 

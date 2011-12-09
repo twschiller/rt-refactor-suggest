@@ -193,17 +193,22 @@ public class CloneResolutionGenerator implements IMarkerResolutionGenerator {
 			rEnd = content.length()-1;
 		}
 			
-
+		
+		
 		//return the string with the bolding tags
-		String ret = "..." +content.substring(rStart, startOffOrig) + "<b>" +
+		String ret = "\n" +content.substring(rStart, startOffOrig) + "<b>" +
 				content.substring(startOffOrig, endOffOrig) + "</b>" + 
-				content.substring(endOffOrig, rEnd) + "<br/>...";
+				content.substring(endOffOrig, rEnd) ;
+		
+		ret = FileUtil.shiftLeft(ret);
+		ret = "..."+ret+ "<br/>...";
 
 		// We need to preserve the indentations here.  Eclipse's HTML 
 		// parser/renderer  is very incomplete, so normal methods don't work.  
 		// Here I  replace spaces and tabs by &#160;.  This is the same as 
 		//  &nbsp;, but Eclipse doesn't recognize that :(
-		ret = ret.replaceAll(newline, "<br/>").replaceAll(" ", "&#160;").
+		
+		ret = ret.replaceAll(newline, "<br/>").replaceAll("  ", "&#160;&#160;").
 				replaceAll("\t", "&#160;&#160;&#160;&#160;&#160;") ;
 
 		return ret;
