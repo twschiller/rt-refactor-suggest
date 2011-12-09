@@ -66,10 +66,10 @@ public class CopyPasteFix extends CloneFix {
 	public String getLabel() {
 		getParent().notifyFixesActivated();
 		if(isSameFile()) {
-			return "Paste local clone";
+			return "Paste local clone" + super.getLabelDetails();
 		} else {
 			return "Paste clone from "+ 
-			getOtherRegion().getFile().getName();
+			getOtherRegion().getFile().getName() + super.getLabelDetails();
 		}
 	}
 	

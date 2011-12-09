@@ -38,10 +38,10 @@ public class JumpToFix extends CloneFix {
 	public String getLabel() {
 		getParent().notifyFixesActivated();
 		if(isSameFile()) {
-			return "Jump to local clone";
+			return "Jump to local clone" + super.getLabelDetails();
 		} else {
 			return "Jump to clone from "+ 
-			getOtherRegion().getFile().getName();
+			getOtherRegion().getFile().getName() + super.getLabelDetails();
 		}
 	}
 	
