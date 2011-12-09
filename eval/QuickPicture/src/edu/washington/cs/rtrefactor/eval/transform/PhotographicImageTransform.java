@@ -3,7 +3,7 @@ import edu.washington.cs.rtrefactor.eval.ImageTransform;
 import edu.washington.cs.rtrefactor.eval.QuickColor;
 import edu.washington.cs.rtrefactor.eval.QuickPicture;
 
-public class PhotographicImageTransform implements ImageTransform{
+public strictfp class PhotographicImageTransform implements ImageTransform{
 
 	public enum PhotoMode  { FIRST, SECOND}
 

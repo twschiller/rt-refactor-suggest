@@ -11,7 +11,7 @@ import edu.washington.cs.rtrefactor.eval.QuickPicture;
  * @author Travis Mandel
  *
  */
-public class CartoonifyImageTransform implements ImageTransform {
+public strictfp class CartoonifyImageTransform implements ImageTransform {
 
 	public enum CartoonStyle  { RETRO, EXPERIMENTAL}
 

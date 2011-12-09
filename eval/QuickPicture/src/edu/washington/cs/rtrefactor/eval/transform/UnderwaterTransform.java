@@ -11,7 +11,7 @@ import edu.washington.cs.rtrefactor.eval.QuickPicture;
  *
  */
 		
-public class UnderwaterTransform implements ImageTransform {
+public strictfp class UnderwaterTransform implements ImageTransform {
 	
 	private boolean extraProcessing;
 	

@@ -40,7 +40,7 @@ public class TransformTest {
 	
 	@Test
 	public void testCartoon() {
-		Common.testTransform(puppy,  new CartoonifyImageTransform(CartoonStyle.RETRO), Common.tryRead("Puppy_cartoon.jpg"));
+		Common.testTransform(puppy,  new CartoonifyImageTransform(CartoonStyle.EXPERIMENTAL), Common.tryRead("Puppy_cartoon.jpg"));
 	}
 	
 	

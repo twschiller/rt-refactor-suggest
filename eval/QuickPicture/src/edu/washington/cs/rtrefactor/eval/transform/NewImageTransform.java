@@ -5,7 +5,7 @@ import edu.washington.cs.rtrefactor.eval.QuickColor;
 import edu.washington.cs.rtrefactor.eval.QuickPicture;
 import edu.washington.cs.rtrefactor.eval.transform.PhotographicImageTransform.PhotoMode;
 
-public class NewImageTransform implements ImageTransform{
+public strictfp class NewImageTransform implements ImageTransform{
 	private int picId;
 	private QuickColor idColor;
 	
@@ -13,6 +13,7 @@ public class NewImageTransform implements ImageTransform{
 		this.picId = picId;
 		this.idColor = idColor;
 	}
+	
 	@Override
 	public QuickPicture transform(QuickPicture old) {
 		// Development Task idea:

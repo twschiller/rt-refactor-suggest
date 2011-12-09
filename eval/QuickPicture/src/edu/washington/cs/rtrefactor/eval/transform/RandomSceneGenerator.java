@@ -10,7 +10,7 @@ import edu.washington.cs.rtrefactor.eval.QuickPicture;
  * @author Travis
  *
  */
-public class RandomSceneGenerator implements ImageTransform {
+public strictfp class RandomSceneGenerator implements ImageTransform {
 	
 	public static final int MAX_STEPS = 500;
 	
