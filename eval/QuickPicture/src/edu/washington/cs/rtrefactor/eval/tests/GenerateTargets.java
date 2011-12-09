@@ -18,42 +18,42 @@ import edu.washington.cs.rtrefactor.eval.util.ImageUtil;
 
 public class GenerateTargets {
 
-	private static QuickPicture astronaut;
+    private static QuickPicture astronaut;
     private static QuickPicture puppy;
     private static QuickPicture ghost;
     private static QuickPicture patchyGhost;
-	
+
     private static void writeTarget(QuickPicture original, ImageTransform transform, String target) throws IOException{
-    	 transform.transform(original).write(new File(Common.IMAGE_DIR, target));
+        transform.transform(original).write(new File(Common.IMAGE_DIR, target));
     }
-    
-    
-	/**
-	 * @param args
-	 * @throws IOException 
-	 */
-	public static void main(String[] args) throws IOException {
-	    astronaut = QuickPicture.read(new File(Common.IMAGE_DIR, "Astronaut_small.jpg"));
+
+
+    /**
+     * @param args
+     * @throws IOException 
+     */
+    public static void main(String[] args) throws IOException {
+        astronaut = QuickPicture.read(new File(Common.IMAGE_DIR, "Astronaut_small.jpg"));
         puppy = QuickPicture.read(new File(Common.IMAGE_DIR, "Puppy_small.jpg"));
         ghost = QuickPicture.read(new File(Common.IMAGE_DIR, "Ghost.png"));
         patchyGhost = QuickPicture.read(new File(Common.IMAGE_DIR, "ghost_try.png"));
-	
+
         writeTarget(astronaut, new NewImageTransform(17, new QuickColor(-400, 400, -400, 0)), "Astronaut_new.jpg");
         writeTarget(puppy, new NewImageTransform(10, new QuickColor(-400, 400, 400, 0)), "Puppy_new.jpg");
 
         writeTarget(patchyGhost, new ImageUtil.ShrinkImage(2), "Ghost_shrink.png");
-        
+
         writeTarget(puppy, new UnderwaterTransform(false), "Puppy_underwater.jpg");            
         writeTarget(astronaut, new UnderwaterTransform(false), "Astronaut_underwater.jpg");
-        
+
         writeTarget(astronaut, new ImageUtil.Flip(), "Astronaut_flip.jpg");
         writeTarget(puppy,  new CartoonifyImageTransform(CartoonStyle.EXPERIMENTAL), "Puppy_cartoon.jpg");
         writeTarget(astronaut, new VisionImageTransform(50, 50, 500), "Astronaut_vision.jpg");
         writeTarget(puppy,  new CinematicImageTransform(), "Puppy_movie.jpg");
-	
+
         // HIDDEN TESTS
-        
+
         writeTarget(patchyGhost, new UnderwaterTransform(true), "Ghost_foo.png");           
         writeTarget(patchyGhost, new CartoonifyImageTransform(CartoonStyle.RETRO), "Ghost_bar.png");
-	}
+    }
 }

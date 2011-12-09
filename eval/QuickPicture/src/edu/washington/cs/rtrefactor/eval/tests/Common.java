@@ -52,7 +52,7 @@ public class Common {
 	public static void assertEquals(QuickPicture expected, QuickPicture actual){
 		Assert.assertEquals("Unexpected image width", expected.getWidth(), actual.getWidth());
 		Assert.assertEquals("Unexpected image height", expected.getHeight(), actual.getHeight());
-		
+
 		for (int r = 0; r < expected.getHeight(); r++){
 			for (int c = 0; c < expected.getWidth(); c++){
 				Assert.assertTrue("Unexpected color <" + actual.getColor(c, r) + "> at x:" + c + " y:" + r + ". Expected: <" +  expected.getColor(c, r) + ">", 

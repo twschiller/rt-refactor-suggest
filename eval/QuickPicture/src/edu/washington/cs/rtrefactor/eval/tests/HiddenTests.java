@@ -17,21 +17,21 @@ import edu.washington.cs.rtrefactor.eval.transform.UnderwaterTransform;
  * @author Todd Schiller
  */
 public class HiddenTests {
-	private QuickPicture ghost;
+    private QuickPicture ghost;
 
-	@Before
-	public void setUp() throws Exception {
-		 ghost = QuickPicture.read(new File(Common.IMAGE_DIR, "ghost_try.png"));
-	}
+    @Before
+    public void setUp() throws Exception {
+        ghost = QuickPicture.read(new File(Common.IMAGE_DIR, "ghost_try.png"));
+    }
 
-	@Test
-	public void testUnderwater() {     
-		Common.testTransform(ghost, new UnderwaterTransform(true), Common.tryRead("Ghost_foo.png"));
-	}
+    @Test
+    public void testUnderwater() {     
+        Common.testTransform(ghost, new UnderwaterTransform(true), Common.tryRead("Ghost_foo.png"));
+    }
 
-	@Test
-	public void testCartoon() {
-		Common.testTransform(ghost, new CartoonifyImageTransform(CartoonStyle.RETRO), Common.tryRead("Ghost_bar.png"));
-	}
-        
+    @Test
+    public void testCartoon() {
+        Common.testTransform(ghost, new CartoonifyImageTransform(CartoonStyle.RETRO), Common.tryRead("Ghost_bar.png"));
+    }
+
 }
