@@ -156,7 +156,7 @@ public class SimianDetector extends BaseCheckStyleDetector<SimianCheck> {
 		double avg = (sourceLen + otherLen) / 2.0;
 	
 		// after 150 non-whitespace chars, we don't care how long the clone section is
-		return Scorer.scale(Math.min(avg, 150), 0, 100, 50, 100);
+		return Scorer.scale(Math.min(avg, 150), 0, 150, 50, 100);
 	}
 	
 	@Override
