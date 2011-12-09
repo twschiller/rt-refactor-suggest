@@ -8,7 +8,10 @@ import javax.swing.JPanel;
 
 
 /**
- * Display for the image being edited
+ * Display for the image being edited.
+ * 
+ * ImageTransforms should never access this class.
+ *  
  * @author Todd Schiller
  */
 @SuppressWarnings("serial")
