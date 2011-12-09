@@ -97,7 +97,7 @@ public strictfp class CartoonifyImageTransform implements ImageTransform {
                                                 total.setRed(total.getRed() + oldColor.getRed());
                                                 total.setGreen(total.getGreen() + oldColor.getGreen());
                                                 total.setBlue(total.getBlue() + oldColor.getBlue());
-                                                //total.setAlpha(total.getAlpha() + oldColor.getAlpha());
+                                                total.setAlpha(total.getAlpha() + oldColor.getAlpha());
                                                 samples++;
                                         }
                                 }
@@ -107,8 +107,8 @@ public strictfp class CartoonifyImageTransform implements ImageTransform {
                                                 if (r + roff >= 0 && r + roff < old.getHeight() && c + coff >=0 && c + coff < old.getWidth()){
                                                         QuickColor newColor = new QuickColor(total.getRed()/samples, 
                                                                         total.getGreen()/samples, total.getBlue()/samples, 
-                                                                        old.getColor(c+coff, r+roff).getAlpha());
-                                                                        //total.getAlpha()/samples));
+                                                                        //old.getColor(c+coff, r+roff).getAlpha());
+                                                                        total.getAlpha()/samples);
                                                         result.setColor(c+coff, r+roff, newColor);
                                                         
                                                 }

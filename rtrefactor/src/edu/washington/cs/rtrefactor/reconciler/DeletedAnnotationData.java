@@ -1,5 +1,7 @@
 package edu.washington.cs.rtrefactor.reconciler;
 
+import java.io.File;
+
 import org.eclipse.jface.text.Position;
 
 /**
@@ -11,6 +13,9 @@ public class DeletedAnnotationData {
 	
 	private final Position pos;
 	private final int cloneNumber;
+	private final File otherFile;
+	private final int otherStart;
+	private final int otherEnd;
 	
 	/**
 	 * Create data about a deleted annotation
@@ -19,10 +24,13 @@ public class DeletedAnnotationData {
 	 * 		deleted
 	 * @param cloneNumber The clone number associated with the marker
 	 */
-	public DeletedAnnotationData(Position pos, int cloneNumber) {
+	public DeletedAnnotationData(Position pos, int cloneNumber, File otherFile, int otherStart, int otherEnd) {
 		super();
 		this.pos = pos;
 		this.cloneNumber = cloneNumber;
+		this.otherFile = otherFile;
+		this.otherStart = otherStart;
+		this.otherEnd = otherEnd;
 	}
 	
 	/**
@@ -39,6 +47,30 @@ public class DeletedAnnotationData {
 	 */
 	public int getCloneNumber() {
 		return cloneNumber;
+	}
+	
+	/**
+	 * Get the other file which this annotation pointed to 
+	 * @return the other file which this annotation pointed to
+	 */
+	public File getOtherFile() {
+		return otherFile;
+	}
+	
+	/**
+	 * Get the global start offset of the other clone
+	 * @return the global start offset of the other clone
+	 */
+	public int getOtherStart() {
+		return otherStart;
+	}
+
+	/**
+	 * Get the global end offset of the other clone
+	 * @return the global end offset of the other clone
+	 */
+	public int getOtherEnd() {
+		return otherEnd;
 	}
 	
 

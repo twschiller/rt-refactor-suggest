@@ -14,7 +14,8 @@ import edu.washington.cs.rtrefactor.eval.QuickPicture;
  */
 public class Common {
 
-	public static File IMAGE_DIR = new File("/homes/gws/tws/proj/rt-refactor-suggest/eval/QuickPicture/img/");
+	//public static File IMAGE_DIR = new File("/homes/gws/tws/proj/rt-refactor-suggest/eval/QuickPicture/img/");
+	public static File IMAGE_DIR = new File("C:\\Users\\Travis\\workspace\\RefactorEvaluation\\img");
 
 
 	/**
