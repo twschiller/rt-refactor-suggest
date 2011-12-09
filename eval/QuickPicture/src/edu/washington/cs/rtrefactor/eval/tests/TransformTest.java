@@ -42,7 +42,7 @@ public class TransformTest {
 	 */
 	@Test
 	public void testShrink() {
-		Common.testTransform(ghost, new ImageUtil.ShrinkImage(1), Common.tryRead("Ghost_shrink.png"));
+		Common.testTransform(ghost, new ImageUtil.ShrinkImage(2), Common.tryRead("Ghost_shrink.png"));
 	}
 
 	@Test
