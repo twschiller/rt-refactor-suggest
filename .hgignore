@@ -1,0 +1,16 @@
+# use glob syntax.
+syntax: glob
+
+*.aux
+*.bbl
+*.blg
+*.dvi
+*.log
+*.pdf
+*.ps
+bib
+
+rtrefactor/bin
+glob:pub/proposal/rt-refactoring-proposal - Copy.tex
+glob:*.orig
+glob:*.class
