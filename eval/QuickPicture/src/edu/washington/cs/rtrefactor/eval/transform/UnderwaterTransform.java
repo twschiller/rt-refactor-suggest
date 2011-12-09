@@ -54,7 +54,7 @@ public class UnderwaterTransform implements ImageTransform {
 		
 		int pow2 = 2;
 		QuickPicture res = new QuickPicture(blue.getWidth() / pow2, blue.getHeight() / pow2);
-
+		
 		int halfsize = pow2/2;
 		for (int r = halfsize; r < blue.getHeight() - halfsize; r+= halfsize * 2){
 
@@ -71,7 +71,8 @@ public class UnderwaterTransform implements ImageTransform {
 						samples++;
 					}
 				}
-
+				
+				//We should probably be blending the alphas here
 				QuickColor newColor = new QuickColor(total.getRed()/samples, 
 						total.getGreen()/samples, total.getBlue()/samples, 
 						blue.getColor(c, r).getAlpha());

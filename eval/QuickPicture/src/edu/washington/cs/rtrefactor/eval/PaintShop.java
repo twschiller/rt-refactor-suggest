@@ -17,6 +17,7 @@ import javax.swing.JPanel;
 import edu.washington.cs.rtrefactor.eval.transform.CartoonifyImageTransform;
 import edu.washington.cs.rtrefactor.eval.transform.CartoonifyImageTransform.CartoonStyle;
 import edu.washington.cs.rtrefactor.eval.transform.CinematicImageTransform;
+import edu.washington.cs.rtrefactor.eval.transform.NewImageTransform;
 import edu.washington.cs.rtrefactor.eval.transform.PhotographicImageTransform;
 import edu.washington.cs.rtrefactor.eval.transform.PhotographicImageTransform.PhotoMode;
 import edu.washington.cs.rtrefactor.eval.transform.RandomSceneGenerator;
@@ -60,10 +61,11 @@ public class PaintShop extends JFrame{
 		addTransform("Shrink", new ImageUtil.ShrinkImage(1));
 		addTransform("Vision", new VisionImageTransform(50, 50, 500));
 		addTransform("Underwater", new UnderwaterTransform(false));
+		addTransform("New", new NewImageTransform(17, new QuickColor(-400, 400, -400, 0)));
 		//TODO:Bugs
 		addTransform("Cinematic", new CinematicImageTransform());
 		addTransform("Photo", new PhotographicImageTransform(new PhotoMode [] 
-				{PhotoMode.FIRST, PhotoMode.SECOND}, new QuickColor(-400, 400, -400, 0)));
+				{PhotoMode.FIRST, PhotoMode.SECOND}, new QuickColor(-400, 400, -400, 0), 4, 5));
 		addTransform("Random", new RandomSceneGenerator(new QuickColor(400,-400,400,0), 100, 100, 200000));
 	}
 	

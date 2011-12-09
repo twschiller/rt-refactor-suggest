@@ -88,7 +88,7 @@ public class CartoonifyImageTransform implements ImageTransform {
 		for (int r = size ; r < old.getHeight() - size; r+= size * 2){
 
 			for (int c = size; c < old.getWidth() - size; c += size* 2){
-
+				// To do : Deal with how this handles alpha channels
 				QuickColor total = new QuickColor(0, 0, 0, 0);
 				int samples = 0;
 				for (int ro = -size; ro < size; ro++){
@@ -141,10 +141,10 @@ public class CartoonifyImageTransform implements ImageTransform {
 				else if(curColor.getRed() > 0  && curColor.getGreen() > 0 && curColor.getBlue() < 0)
 				{
 					//diag only
-					QuickColor upperLeft = old.getColor(x-1, y-1);
-					QuickColor upperRight = old.getColor(x+1, y-1);
-					QuickColor lowerLeft = old.getColor(x-1, y+1);
-					QuickColor lowerRight = old.getColor(x+1, y+1);
+					QuickColor upperLeft = getSafeColor(old, x-1, y-1);
+					QuickColor upperRight = getSafeColor(old, x+1, y-1);
+					QuickColor lowerLeft = getSafeColor(old, x-1, y+1);
+					QuickColor lowerRight = getSafeColor(old, x+1, y+1);
 					newColor.setRed((upperLeft.getRed() + upperRight.getRed()
 							+ lowerLeft.getRed() + lowerRight.getRed())/4);
 					newColor.setGreen((upperLeft.getGreen() + upperRight.getGreen()
@@ -172,7 +172,7 @@ public class CartoonifyImageTransform implements ImageTransform {
 		return result;
 	}
 
-	public QuickColor getSafeColor(QuickPicture p, int c, int r) {
+	public static QuickColor getSafeColor(QuickPicture p, int c, int r) {
 		QuickColor result = p.getColor(c, r);
 		if(result == null)
 			return new QuickColor(0,0,0,0);

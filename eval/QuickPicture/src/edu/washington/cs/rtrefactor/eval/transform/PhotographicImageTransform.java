@@ -7,12 +7,12 @@ public class PhotographicImageTransform implements ImageTransform{
 
 	public enum PhotoMode  { FIRST, SECOND}
 
-	public static final int OFFX = 4;
-	public static final int OFFY = 5;
 	public static final int SIZE = 10;
-	public static final int SPACE = 4;
+	public static final int SPACE = 5;
 	
-	QuickColor myColor;
+	private QuickColor myColor;
+	private int offX;
+	private int offY;
 
 	private PhotoMode[] myModes;
 	
@@ -21,10 +21,12 @@ public class PhotographicImageTransform implements ImageTransform{
 	 * @param modes  The ist of modes inidcating the sequence of annotations to add to the image
 	 * @param qc The mmain color to use when transforming the image
 	 */
-	public PhotographicImageTransform(PhotoMode[] modes, QuickColor qc)
+	public PhotographicImageTransform(PhotoMode[] modes, QuickColor qc, int offX, int offY)
 	{
 		myModes = modes;
 		myColor = qc;
+		this.offX = offX;
+		this.offY = offY;
 	}
 	
 	/**
@@ -49,19 +51,19 @@ public class PhotographicImageTransform implements ImageTransform{
 			int cOff = (SPACE+SIZE) *i;
 			if(myMode.equals(PhotoMode.FIRST)) {
 				//vertical
-				for(int y = OFFY; y<OFFY+2*SIZE; y++) {
-					setSafeColor(result, OFFX + cOff, y, myColor);
-					setSafeColor(result, OFFX+SIZE + cOff, y, myColor);
+				for(int y = offY; y<offY+2*SIZE; y++) {
+					setSafeColor(result, offX + cOff, y, myColor);
+					setSafeColor(result, offX+SIZE + cOff, y, myColor);
 				}
 				//horizontal
-				for(int x = OFFX; x<OFFX+SIZE; x++) {
-					setSafeColor(result, x+cOff, OFFY , myColor);
-					setSafeColor(result, x + cOff, OFFY+2*SIZE, myColor);
+				for(int x = offX; x<offX+SIZE; x++) {
+					setSafeColor(result, x+cOff, offY , myColor);
+					setSafeColor(result, x + cOff, offY+2*SIZE, myColor);
 				}
 			} else {
 				//vertical
-				for(int y = OFFY; y<OFFY+2*SIZE; y++) {
-					setSafeColor(result, OFFX+(SIZE/2)+cOff, y, myColor);
+				for(int y = offY; y<offY+2*SIZE; y++) {
+					setSafeColor(result, offX+(SIZE/2)+cOff, y, myColor);
 				}
 			}
 		}
