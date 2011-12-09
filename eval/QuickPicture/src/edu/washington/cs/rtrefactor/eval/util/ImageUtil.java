@@ -1,12 +1,20 @@
 package edu.washington.cs.rtrefactor.eval.util;
 
+import edu.washington.cs.rtrefactor.eval.ImageTransform;
 import edu.washington.cs.rtrefactor.eval.QuickColor;
 import edu.washington.cs.rtrefactor.eval.QuickPicture;
-import edu.washington.cs.rtrefactor.eval.transform.ImageTransform;
 
+/**
+ * Provides some simple, basic image transformations which may prove useful to other classes.
+ * @author Travis Mandel
+ *
+ */
 public class ImageUtil {
 	
 	public static class Flip implements ImageTransform {
+		/**
+		 * Flips the image vertically.
+		 */
 		public QuickPicture transform(QuickPicture orig) {
 			QuickPicture res = new QuickPicture(orig.getWidth(), orig.getHeight());
 
@@ -20,17 +28,23 @@ public class ImageUtil {
 	}
 
 
-
+	/** Shrinks the image
+	 * */
 	public static class ShrinkImage implements ImageTransform {
 		
 		int shrinkFactor;
+		/**
+		 * Initialize the transform
+		 * @param factor The power of two by which to shrink the image (for example, 3 would 
+		 * 	create an image 1/8th the size)
+		 */
 		public ShrinkImage(int factor){
 			shrinkFactor = (int)Math.pow(2, factor);
 		}
 		
 		@Override
 		public QuickPicture transform(QuickPicture old) {
-			return ImageUtil.halfImage(old, shrinkFactor);
+			return ImageUtil.downsizeImage(old, shrinkFactor);
 		}
 		
 	}
@@ -42,7 +56,15 @@ public class ImageUtil {
 	//
 	// In reality, there is a clone of this method in UnderwaterTransform, and a partial clone in 
 	//	Cartoonify that must be changed.
-	public static QuickPicture halfImage(QuickPicture orig, int pow2) {
+	
+	/**
+	 * Shrinks the image by the indicated factor.
+	 * 
+	 * @param orig The provided image
+	 * @param pow2 The factor by which to shrink.  Must be a power of 2 (2,4,8,etc.)
+	 * @return The shrunken image.
+	 */
+	public static QuickPicture downsizeImage(QuickPicture orig, int pow2) {
 
 		QuickPicture res = new QuickPicture(orig.getWidth() / pow2, orig.getHeight() / pow2);
 

@@ -1,11 +1,16 @@
 package edu.washington.cs.rtrefactor.eval.transform;
 
+import edu.washington.cs.rtrefactor.eval.ImageTransform;
+import edu.washington.cs.rtrefactor.eval.QuickColor;
 import edu.washington.cs.rtrefactor.eval.QuickPicture;
 
 public class NewImageTransform implements ImageTransform{
 	private int picId;
-	public NewImageTransform(int picId) {
+	private QuickColor annotationColor;
+	
+	public NewImageTransform(int picId, QuickColor annotationColor) {
 		this.picId = picId;
+		this.annotationColor = annotationColor;
 	}
 	@Override
 	public QuickPicture transform(QuickPicture old) {

@@ -1,14 +1,39 @@
 package edu.washington.cs.rtrefactor.eval.transform;
 
+import edu.washington.cs.rtrefactor.eval.ImageTransform;
 import edu.washington.cs.rtrefactor.eval.QuickColor;
 import edu.washington.cs.rtrefactor.eval.QuickPicture;
 
+/**
+ * Transforms images by making them appear to be underwater.
+ * 
+ * @author Travis
+ *
+ */
+		
 public class UnderwaterTransform implements ImageTransform {
 	
-	private boolean setSize;
-	public UnderwaterTransform(boolean setSize) {
-		this.setSize = setSize;
+	private boolean extraProcessing;
+	
+	/**
+	 * Initializes this transform.
+	 * 
+	 * @param extra Should we include extra processing (potentially expensive)?
+	 */
+	public UnderwaterTransform(boolean extra) {
+		this.extraProcessing = extra;
 	}
+	
+	/**
+	 * Transforms the image to make it appear to be underwater
+	 * 
+	 * More specifically, takes care of altering the overall color of the image to make it appear to be 
+	 * submerged.
+	 * 
+	 * If extra processing is enabled, does extra post-processing to emulate looking through a small
+	 * submarine window 
+	 * 
+	 */
 	public QuickPicture transform(QuickPicture old) {
 		
 		
@@ -23,7 +48,7 @@ public class UnderwaterTransform implements ImageTransform {
 			}
 		}
 		
-		if(!setSize)
+		if(!extraProcessing)
 			return blue;
 		
 		

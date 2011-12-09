@@ -1,4 +1,5 @@
 package edu.washington.cs.rtrefactor.eval.transform;
+import edu.washington.cs.rtrefactor.eval.ImageTransform;
 import edu.washington.cs.rtrefactor.eval.QuickColor;
 import edu.washington.cs.rtrefactor.eval.QuickPicture;
 
@@ -10,13 +11,30 @@ public class PhotographicImageTransform implements ImageTransform{
 	public static final int OFFY = 5;
 	public static final int SIZE = 10;
 	public static final int SPACE = 4;
+	
+	QuickColor myColor;
 
 	private PhotoMode[] myModes;
-
-	public PhotographicImageTransform(PhotoMode[] modes)
+	
+	/**
+	 * Initialize the transformation with the necessary data to use.
+	 * @param modes  The ist of modes inidcating the sequence of annotations to add to the image
+	 * @param qc The mmain color to use when transforming the image
+	 */
+	public PhotographicImageTransform(PhotoMode[] modes, QuickColor qc)
 	{
 		myModes = modes;
+		myColor = qc;
 	}
+	
+	/**
+	 * Transforms the picture.
+	 *   
+	 * More specifically, applies a sequence of 
+	 * transformations to the image which encode the information stored in the modes
+	 * array into the pixels of the image, where it can be later retrieved by 
+	 * computer vision procedures.
+	 */
 	@Override
 	public QuickPicture transform(QuickPicture old) {
 		QuickPicture result = new QuickPicture(old.getWidth(), old.getHeight());
@@ -32,16 +50,18 @@ public class PhotographicImageTransform implements ImageTransform{
 			if(myMode.equals(PhotoMode.FIRST)) {
 				//vertical
 				for(int y = OFFY; y<OFFY+2*SIZE; y++) {
-					setSafeColor(result, OFFX + cOff, y, new QuickColor(0,0,0,0));
-					setSafeColor(result, OFFX+SIZE + cOff, y, new QuickColor(0,0,0,0));
+					setSafeColor(result, OFFX + cOff, y, myColor);
+					setSafeColor(result, OFFX+SIZE + cOff, y, myColor);
 				}
+				//horizontal
 				for(int x = OFFX; x<OFFX+SIZE; x++) {
-					setSafeColor(result, x+cOff, OFFY , new QuickColor(0,0,0,0));
-					setSafeColor(result, x + cOff, OFFY+2*SIZE, new QuickColor(0,0,0,0));
+					setSafeColor(result, x+cOff, OFFY , myColor);
+					setSafeColor(result, x + cOff, OFFY+2*SIZE, myColor);
 				}
 			} else {
+				//vertical
 				for(int y = OFFY; y<OFFY+2*SIZE; y++) {
-					setSafeColor(result, OFFX+(SIZE/2)+cOff, y, new QuickColor(0,0,0,0));
+					setSafeColor(result, OFFX+(SIZE/2)+cOff, y, myColor);
 				}
 			}
 		}
@@ -51,15 +71,15 @@ public class PhotographicImageTransform implements ImageTransform{
 		return result;
 	}
 
-	public void setSafeColor(QuickPicture p, int r, int c, QuickColor newColor) {
-		if(r < 0 || r >= p.getHeight())
-			return;
-
+	private void setSafeColor(QuickPicture p, int c, int r, QuickColor newColor) {
 		if(c < 0 || c >= p.getWidth())
 			return;
 
-		p.setColor(r, c, new QuickColor(newColor.getRed(), newColor.getGreen(), newColor.getBlue(), 
-				p.getColor(r, c).getAlpha()));
+		if(r < 0 || r >= p.getHeight())
+			return;
+
+		p.setColor(c, r, new QuickColor(newColor.getRed(), newColor.getGreen(), newColor.getBlue(), 
+				p.getColor(c, r).getAlpha()));
 
 	}
 
