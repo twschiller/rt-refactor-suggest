@@ -12,12 +12,12 @@ import edu.washington.cs.rtrefactor.eval.QuickPicture;
  */
 public class HiddenTests {
 
-	private QuickPicture astronaut;
-	private QuickPicture puppy;
-	
-	@Before
-	public void setUp() throws Exception {
-		astronaut = QuickPicture.read(new File(Common.IMAGE_DIR, "Astronaut_small.jpg"));
-		puppy = QuickPicture.read(new File(Common.IMAGE_DIR, "Puppy_small.jpg"));
-	}
+        private QuickPicture astronaut;
+        private QuickPicture puppy;
+        
+        @Before
+        public void setUp() throws Exception {
+                astronaut = QuickPicture.read(new File(Common.IMAGE_DIR, "Astronaut_small.jpg"));
+                puppy = QuickPicture.read(new File(Common.IMAGE_DIR, "Puppy_small.jpg"));
+        }
 }
