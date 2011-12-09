@@ -57,15 +57,13 @@ public class PaintShop extends JFrame{
 
 	private void addTransforms(){
 		addTransform("Flip", new ImageUtil.Flip());
-		addTransform("Cartoon", new CartoonifyImageTransform(CartoonStyle.RETRO));
+		addTransform("Cartoon", new CartoonifyImageTransform(CartoonStyle.EXPERIMENTAL));
 		addTransform("Shrink", new ImageUtil.ShrinkImage(1));
 		addTransform("Vision", new VisionImageTransform(50, 50, 500));
 		addTransform("Underwater", new UnderwaterTransform(false));
 		addTransform("New", new NewImageTransform(17, new QuickColor(-400, 400, -400, 0)));
 		//TODO:Bugs
 		addTransform("Cinematic", new CinematicImageTransform());
-		addTransform("Photo", new PhotographicImageTransform(new PhotoMode [] 
-				{PhotoMode.FIRST, PhotoMode.SECOND}, new QuickColor(-400, 400, -400, 0), 4, 5));
 		addTransform("Random", new RandomSceneGenerator(new QuickColor(400,-400,400,0), 100, 100, 200000));
 	}
 	

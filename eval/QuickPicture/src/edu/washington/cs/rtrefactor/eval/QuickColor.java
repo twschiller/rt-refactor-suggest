@@ -116,5 +116,10 @@ public class QuickColor {
 		
 	}
 	
+	public String toString() {
+		return getRed() + " " + getGreen() + " " + getBlue() + 
+				" " + getAlpha();
+	}
+	
 	
 }
