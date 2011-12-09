@@ -68,7 +68,7 @@ public strictfp class UnderwaterTransform implements ImageTransform {
                                                 total.setRed(total.getRed() + oldColor.getRed());
                                                 total.setGreen(total.getGreen() + oldColor.getGreen());
                                                 total.setBlue(total.getBlue() + oldColor.getBlue());
-                                                //total.setAlpha(total.getAlpha() + oldColor.getAlpha());
+                                                total.setAlpha(total.getAlpha() + oldColor.getAlpha());
                                                 samples++;
                                         }
                                 }
@@ -76,8 +76,8 @@ public strictfp class UnderwaterTransform implements ImageTransform {
                                 //We should probably be blending the alphas here
                                 QuickColor newColor = new QuickColor(total.getRed()/samples, 
                                                 total.getGreen()/samples, total.getBlue()/samples, 
-                                                blue.getColor(c, r).getAlpha());
-                                                //total.getAlpha()/samples));
+                                             //   blue.getColor(c, r).getAlpha());
+                                                total.getAlpha()/samples);
                                 res.setColor(c/2, r/2, newColor);
                                 
                         }
