@@ -45,7 +45,7 @@ strictfp public class Scorer {
 	
 	public static final int MAX_SCORE = 100;
 	public static final int MIN_SCORE = 10;
-	public static final int THRESHOLD = 0;
+	public static final int THRESHOLD = 60;
 	
 	// ADAPTIVE SCORING SYSTEM
 	// 
