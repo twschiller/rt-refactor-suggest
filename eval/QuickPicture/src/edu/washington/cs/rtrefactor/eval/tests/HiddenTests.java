@@ -10,6 +10,8 @@ import edu.washington.cs.rtrefactor.eval.transform.CartoonifyImageTransform;
 import edu.washington.cs.rtrefactor.eval.transform.CartoonifyImageTransform.CartoonStyle;
 import edu.washington.cs.rtrefactor.eval.transform.UnderwaterTransform;
 
+//TODO EVAL: delete this class
+
 /**
  * Hidden tests (not shown to the user during the evaluation)
  * @author Todd Schiller
@@ -19,7 +21,7 @@ public class HiddenTests {
 
 	@Before
 	public void setUp() throws Exception {
-		 ghost = QuickPicture.read(new File(Common.IMAGE_DIR, "Ghost.png"));
+		 ghost = QuickPicture.read(new File(Common.IMAGE_DIR, "ghost_try.png"));
 	}
 
 	@Test
