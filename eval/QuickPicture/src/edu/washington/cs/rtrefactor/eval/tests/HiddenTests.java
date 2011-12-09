@@ -29,7 +29,7 @@ public class HiddenTests {
 
 	@Test
 	public void testCartoon() {
-		Common.testTransform(ghost,  new CartoonifyImageTransform(CartoonStyle.RETRO), Common.tryRead("Ghost_bar.png"));
+		Common.testTransform(ghost, new CartoonifyImageTransform(CartoonStyle.RETRO), Common.tryRead("Ghost_bar.png"));
 	}
         
 }
