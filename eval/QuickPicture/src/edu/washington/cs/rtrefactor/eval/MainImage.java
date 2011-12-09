@@ -6,7 +6,6 @@ import java.awt.Image;
 
 import javax.swing.JPanel;
 
-import edu.washington.cs.rtrefactor.eval.transform.ImageTransform;
 
 /**
  * Display for the image being edited

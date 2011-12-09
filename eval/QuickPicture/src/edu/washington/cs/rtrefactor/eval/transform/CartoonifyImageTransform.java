@@ -1,75 +1,94 @@
 package edu.washington.cs.rtrefactor.eval.transform;
 
-import java.awt.Color;
-
+import edu.washington.cs.rtrefactor.eval.ImageTransform;
 import edu.washington.cs.rtrefactor.eval.QuickColor;
 import edu.washington.cs.rtrefactor.eval.QuickPicture;
 
+
+/**
+ * Apply a transformation to the image to make it looky a little more cartoon-y.
+ * 
+ * @author Travis Mandel
+ *
+ */
 public class CartoonifyImageTransform implements ImageTransform {
-	
-	public enum CartoonStyle  { ORIG, ENHANCED, EXPERIMENTAL}
-	
+
+	public enum CartoonStyle  { RETRO, EXPERIMENTAL}
+
 	public static final int NUM_ITER = 2;
-	
+
 	public CartoonStyle myStyle;
-	
+
+	/**
+	 * Initialize the transformation.
+	 * 
+	 * @param style Which of the two cartoony image tranforms to apply: retro or experimental 
+	 */
 	public CartoonifyImageTransform(CartoonStyle style) {
 		myStyle = style;
 	}
-	
+
 	@Override
+	/**
+	 * Transforms the image based on the mode field.  
+	 * 
+	 * If the mode is RETRO, it makes the image look like a pixelated cartoon.
+	 * 
+	 * If the mode is EXPERIMENTAL, it wiggles and tints the picture to make it look more 
+	 * 	radioactive. 
+	 */
 	public QuickPicture transform(QuickPicture old) {
 		if(!myStyle.equals(CartoonStyle.EXPERIMENTAL))
 		{
-			old = applyBlkDistortion(old);
+			old = applyRetroDistortion(old);
 			return old;
 		} else {
 			return applyWiggleDistortion(old);
 		}
-		
+
 	}
-	
-	public QuickPicture applyBlkDistortion(QuickPicture old) {
+
+	private QuickPicture applyRetroDistortion(QuickPicture old) {
 		int centerOffHeight = old.getHeight()/4;
 		int centerOffWidth = old.getWidth()/4;
 		int minRun = 0;
-		for (int r = centerOffHeight ; r < old.getHeight()-centerOffHeight; r++){
-			for (int c = centerOffWidth; c < old.getWidth()-centerOffWidth; c ++){
-				QuickColor curColor = old.getColor(r, c);
-				int horizRun = r, vertRun = c;
-				while(horizRun+1 < old.getWidth() && old.getColor(horizRun, c).equalsRGB(curColor)) {
+		for (int x = centerOffHeight ; x < old.getHeight()-centerOffHeight; x++){
+			for (int y = centerOffWidth; y < old.getWidth()-centerOffWidth; y ++){
+				QuickColor curColor = old.getColor(x, y);
+				int horizRun = x, vertRun = y;
+				while(horizRun+1 < old.getWidth() && old.getColor(horizRun, y).equalsRGB(curColor)) {
 					horizRun++;
-					
-					int horizBRun = r;
-					while(horizBRun >= 0 && old.getColor(horizBRun, c).equalsRGB(curColor))
+
+					int horizBRun = x;
+					while(horizBRun >= 0 && old.getColor(horizBRun, y).equalsRGB(curColor))
 					{
 						horizBRun--;
 						horizRun++;
 					}
-					
+
 				}
-				while(vertRun+1 < old.getHeight() && old.getColor(r, vertRun).equalsRGB(curColor)) {
+				while(vertRun+1 < old.getHeight() && old.getColor(x, vertRun).equalsRGB(curColor)) {
 					vertRun++;
-					
-					int vertBRun = c;
-					while(vertBRun >= 0 && old.getColor(r, vertBRun).equalsRGB(curColor))
+
+					int vertBRun = y;
+					while(vertBRun >= 0 && old.getColor(x, vertBRun).equalsRGB(curColor))
 					{
 						vertBRun--;
 						vertRun++;
 					}
 				}
-				int minRunHere = Math.min(horizRun-r, vertRun-c);
+				int minRunHere = Math.min(horizRun-x, vertRun-y);
 				minRun = (minRunHere < minRun || minRun == 0) ? minRunHere : minRun;
-				
+
 			}
 		}
-			
+
 		QuickPicture result = new QuickPicture(old.getWidth(), old.getHeight());
 		int size = Math.min(minRun+1, old.getHeight()/2);
 		for (int r = size ; r < old.getHeight() - size; r+= size * 2){
-			
+
 			for (int c = size; c < old.getWidth() - size; c += size* 2){
-			
+
 				QuickColor total = new QuickColor(0, 0, 0, 0);
 				int samples = 0;
 				for (int ro = -size; ro < size; ro++){
@@ -81,7 +100,7 @@ public class CartoonifyImageTransform implements ImageTransform {
 						samples++;
 					}
 				}
-				
+
 				for (int roff = -size; roff < size; roff++){
 					for (int coff = -size; coff < size; coff++){
 						if (r + roff >= 0 && r + roff < old.getHeight() && c + coff >=0 && c + coff < old.getWidth()){
@@ -92,29 +111,29 @@ public class CartoonifyImageTransform implements ImageTransform {
 						}
 					}
 				}
-		
-				
+
+
 			}
-			
+
 		}
-		
+
 		return result;
 	}
-	
-	public QuickPicture applyWiggleDistortion(QuickPicture old) {
-		
+
+	private QuickPicture applyWiggleDistortion(QuickPicture old) {
+
 		QuickPicture result = new QuickPicture(old.getWidth(), old.getHeight());
-		
-		for (int r = 0 ; r < old.getHeight(); r++){
-			for (int c = 0; c < old.getWidth(); c ++){
-				QuickColor curColor = old.getColor(r, c);
-				
+
+		for (int x = 0 ; x < old.getWidth(); x++){
+			for (int y = 0; y < old.getHeight(); y ++){
+				QuickColor curColor = old.getColor(x, y);
+
 				QuickColor newColor = new QuickColor(0, 0, 0, curColor.getAlpha());
 				if(curColor.getRed() > 0  && curColor.getGreen() < 0 && curColor.getBlue() > 0)
 				{
 					//horiz only
-					QuickColor left = getSafeColor(old, r-1, c);
-					QuickColor right = getSafeColor(old, r+1, c);
+					QuickColor left = getSafeColor(old, x-1, y);
+					QuickColor right = getSafeColor(old, x+1, y);
 					newColor.setRed((left.getRed() + right.getRed())/2);
 					newColor.setGreen((left.getGreen() + right.getGreen())/2);
 					newColor.setRed((left.getBlue() + right.getBlue())/2);
@@ -122,10 +141,10 @@ public class CartoonifyImageTransform implements ImageTransform {
 				else if(curColor.getRed() > 0  && curColor.getGreen() > 0 && curColor.getBlue() < 0)
 				{
 					//diag only
-					QuickColor upperLeft = old.getColor(r-1, c-1);
-					QuickColor upperRight = old.getColor(r+1, c-1);
-					QuickColor lowerLeft = old.getColor(r-1, c+1);
-					QuickColor lowerRight = old.getColor(r+1, c+1);
+					QuickColor upperLeft = old.getColor(x-1, y-1);
+					QuickColor upperRight = old.getColor(x+1, y-1);
+					QuickColor lowerLeft = old.getColor(x-1, y+1);
+					QuickColor lowerRight = old.getColor(x+1, y+1);
 					newColor.setRed((upperLeft.getRed() + upperRight.getRed()
 							+ lowerLeft.getRed() + lowerRight.getRed())/4);
 					newColor.setGreen((upperLeft.getGreen() + upperRight.getGreen()
@@ -136,28 +155,28 @@ public class CartoonifyImageTransform implements ImageTransform {
 				else
 				{
 					//vert only
-					QuickColor top = getSafeColor(old, r, c-1);
-					QuickColor bottom = getSafeColor(old, r, c+1);
+					QuickColor top = getSafeColor(old, x, y-1);
+					QuickColor bottom = getSafeColor(old, x, y+1);
 					newColor.setRed((top.getRed() + bottom.getRed())/2);
 					newColor.setGreen((top.getGreen() + bottom.getGreen())/2);
 					newColor.setRed((top.getBlue() + bottom.getBlue())/2);
-					
+
 				}
-				
-				
-				
+
+
+
 				newColor.setAlpha(curColor.getAlpha());
-				result.setColor(r, c, newColor);
+				result.setColor(x, y, newColor);
 			}
 		}
 		return result;
 	}
-		
-		public QuickColor getSafeColor(QuickPicture p, int r, int c) {
-			QuickColor result = p.getColor(r, c);
-			if(result == null)
-				return new QuickColor(0,0,0,0);
-			else
-				return result;
-		}
+
+	public QuickColor getSafeColor(QuickPicture p, int c, int r) {
+		QuickColor result = p.getColor(c, r);
+		if(result == null)
+			return new QuickColor(0,0,0,0);
+		else
+			return result;
+	}
 }

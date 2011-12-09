@@ -1,14 +1,27 @@
 package edu.washington.cs.rtrefactor.eval.transform;
 
+import edu.washington.cs.rtrefactor.eval.ImageTransform;
 import edu.washington.cs.rtrefactor.eval.QuickColor;
 import edu.washington.cs.rtrefactor.eval.QuickPicture;
 
+/**
+ * Applies some computer-vision-esque transformations to the image.
+ * 
+ * @author Travis Mandel
+ *
+ */
 public class VisionImageTransform implements ImageTransform {
 	private int interestX;
 	private int interestY;
-	//If per-pixel difference is less then this, it is OK to merge
 	private int changeThreshold;
-
+	
+	/**
+	 * Initializes the transformation
+	 * @param interestX  The x-coordinate of the primary interest point
+	 * @param interestY The y-coordinate of the primary interst point
+	 * @param changeThreshold If per-pixel difference is less then this, it is OK to merge two areas 
+	 * 					together
+	 */
 	public VisionImageTransform(int interestX, int interestY, int changeThreshold)
 	{
 		this.interestX = interestX;
@@ -17,17 +30,27 @@ public class VisionImageTransform implements ImageTransform {
 	}
 
 	@Override
+	/**
+	 * Applies two transformations to the image which are reminiscent of computer vision techniques:
+	 * 
+	 * The first is an edge detector, all the edges will be marked in the image
+	 * 
+	 * The second adds a rectangle indicating the region of interest (expanded from the provided \
+	 * 	primary interest point)
+	 * 
+	 * All changes are made in color (0,0,0).
+	 */
 	public QuickPicture transform(QuickPicture old) {
 		QuickPicture pic1 = detectEdges(old);
-		QuickPicture pic2 = circleify(old);
+		QuickPicture pic2 = addRectangle(old);
 
 
 		for (int r = 0 ; r < old.getHeight(); r++){
 			for (int c = 0; c < old.getWidth() ; c ++){
-				QuickColor p2Color= pic2.getColor(r, c);
+				QuickColor p2Color= pic2.getColor(c, r);
 				if(p2Color.equalsRGB(new QuickColor(0,0,0,0)))
 				{
-					pic1.setColor(r, c, p2Color);
+					pic1.setColor(c, r, p2Color);
 				}
 
 			}
@@ -42,20 +65,20 @@ public class VisionImageTransform implements ImageTransform {
 		int[][] totals = new int[old.getWidth()][old.getHeight()];
 		int totalColor = 0;
 		int maxColor = 0;
-		for (int r = 0 ; r < old.getHeight(); r++){
-			for (int c = 0; c < old.getWidth() ; c ++){
-				QuickColor current = old.getColor(r, c);
-				QuickColor left = old.getColor(r-1, c);
+		for (int x = 0 ; x < old.getWidth(); x++){
+			for (int y = 0; y < old.getHeight() ; y ++){
+				QuickColor current = old.getColor(x, y);
+				QuickColor left = old.getColor(x-1, y);
 				if(left == null)
 					left = new QuickColor(0,0,0,0);
-				QuickColor right = old.getColor(r+1, c);
+				QuickColor right = old.getColor(x+1, y);
 				if(right == null)
 					right = new QuickColor(0,0,0,0);
 				QuickColor newColor =new QuickColor(left.getRed() - right.getRed(),
 						left.getGreen() - right.getGreen(), left.getBlue() - right.getBlue(), 
 						current.getAlpha()); 
 				int colorSum = newColor.getRed() + newColor.getGreen() + newColor.getBlue();
-				totals[r][c] = colorSum;
+				totals[x][y] = colorSum;
 				totalColor += colorSum;
 				maxColor = (colorSum > maxColor) ? colorSum : maxColor;
 
@@ -70,7 +93,7 @@ public class VisionImageTransform implements ImageTransform {
 		for (int r = 0 ; r < old.getHeight(); r++){
 			for (int c = 0; c < old.getWidth() ; c ++){
 				QuickColor current = old.getColor(r, c);
-				if(totals[r][c]  < threshold)
+				if(totals[c][r]  < threshold)
 					result.setColor(r, c, current);
 				else
 					result.setColor(r, c, new QuickColor(0, 0, 0, current.getAlpha()));
@@ -80,7 +103,7 @@ public class VisionImageTransform implements ImageTransform {
 		return result;
 	}
 
-	public QuickPicture circleify(QuickPicture orig) {
+	public QuickPicture addRectangle(QuickPicture orig) {
 		int leftFrontier = interestX, rightFrontier=interestX;
 		int topFrontier = interestY, bottomFrontier = interestY;
 		int numPixels = 1;

@@ -1,13 +1,26 @@
 package edu.washington.cs.rtrefactor.eval.transform;
 
+import edu.washington.cs.rtrefactor.eval.ImageTransform;
 import edu.washington.cs.rtrefactor.eval.QuickColor;
 import edu.washington.cs.rtrefactor.eval.QuickPicture;
 
+/**
+ * Applys some transformations to the image to give it more of a cinematic feel
+ * 
+ * @author Travis
+ *
+ */
 public class CinematicImageTransform implements ImageTransform {
 
 	@Override
+	/**
+	 * Transforms the image to make it more cinematic:
+	 * 
+	 * This is a two-phase process, with the first phase changing the focus,
+	 * and the second phase swapping out colors to give it that old-timey video feel.
+	 */
 	public QuickPicture transform(QuickPicture old) {
-		//odd, square sam size kernels only
+		//odd, square same size kernels only
 		double[]  kernel = {0.05, 0.1, 0.05,
 							0.1, 0.4, 0.1,
 							0.05, 0.1, 0.05};
@@ -21,15 +34,14 @@ public class CinematicImageTransform implements ImageTransform {
 		int len = (int)Math.sqrt(kernel2.length);
 		int sideoff =  (len-1)/2;
 		
-		for (int r = 0 ; r < old.getHeight(); r++){
-			for (int c = 0; c < old.getWidth() ; c ++){
+		for (int x = 0 ; x < old.getHeight(); x++){
+			for (int y = 0; y < old.getWidth() ; y ++){
 				double totalColor=0;
-				for (int ro = Math.max(r-sideoff, 0); ro <= Math.min(r+sideoff, old.getHeight()-1); ro++){
-					for (int co = Math.max(c-sideoff, 0); co <= Math.min(c+sideoff, old.getHeight()-1); co++){
-						QuickColor color = old.getColor(ro, co);
-						int kernelr = ro -(r-sideoff);
-						int kernelc = co - (c-sideoff);
-						//System.out.println(kernelr + " " + kernelc);
+				for (int xo = Math.max(x-sideoff, 0); xo <= Math.min(x+sideoff, old.getHeight()-1); xo++){
+					for (int yo = Math.max(y-sideoff, 0); yo <= Math.min(y+sideoff, old.getHeight()-1); yo++){
+						QuickColor color = old.getColor(xo, yo);
+						int kernelr = xo -(x-sideoff);
+						int kernelc = yo - (y-sideoff);
 						double kFactor = kernel2[kernelr*len + kernelc];
 						totalColor += kFactor *color.getRed();
 						totalColor += kFactor *color.getGreen();
@@ -37,11 +49,10 @@ public class CinematicImageTransform implements ImageTransform {
 					}
 				}
 				
-				//totalColor = 1;
 				if(totalColor > 0){
-					result.setColor(r,c, old.getColor(r, c));
+					result.setColor(x,y, old.getColor(x, y));
 				} else {
-					result.setColor(r, c, new QuickColor(0,0,0, old.getColor(r, c).getAlpha()));
+					result.setColor(x, y, new QuickColor(0,0,0, old.getColor(x, y).getAlpha()));
 				}
 					
 		
@@ -49,22 +60,22 @@ public class CinematicImageTransform implements ImageTransform {
 		}
 		
 		
-		for (int r = 0 ; r < result.getHeight(); r++){
-			for (int c = 0; c < result.getWidth() ; c ++){
+		for (int x = 0 ; x < result.getHeight(); x++){
+			for (int y = 0; y < result.getWidth() ; y ++){
 				double totalRed =0, totalGreen=0, totalBlue=0;
-				for (int ro = Math.max(r-sideoff, 0); ro <= Math.min(r+sideoff, result.getHeight()-1); ro++){
-					for (int co = Math.max(c-sideoff, 0); co <= Math.min(c+sideoff, result.getHeight()-1); co++){
-						QuickColor color = result.getColor(ro, co);
-						int kernelr = ro -(r-sideoff);
-						int kernelc = co - (c-sideoff);
+				for (int xo = Math.max(x-sideoff, 0); xo <= Math.min(x+sideoff, result.getHeight()-1); xo++){
+					for (int yo = Math.max(y-sideoff, 0); yo <= Math.min(y+sideoff, result.getHeight()-1); yo++){
+						QuickColor color = result.getColor(xo, yo);
+						int kernelr = xo -(x-sideoff);
+						int kernelc = yo - (y-sideoff);
 						double kFactor = kernel[kernelr*len + kernelc];
 						totalRed += kFactor *color.getRed();
 						totalGreen += kFactor *color.getGreen();
 						totalBlue += kFactor *color.getBlue();
 					}
 				}
-				result.setColor(r, c, new QuickColor((int)totalRed, (int)totalGreen, (int)totalBlue, 
-						result.getColor(r, c).getAlpha()));
+				result.setColor(x, y, new QuickColor((int)totalRed, (int)totalGreen, (int)totalBlue, 
+						result.getColor(x, y).getAlpha()));
 		
 			}
 		}

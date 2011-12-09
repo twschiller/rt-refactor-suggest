@@ -1,8 +1,15 @@
 package edu.washington.cs.rtrefactor.eval.transform;
 
+import edu.washington.cs.rtrefactor.eval.ImageTransform;
 import edu.washington.cs.rtrefactor.eval.QuickColor;
 import edu.washington.cs.rtrefactor.eval.QuickPicture;
 
+/**
+ * Transforms images by generating a random scene.
+ * 
+ * @author Travis
+ *
+ */
 public class RandomSceneGenerator implements ImageTransform {
 	
 	public static final int MAX_STEPS = 500;
@@ -12,7 +19,15 @@ public class RandomSceneGenerator implements ImageTransform {
 	private int startRow;
 	private int startColumn;
 	private int maxRed;
-
+	
+	/**
+	 * Initializes the scene generator with the information necessary to generate the scene.
+	 * 
+	 * @param qc The main color to use when drawing the scene 
+	 * @param startRow The desired initial scene row 
+	 * @param startColumn The desired initial scene column
+	 * @param maxRed  How much red to consume before altering direction
+	 */
 	public RandomSceneGenerator(QuickColor qc, int startRow, int startColumn, int maxRed) {
 		lineColor = qc;
 		this.startRow = startRow;
@@ -21,6 +36,10 @@ public class RandomSceneGenerator implements ImageTransform {
 		
 	}
 	@Override
+	/**
+	 * Transforms the picture by overlaying a new  single-color scene which appears to be random, 
+	 * but is actually based on the properties of the underlying image.
+	 */
 	public QuickPicture transform(QuickPicture old) {
 		QuickPicture newPic = old;
 		for(int i=0; i< 20; i++)
@@ -67,7 +86,6 @@ public class RandomSceneGenerator implements ImageTransform {
 			
 			result.setColor(currentColumn, currentRow, lineColor);
 		}
-		System.out.println(totalRed + " " + steps);
 		
 		return result;
 	}
