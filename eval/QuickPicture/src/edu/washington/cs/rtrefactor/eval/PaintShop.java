@@ -58,7 +58,7 @@ public class PaintShop extends JFrame{
 	private void addTransforms(){
 		addTransform("Flip", new ImageUtil.Flip());
 		addTransform("Cartoon", new CartoonifyImageTransform(CartoonStyle.EXPERIMENTAL));
-		addTransform("Shrink", new ImageUtil.ShrinkImage(1));
+		addTransform("Shrink", new ImageUtil.ShrinkImage(2));
 		addTransform("Vision", new VisionImageTransform(50, 50, 500));
 		addTransform("Underwater", new UnderwaterTransform(false));
 		addTransform("New", new NewImageTransform(17, new QuickColor(-400, 400, -400, 0)));
