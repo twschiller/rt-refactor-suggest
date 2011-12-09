@@ -25,7 +25,7 @@ public class TransformTest {
 	public void setUp() throws Exception {
 		astronaut = QuickPicture.read(new File(Common.IMAGE_DIR, "Astronaut_small.jpg"));
 		puppy = QuickPicture.read(new File(Common.IMAGE_DIR, "Puppy_small.jpg"));
-		ghost = QuickPicture.read(new File(Common.IMAGE_DIR, "ghost_try.png"));
+		ghost = QuickPicture.read(new File(Common.IMAGE_DIR, "Ghost.png"));
 	}
 
 	/**
@@ -42,7 +42,7 @@ public class TransformTest {
 	 */
 	@Test
 	public void testShrink() {
-		Common.testTransform(ghost, new ImageUtil.ShrinkImage(1), Common.tryRead("Ghost_shrink.png"));
+		Common.testTransform(ghost, new ImageUtil.ShrinkImage(2), Common.tryRead("Ghost_shrink.png"));
 	}
 
 	@Test

@@ -32,12 +32,12 @@ public class GenerateTargets {
 	public static void main(String[] args) throws IOException {
 	    astronaut = QuickPicture.read(new File(Common.IMAGE_DIR, "Astronaut_small.jpg"));
         puppy = QuickPicture.read(new File(Common.IMAGE_DIR, "Puppy_small.jpg"));
-        ghost = QuickPicture.read(new File(Common.IMAGE_DIR, "ghost_try.png"));
+        ghost = QuickPicture.read(new File(Common.IMAGE_DIR, "Ghost.png"));
 	
         writeTarget(astronaut, new NewImageTransform(17, new QuickColor(-400, 400, -400, 0)), "Astronaut_new.jpg");
         writeTarget(puppy, new NewImageTransform(10, new QuickColor(-400, 400, 400, 0)), "Puppy_new.jpg");
 
-        writeTarget(ghost, new ImageUtil.ShrinkImage(1), "Ghost_shrink.png");
+        writeTarget(ghost, new ImageUtil.ShrinkImage(2), "Ghost_shrink.png");
         
         writeTarget(puppy, new UnderwaterTransform(false), "Puppy_underwater.jpg");            
         writeTarget(astronaut, new UnderwaterTransform(false), "Astronaut_underwater.jpg");

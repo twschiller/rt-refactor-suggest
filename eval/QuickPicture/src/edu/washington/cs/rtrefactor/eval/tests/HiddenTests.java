@@ -19,7 +19,7 @@ public class HiddenTests {
 
 	@Before
 	public void setUp() throws Exception {
-		 ghost = Common.tryRead("ghost_try.png");
+		 ghost = QuickPicture.read(new File(Common.IMAGE_DIR, "Ghost.png"));
 	}
 
 	@Test
@@ -29,7 +29,7 @@ public class HiddenTests {
 
 	@Test
 	public void testCartoon() {
-		Common.testTransform(ghost,  new CartoonifyImageTransform(CartoonStyle.RETRO), Common.tryRead("Ghost_bar.png"));
+		Common.testTransform(ghost, new CartoonifyImageTransform(CartoonStyle.RETRO), Common.tryRead("Ghost_bar.png"));
 	}
         
 }
