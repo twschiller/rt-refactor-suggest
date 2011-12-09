@@ -35,17 +35,19 @@ public strictfp class RandomSceneGenerator implements ImageTransform {
         this.maxRed = maxRed;
 
     }
-    @Override
+   
     /**
      * Transforms the picture by overlaying a new  single-color scene which appears to be random, 
      * but is actually based on the properties of the underlying image.
      */
+    @Override
     public QuickPicture transform(QuickPicture old) {
         QuickPicture newPic = old;
         for(int i=0; i< 20; i++)
             newPic = transformHelper(newPic);
         return newPic;
     }
+    
     public QuickPicture transformHelper(QuickPicture old) {
         int currentRow = startRow;
         int currentColumn = startColumn;
