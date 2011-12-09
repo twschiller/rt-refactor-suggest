@@ -19,13 +19,31 @@ public class TransformTest {
 	
 	private QuickPicture astronaut;
 	private QuickPicture puppy;
+	private QuickPicture ghost;
 	
 	@Before
 	public void setUp() throws Exception {
 		astronaut = QuickPicture.read(new File(Common.IMAGE_DIR, "Astronaut_small.jpg"));
 		puppy = QuickPicture.read(new File(Common.IMAGE_DIR, "Puppy_small.jpg"));
+		ghost = QuickPicture.read(new File(Common.IMAGE_DIR, "Ghost.png"));
 	}
 
+	/**
+	 * This test must pass at the end of the development task
+	 */
+	@Test
+	public void testNewTransform() {
+		Common.testTransform(astronaut, new NewImageTransform(17, new QuickColor(-400, 400, -400, 0)), Common.tryRead("Astronaut_new.jpg"));
+		Common.testTransform(puppy, new NewImageTransform(10, new QuickColor(-400, 400, 400, 0)), Common.tryRead("Puppy_new.jpg"));
+	}
+	
+	/**
+	 * This test must pass at the end of the maintenance task
+	 */
+	@Test
+	public void testShrink() {
+		Common.testTransform(ghost, new ImageUtil.ShrinkImage(1), Common.tryRead("Ghost_shrink.png"));
+	}
 	
 	@Test
 	public void testUnderwater() {
@@ -53,11 +71,4 @@ public class TransformTest {
 	public void testMovie() {
 		Common.testTransform(puppy,  new CinematicImageTransform(), Common.tryRead("Puppy_movie.jpg"));
 	}
-	
-	@Test
-	public void testNewTransform() {
-		Common.testTransform(astronaut, new NewImageTransform(17, new QuickColor(-400, 400, -400, 0)), Common.tryRead("Astronaut_new.jpg"));
-		Common.testTransform(puppy, new NewImageTransform(10, new QuickColor(-400, 400, 400, 0)), Common.tryRead("Puppy_new.jpg"));
-	}
-
 }
