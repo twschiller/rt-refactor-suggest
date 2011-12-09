@@ -1,14 +1,19 @@
 package edu.washington.cs.rtrefactor.eval.tests;
 
-import static org.junit.Assert.*;
-
 import java.io.File;
 
 import org.junit.Before;
 import org.junit.Test;
 
+import edu.washington.cs.rtrefactor.eval.QuickColor;
 import edu.washington.cs.rtrefactor.eval.QuickPicture;
+import edu.washington.cs.rtrefactor.eval.transform.CartoonifyImageTransform;
+import edu.washington.cs.rtrefactor.eval.transform.CinematicImageTransform;
+import edu.washington.cs.rtrefactor.eval.transform.NewImageTransform;
 import edu.washington.cs.rtrefactor.eval.transform.UnderwaterTransform;
+import edu.washington.cs.rtrefactor.eval.transform.VisionImageTransform;
+import edu.washington.cs.rtrefactor.eval.transform.CartoonifyImageTransform.CartoonStyle;
+import edu.washington.cs.rtrefactor.eval.util.ImageUtil;
 
 public class TransformTest {
 	
@@ -21,6 +26,7 @@ public class TransformTest {
 		puppy = QuickPicture.read(new File(Common.IMAGE_DIR, "Puppy_small.jpg"));
 	}
 
+	
 	@Test
 	public void testUnderwater() {
 		Common.testTransform(puppy, new UnderwaterTransform(false), Common.tryRead("Puppy_underwater.jpg"));		
@@ -28,8 +34,30 @@ public class TransformTest {
 	}
 	
 	@Test
+	public void testFlip() {
+		Common.testTransform(astronaut, new ImageUtil.Flip(), Common.tryRead("Astronaut_flip.jpg"));
+	}
+	
+	@Test
+	public void testCartoon() {
+		Common.testTransform(puppy,  new CartoonifyImageTransform(CartoonStyle.RETRO), Common.tryRead("Puppy_cartoon.jpg"));
+	}
+	
+	
+	@Test
+	public void testVision() {
+		Common.testTransform(astronaut, new VisionImageTransform(50, 50, 500), Common.tryRead("Astronaut_vision.jpg"));
+	}
+	
+	@Test
+	public void testMovie() {
+		Common.testTransform(puppy,  new CinematicImageTransform(), Common.tryRead("Puppy_movie.jpg"));
+	}
+	
+	@Test
 	public void testNewTransform() {
-		fail("Unimplemented");
+		Common.testTransform(astronaut, new NewImageTransform(17, new QuickColor(-400, 400, -400, 0)), Common.tryRead("Astronaut_new.jpg"));
+		Common.testTransform(puppy, new NewImageTransform(10, new QuickColor(-400, 400, 400, 0)), Common.tryRead("Puppy_new.jpg"));
 	}
 
 }
