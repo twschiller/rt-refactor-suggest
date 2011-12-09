@@ -19,7 +19,7 @@ public class HiddenTests {
 
 	@Before
 	public void setUp() throws Exception {
-		 ghost = QuickPicture.read(new File(Common.IMAGE_DIR, "Ghost.png"));
+		 ghost = Common.tryRead("ghost_try.png");
 	}
 
 	@Test

@@ -25,7 +25,7 @@ public class TransformTest {
 	public void setUp() throws Exception {
 		astronaut = QuickPicture.read(new File(Common.IMAGE_DIR, "Astronaut_small.jpg"));
 		puppy = QuickPicture.read(new File(Common.IMAGE_DIR, "Puppy_small.jpg"));
-		ghost = QuickPicture.read(new File(Common.IMAGE_DIR, "Ghost.png"));
+		ghost = QuickPicture.read(new File(Common.IMAGE_DIR, "ghost_try.png"));
 	}
 
 	/**
