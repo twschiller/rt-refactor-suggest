@@ -3,21 +3,33 @@ package edu.washington.cs.rtrefactor.eval.tests;
 import java.io.File;
 
 import org.junit.Before;
+import org.junit.Test;
 
 import edu.washington.cs.rtrefactor.eval.QuickPicture;
+import edu.washington.cs.rtrefactor.eval.transform.CartoonifyImageTransform;
+import edu.washington.cs.rtrefactor.eval.transform.CartoonifyImageTransform.CartoonStyle;
+import edu.washington.cs.rtrefactor.eval.transform.UnderwaterTransform;
 
 /**
  * Hidden tests (not shown to the user during the evaluation)
  * @author Todd Schiller
  */
 public class HiddenTests {
+	private QuickPicture ghost;
 
-        private QuickPicture astronaut;
-        private QuickPicture puppy;
+	@Before
+	public void setUp() throws Exception {
+		 ghost = QuickPicture.read(new File(Common.IMAGE_DIR, "Ghost.png"));
+	}
+
+	@Test
+	public void testUnderwater() {     
+		Common.testTransform(ghost, new UnderwaterTransform(true), Common.tryRead("Ghost_foo.png"));
+	}
+
+	@Test
+	public void testCartoon() {
+		Common.testTransform(ghost,  new CartoonifyImageTransform(CartoonStyle.RETRO), Common.tryRead("Ghost_bar.png"));
+	}
         
-        @Before
-        public void setUp() throws Exception {
-                astronaut = QuickPicture.read(new File(Common.IMAGE_DIR, "Astronaut_small.jpg"));
-                puppy = QuickPicture.read(new File(Common.IMAGE_DIR, "Puppy_small.jpg"));
-        }
 }
