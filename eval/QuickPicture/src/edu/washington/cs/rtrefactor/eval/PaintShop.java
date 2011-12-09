@@ -24,6 +24,14 @@ import edu.washington.cs.rtrefactor.eval.transform.UnderwaterTransform;
 import edu.washington.cs.rtrefactor.eval.transform.VisionImageTransform;
 import edu.washington.cs.rtrefactor.eval.util.ImageUtil;
 
+/**
+ * The GUI for the image transformations
+ * 
+ * ImageTransforms should never directly access this class.
+ * 
+ * @author Todd Schiller
+ *
+ */
 @SuppressWarnings("serial")
 public class PaintShop extends JFrame{
 
