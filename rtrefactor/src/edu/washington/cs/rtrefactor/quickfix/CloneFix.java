@@ -59,7 +59,7 @@ public abstract class CloneFix implements IMarkerResolution, IJavaCompletionProp
 	public Image getImage() {
 		//Cycle through the image choices, all clones of the same number should 
 		// 	have the same image
-		int imageNum = getCloneNumber() %Activator.IMAGE_IDS.length;
+		int imageNum = getCloneNumber() % Activator.IMAGE_IDS.length;
 		String imageId = Activator.IMAGE_IDS[imageNum];
 		return Activator.getDefault().getImageRegistry().get(imageId);
 	}

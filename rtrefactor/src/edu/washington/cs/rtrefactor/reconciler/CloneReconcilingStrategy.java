@@ -230,8 +230,9 @@ public class CloneReconcilingStrategy implements IReconcilingStrategy,IReconcili
 	/**
 	 * Returns true iff the either region of the clone pair is pointed to by the clone marker
 	 *  
-	 *  For now, checks if region is wholly subsumed by the pair (to account for expanding clones).
+	 *  For now, checks if both regions are wholly subsumed by the pair (to account for expanding clones).
 	 *  
+	 *  Also check to see if other side of the clone overlaps.
 	 *  Because it uses data collected from annotation, robust to text inserted between detection
 	 *  phases.
 	 *  
@@ -247,7 +248,13 @@ public class CloneReconcilingStrategy implements IReconcilingStrategy,IReconcili
 			SourceRegion newRegion = (c==0) ? pair.getFirst() : pair.getSecond();
 			if(oldStart >= newRegion.getStart().getGlobalOffset()
 					&& oldEnd <= newRegion.getEnd().getGlobalOffset()) {
-				return true;
+				SourceRegion otherRegion = (c==0) ? pair.getSecond() : pair.getFirst();
+				//check if other region matches
+				if(oldAnnotation.getOtherFile().equals(otherRegion.getFile()) && 
+						otherRegion.getStart().getGlobalOffset() <= oldAnnotation.getOtherStart() && 
+						otherRegion.getEnd().getGlobalOffset() >= oldAnnotation.getOtherEnd()) {
+					return true;
+				}
 			}
 		}
 		
@@ -333,12 +340,16 @@ public class CloneReconcilingStrategy implements IReconcilingStrategy,IReconcili
 				{
 					int cloneNumber = -1;
 					try {
-						cloneNumber = (Integer) ((CloneAnnotation) an).getMarker().getAttribute(CloneResolutionGenerator.CLONE_NUMBER);
+						IMarker oldMarker = ((CloneAnnotation) an).getMarker();
+						cloneNumber = (Integer) oldMarker.getAttribute(CloneResolutionGenerator.CLONE_NUMBER);
+						int otherStart = (Integer)oldMarker.getAttribute(CloneResolutionGenerator.OTHER_START_OFFSET);
+						int otherEnd = (Integer)oldMarker.getAttribute(CloneResolutionGenerator.OTHER_END_OFFSET);
+						File otherFile = new File((String)oldMarker.getAttribute(CloneResolutionGenerator.OTHER_FILE));
+						removedAnnotations.add(new DeletedAnnotationData(p, cloneNumber, otherFile, otherStart, otherEnd));
 					} catch (CoreException e) {
 						throw new RuntimeException("Marker attached to clone annotation has no clone number!" + 
 									e.getMessage());
 					}
-					removedAnnotations.add(new DeletedAnnotationData(p, cloneNumber));
 					fAnnotationModel.removeAnnotation(an);
 				}
 			}
