@@ -45,7 +45,7 @@ strictfp public class Scorer {
 	
 	public static final int MAX_SCORE = 100;
 	public static final int MIN_SCORE = 10;
-	public static final int THRESHOLD = 60;
+	public static final int THRESHOLD = 70;
 	
 	// ADAPTIVE SCORING SYSTEM
 	// 
@@ -426,7 +426,15 @@ strictfp public class Scorer {
 	 * @return the scaled value
 	 */
 	public static double scale(double x, double oMin, double oMax, double nMin, double nMax){
-		return (x / ((oMax - oMin) / (nMax - nMin))) + nMin;
+	    double oRng = (oMax - oMin);
+	    double nRng = (nMax - nMin);
+	    double result = (((x - oMin) * nRng) / oRng) + nMin;
+	    
+		if (result > nMax || result < nMin){
+		    throw new RuntimeException("Internal calculation error");
+		}
+	    
+	    return result;
 	}
 	
 	private int actionIndex(CloneFix fix){

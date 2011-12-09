@@ -179,6 +179,6 @@ public abstract class CloneFix implements IMarkerResolution, IJavaCompletionProp
 	 * @return Returns details to display iff {@link DEBUG_MODE} is set, otherwise returns an empty string.
 	 */
 	protected String getLabelDetails(){
-	    return DEBUG_MODE ? " (raw: " + pairData.getSimilarity() + " adj: " + relevance + ")" : "";
+	    return DEBUG_MODE ? " (raw: " + ((int)pairData.getSimilarity()) + " adj: " + relevance + ")" : "";
 	}
 }
