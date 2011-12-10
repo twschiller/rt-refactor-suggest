@@ -89,8 +89,16 @@ public class SourceRegion implements Comparable<SourceRegion>{
 			return false;
 		}
 		
-		return region.getStart().compareTo(getEnd()) <= 0 &&// other region begins before other this ends
-			   region.getEnd().compareTo(getStart()) >= 0; // the other region ends after this begins 
+		//http://world.std.com/~swmcd/steven/tech/interval.html
+		//[A, B) [X, Y)
+		//X < B AND A < Y
+		
+		SourceLocation A = this.getStart();
+		SourceLocation B = this.getEnd();
+		SourceLocation X = region.getStart();
+		SourceLocation Y = region.getEnd();
+		
+		return X.compareTo(B) < 0 && A.compareTo(Y) < 0; 
 	}
 	
 	@Override
