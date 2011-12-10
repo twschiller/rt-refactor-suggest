@@ -120,9 +120,6 @@ public abstract class BaseCheckStyleDetector<T extends AbstractFileSetCheck> imp
 	}
 	
 	@Override
-	/**
-	 * {@inheritDoc}
-	 */
 	public Set<ClonePair> detect(Map<File, String> dirty, SourceRegion active) throws CoreException, IOException{	
 		return new HashSet<ClonePair>(Sets.filter(detect(dirty), new DetectorUtil.ActiveRegion(active)));
 	}
@@ -150,9 +147,6 @@ public abstract class BaseCheckStyleDetector<T extends AbstractFileSetCheck> imp
 	protected abstract ClonePair makeClonePair(BiMap<File,File> files, AuditEvent e);
 	
 	@Override
-	/**
-	 * {@inheritDoc}
-	 */
 	public Set<ClonePair> detect(Map<File, String> dirty) throws CoreException, IOException {
 		DetectorUtil.detectLog.debug("Begin full clone detection with detector " + check.getClass().getName());
 		
