@@ -28,7 +28,7 @@ public strictfp class CartoonifyImageTransform implements ImageTransform {
         myStyle = style;
     }
 
-    @Override
+    
     /**
      * Transforms the image based on the mode field.  
      * 
@@ -37,6 +37,7 @@ public strictfp class CartoonifyImageTransform implements ImageTransform {
      * If the mode is EXPERIMENTAL, it wiggles and tints the picture to make it look more 
      *      radioactive. 
      */
+    @Override
     public QuickPicture transform(QuickPicture old) {
         if(!myStyle.equals(CartoonStyle.EXPERIMENTAL))
         {
@@ -118,10 +119,7 @@ public strictfp class CartoonifyImageTransform implements ImageTransform {
                         }
                     }
                 }
-
-
             }
-
         }
 
         return result;
