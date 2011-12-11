@@ -32,7 +32,8 @@ of transformations to a square image of their choosing. The GUI is
 implemented in \verb|MainImage| and \verb|PaintShop|; you do not need
 to concern yourself with the details of their implementation. To run
 the application, run the \verb|MainImage| class. Take a few minutes to
-run the application, trying a few image transformations.
+run the application, trying a few image transformations on images in the 
+\verb|img| folder.
 
 \paragraph{Colors}
 \verb|QuickPicture| and \verb|QuickColor| are the classes used to
@@ -104,12 +105,14 @@ You are tasked with completing the implementation of the
 stages: In the first stage, the transformation iterates over each
 pixel and assign its color to be the average (mean) of each of its
 four diagonal neighbors. If a pixel is missing a diagonal neighbor,
-use the value \verb|(0, 0, 0, 0)|.
+assume the neighbor exists with rgb values \verb|(0, 0, 0)|.
 
 In the second stage, the transformation
-writes the image id indicated by the field \verb|imageId| \testit{in binary} to the lower
-left corner of the image.  To convert the number to a sequence of binary digits, use the 
-\verb|Integer.toBinaryString| method.
+writes the image id indicated by the field \verb|imageId| \textit{in binary} to the lower
+left corner of the image.  Hint: To convert the number to a sequence of binary digits, use the 
+\verb|Integer.toBinaryString()| method.
+
+
 Here is the precise definition of how to
 write out the two numerals, 1 and 0:
 
@@ -134,7 +137,7 @@ alpha channels in the original image.
 
 A user has found a bug with the static method
 \verb|ImageUtil.downsizeImage|.  When an image with a variety of alpha
-values is passed in, the alpha values of the resulting image do not
+values is passed in (such as  \verb|Ghost.png|), the alpha values of the resulting image do not
 look quite right.  \verb|ImageUtil.downsizeImage|, \textit{and any
   other code code which averages over a block of values}, is supposed
 to average the alphas as well as the RGB values.  Please fix this bug
@@ -156,6 +159,7 @@ performed when performing the development and maintenance tasks.
   \item Was the ranking (ordering) of the tool's suggestions valid?
     Why, or why not? Does your answer differ for the development and
     maintenance tasks? If so, why?
+  \item What situation(s), if any, would this tool be most useful to you as a 		    programmer?
 \end{enumerate}
 
 \paragraph{Method Extraction}
