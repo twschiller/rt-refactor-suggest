@@ -20,7 +20,7 @@ import org.eclipse.text.edits.TextEdit;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.PlatformUI;
 
-import edu.washington.cs.rtrefactor.quickfix.FindBlock.BlockInfo;
+import edu.washington.cs.rtrefactor.quickfix.FindBlock.StatementGroup;
 import edu.washington.cs.rtrefactor.quickfix.FindBlock.VariableCaptureCounter;
 import edu.washington.cs.rtrefactor.reconciler.CloneEditor;
 import edu.washington.cs.rtrefactor.reconciler.ClonePairData;
@@ -37,12 +37,12 @@ public class CopyPasteFix extends CloneFix {
 	/**
 	 * the source region to replace during the paste
 	 */
-	private final BlockInfo pasteBlock;
+	private final StatementGroup pasteBlock;
 	
 	/**
 	 * the source region to copy 
 	 */
-	private final BlockInfo copyBlock;
+	private final StatementGroup copyBlock;
 	
 	/**
 	 * Instantiates a clone clone quick fix
@@ -52,7 +52,7 @@ public class CopyPasteFix extends CloneFix {
 	 * @param pasteBlock the statements to replace during the paste
 	 * @param copyBlock the statements to copy
 	 */
-	public CopyPasteFix(ClonePairData pairData, int relevance, CloneResolutionGenerator parent, BlockInfo pasteBlock, BlockInfo copyBlock){
+	public CopyPasteFix(ClonePairData pairData, int relevance, CloneResolutionGenerator parent, StatementGroup pasteBlock, StatementGroup copyBlock){
 		super(pairData, relevance, parent);
 		this.pasteBlock = pasteBlock;
 		this.copyBlock = copyBlock;
@@ -138,11 +138,11 @@ public class CopyPasteFix extends CloneFix {
 	 * @param original The document in which this block resides
 	 * @return An edit to this document with the requested replacements.
 	 */
-	public static TextEdit replaceNames(LinkedHashSet<String> replaceVars, BlockInfo before, BlockInfo other, IDocument original)
+	public static TextEdit replaceNames(LinkedHashSet<String> replaceVars, StatementGroup before, StatementGroup other, IDocument original)
 	{
 		//Find external dependencies in the other block to know which variables to replace.
 		VariableCaptureCounter otherCounter = new VariableCaptureCounter();
-		for (Statement s : other.getStatements()){
+		for (Statement s : other.getTopLevelStatements()){
 			s.accept(otherCounter);
 		}
 		
@@ -163,7 +163,7 @@ public class CopyPasteFix extends CloneFix {
 		//Modify the AST with the name replacements
 		VariableReferenceReplacer replacer = new VariableReferenceReplacer(variableReplacements);
 		
-		for (Statement s : before.getStatements()){
+		for (Statement s : before.getTopLevelStatements()){
 			s.accept(replacer);
 		}
 		
