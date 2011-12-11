@@ -1,5 +1,6 @@
 package edu.washington.cs.rtrefactor.quickfix;
 
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 
@@ -50,6 +51,7 @@ public class FindBlock {
 	 */
 	public static class StatementGroup{
 		private final List<Statement> topLevelStatements;
+		private final Block block;
 		private final CompilationUnit cu;
 
 		/**
@@ -57,7 +59,7 @@ public class FindBlock {
 		 * @param topLevelStatements the top-level statements in the group
 		 * @param cu the compilation unit
 		 */
-		protected StatementGroup(List<Statement> topLevelStatements, CompilationUnit cu) {
+		protected StatementGroup(List<Statement> topLevelStatements, Block block, CompilationUnit cu) {
 			if (topLevelStatements.isEmpty()){
 				throw new IllegalArgumentException("Block cannot be empty");
 			}else if (cu == null){
@@ -66,6 +68,7 @@ public class FindBlock {
 			
 			this.topLevelStatements = Lists.newArrayList(topLevelStatements);
 			this.cu = cu;
+			this.block = block;
 		}
 		
 		/**
@@ -115,6 +118,14 @@ public class FindBlock {
 				s.accept(counter);
 			}
 			return counter.captured;
+		}
+		
+		/**
+		 * Get the surrounding block
+		 * @return the surrounding block
+		 */
+		public Block getBlock(){
+		    return block;
 		}
 		
 		/**
@@ -243,11 +254,82 @@ public class FindBlock {
 			
 			if (size > 0 && size > max){
 			    max = size;
-			    maxGroup = new StatementGroup(inc, cu);
+			    maxGroup = new StatementGroup(inc, node, cu);
 			}
 			
 			return true;
 		}
+	}
+	
+	/**
+	 * Given a source region to extract within a block, and the rest of the block, determines
+	 * which variable(s) must be return from the extracted method.
+	 * @author Todd Schiller
+	 */
+	protected static class ExtractReturnVisitor extends ASTVisitor{
+	    
+	    private final HashSet<IVariableBinding> bindings;
+	    private final HashSet<IVariableBinding> returns = Sets.newHashSet();
+	    
+	    protected ExtractReturnVisitor(StatementGroup query){
+	        BindingCollector x = new BindingCollector();
+	        for (Statement statement : query.getTopLevelStatements()){
+	            statement.accept(x);
+	        }	        
+	        bindings = x.bindings;
+	    }
+	    
+	    @Override
+        public boolean visit(SimpleName name){
+            doName(name);
+            return false;
+        }
+        
+        @Override
+        public boolean visit(QualifiedName name){
+            doName(name);
+            return false;
+        }
+        
+        /**
+         * Add to set of returned variable if the name binds to a variable
+         * defined in the region to extract
+         * @param name the name of variable
+         */
+        private void doName(Name name){
+            if (!(name.getParent() instanceof VariableDeclarationFragment)){
+                IBinding binding = name.resolveBinding();
+                if (binding instanceof IVariableBinding){
+                    IVariableBinding vb = (IVariableBinding) binding;
+                    if (bindings.contains(vb)){
+                        returns.add(vb);
+                    }
+                }
+            }
+        }
+        
+        public int getNumReturnValues(){
+            return returns.size();
+        }
+	    
+	}
+	
+	/**
+	 * Collects the variable bindings as {@link IVariableBinding}s
+	 * @author Todd Schiller
+	 */
+	private static class BindingCollector extends ASTVisitor{
+	    
+	    private final HashSet<IVariableBinding> bindings = Sets.newHashSet();
+	    
+	    @Override
+        public boolean visit(VariableDeclarationStatement x){
+            // only have to look at the first entry because we only care about the lowest number
+            VariableDeclarationFragment f = (VariableDeclarationFragment) x.fragments().get(0);
+            IVariableBinding binding = (IVariableBinding) f.getName().resolveBinding();
+            bindings.add(binding);
+            return true;
+        }
 	}
 	
 	/**

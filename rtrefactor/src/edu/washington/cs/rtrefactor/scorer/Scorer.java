@@ -346,10 +346,10 @@ strictfp public class Scorer {
 			return Lists.newArrayList();
 		}
 		
-		if (b == null){
+		if (b == null || !ExtractMethodFix.canExtract(b)){
 			return Lists.newArrayList();
 		}
-		
+	
 		double base = truncate(pair.getSimilarity() * Math.pow(NONLOCAL_PENALTY, b.getNumCapturedVariable()));
 		
 		int score = calc(base, EXTRACT, pair.getCloneNumber());

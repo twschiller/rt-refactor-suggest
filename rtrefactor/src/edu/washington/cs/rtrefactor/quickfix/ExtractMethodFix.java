@@ -1,7 +1,11 @@
 package edu.washington.cs.rtrefactor.quickfix;
 
+import java.util.List;
+
 import org.eclipse.core.commands.ParameterizedCommand;
 import org.eclipse.core.resources.IMarker;
+import org.eclipse.jdt.core.dom.ASTNode;
+import org.eclipse.jdt.core.dom.Statement;
 import org.eclipse.jdt.ui.actions.IJavaEditorActionDefinitionIds;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.ui.IWorkbench;
@@ -10,6 +14,8 @@ import org.eclipse.ui.commands.ICommandService;
 import org.eclipse.ui.handlers.IHandlerService;
 
 import edu.washington.cs.rtrefactor.detect.SourceRegion;
+import edu.washington.cs.rtrefactor.quickfix.FindBlock.ExtractReturnVisitor;
+import edu.washington.cs.rtrefactor.quickfix.FindBlock.StatementGroup;
 import edu.washington.cs.rtrefactor.reconciler.ClonePairData;
 
 /**
@@ -72,6 +78,29 @@ public class ExtractMethodFix extends CloneFix {
 			return;
 		}
 		
+	}
+	
+	/**
+	 * <code>true</code> iff <code>region</code> can be extracted. Currently
+	 * just checks that the extracted method would need at most one return 
+	 * value.
+	 * @param region the statements
+	 * @return true iff <code>region</code> can be extracted
+	 */
+	public static boolean canExtract(StatementGroup region){
+	    
+	    ExtractReturnVisitor v = new ExtractReturnVisitor(region);
+	   
+	    List<Statement> s = region.getTopLevelStatements();
+	    
+	    int i = region.getBlock().statements().indexOf(s.get(s.size()-1)) + 1;
+	    
+	    for (int j = i; j < region.getBlock().statements().size(); j++){
+	        ASTNode n = (ASTNode) region.getBlock().statements().get(j);
+	        n.accept(v);
+	    }
+	    
+	    return v.getNumReturnValues() <= 1;
 	}
 
 	@Override
