@@ -59,7 +59,7 @@ public class ImageUtil {
      * Shrinks the image by the indicated factor.
      * 
      * @param orig The provided image
-     * @param pow2 The factor by which to shrink.  Must be a power of 2 (2,4,8,etc.)
+     * @param pow2 The factor by which to shrink.  Must be a power of 2 (2, 4, 8, etc.)
      * @return The shrunken image.
      */
     public static QuickPicture downsizeImage(QuickPicture orig, int pow2) {

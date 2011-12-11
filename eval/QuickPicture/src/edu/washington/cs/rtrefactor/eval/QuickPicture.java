@@ -93,10 +93,8 @@ public class QuickPicture extends java.awt.Image {
     }
 
     /**
-     * returns <code>null</code>
-     * 
-     * Image transformations should not call this method
-     * 
+     * returns <code>null</code>.
+     * Image transformations should not call this method.
      * @return returns <code>null</code>
      */
     @Override
@@ -104,10 +102,11 @@ public class QuickPicture extends java.awt.Image {
         return null;
     }
 
-    @Override
+   
     /**
      * Image transformations should not call this method
      */
+    @Override
     public int getWidth(ImageObserver observer) {
         return getWidth();
     }
