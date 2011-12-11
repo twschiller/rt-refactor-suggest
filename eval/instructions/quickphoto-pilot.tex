@@ -1,0 +1,170 @@
+\title{QuickPhoto Instructions}
+
+\documentclass[12pt]{article}
+\usepackage{fullpage}
+
+\newcommand{\todo}[1]{{\bfseries [[#1]]}}
+%% To disable, just uncomment this line
+%\renewcommand{\todo}[1]{\relax}
+
+\begin{document}
+\maketitle
+
+\section{Introduction}
+Today you will be playing the role of one of the developers of
+QuickPhoto, a small application for manipulating square images. Unlike
+traditional image tools, QuickPhoto works with high-fidelity images
+which are not limited to 256 colors per channel (e.g., there are many
+thousand variants of the color ``red'').
+
+Your
+development team has just installed a new Eclipse plugin for working
+with duplicate code, and is vetting the tool for use during software
+development and maintenance. 
+Over the next 40 - 60 minutes, you will be adding a new feature to the
+QuickPhoto application, and fixing a bug that a user has found. After
+performing these two tasks, you will answer questions about the tasks
+you just performed.
+
+\section{Application Overview}
+QuickPhoto is a GUI application which allows users to apply a variety
+of transformations to a square image of their choosing. The GUI is
+implemented in \verb|MainImage| and \verb|PaintShop|; you do not need
+to concern yourself with the details of their implementation. To run
+the application, run the \verb|MainImage| class. Take a few minutes to
+run the application, trying a few image transformations.
+
+\paragraph{Colors}
+\verb|QuickPicture| and \verb|QuickColor| are the classes used to
+present high-fidelity images and colors.  Like traditional colors,
+\verb|QuickColor|s have an integer red, green, blue and alpha
+(transparency) channel.
+
+Unfortunately, a standard format for representing colors in this space
+has not yet been agreed upon.  As such, all code must be flexible
+enough to deal with colors at different scales; The code may only make
+the following assumptions:
+
+\begin{enumerate}
+\item Each color channel is represented as an integer (\verb|int|).
+\item Colors are roughly centered at 0, i.e. (0, 0, 0) is guaranteed
+  to be gray,
+\item The scale of colors is consistent across an image and across
+  channels, e.g., (23, -40, 400) is always encodes same blue-ish color
+\end{enumerate}
+
+\paragraph{Image Transformations}
+
+The \verb|transform| package contains a variety of complex image
+transformations.  Each transformation implements the
+\verb|ImageTransform| interface, which provides a method that takes as
+input a \verb|QuickPicture| and outputs the transformed
+\verb|QuickPicture|. Any additional information needed for the
+transformation is passed in via the transformation's constructor.
+
+The class \verb|ImageUtil| contains several simple transformations
+which could be useful as a step in other transformations, namely flip
+and shrink.
+
+\paragraph{Transformation Tests}
+
+The \verb|tests| package contains JUnit tests for the
+transformations. Each test consists of at least one original image and
+target image. If you have questions about how to run the unit tests,
+please ask the proctor before beginning the tasks.
+
+\paragraph{Code Ownership}  
+
+You should feel free to modify any source files \textit{EXCEPT} the classes in
+the \verb|eval| package and the test cases.
+
+\section{Duplicate Code Plugin}
+The duplicate code plugin detects when similar code appears in
+multiple places in a project. For each region of similar code, it may
+recommend four different actions:
+
+\begin{itemize}
+  \item Insert a method call to the method containing the similar code
+  \item Create a new method that contains the similar code (method extraction)
+  \item Open an editor that is focused on the similar code, and
+  \item Paste the similar code, substituting identifiers as needed
+\end{itemize}
+
+\paragraph{Plugin Modes}
+The tool has a development mode, and a maintenance mode; these modes
+can be toggled using the toolbar. In development mode, the tool only
+marks similar code in the region where the last file edit happened
+(where you are developing). In maintenance mode, the tool marks all of
+the similar code in the active file.
+
+\section{Development (approx. 20 minutes)}
+
+You are tasked with completing the implementation of the
+\verb|NewImageTransform| transformation.  This transformation has two
+stages: In the first stage, the transformation iterates over each
+pixel and assign its color to be the average (mean) of each of its
+four diagonal neighbors. If a pixel is missing a diagonal neighbor,
+use the value \verb|(0, 0, 0, 0)|.
+
+In the second stage, the transformation
+writes the image id indicated by the field \verb|imageId| \testit{in binary} to the lower
+left corner of the image.  To convert the number to a sequence of binary digits, use the 
+\verb|Integer.toBinaryString| method.
+Here is the precise definition of how to
+write out the two numerals, 1 and 0:
+
+\begin{itemize}
+\item The upper left corner of the numerals region starts at (5,
+  height-30), so the number is printed in the lower left of the image.
+\item The characters all get a 15 pixel space to work with before the
+  next character begins.
+\item The zero is a rectangle 20 pixels tall and 10 pixels wide, flush
+  to the left side of its space.
+\item The one is a single vertical line, indented 5 pixels into its
+  space (i.e. pixel index 5) and 20 pixels tall.
+\item The RGB color of the lines must be equal to the \verb|idColor|
+  field, but the alpha channel MUST be preserved.
+\end{itemize}
+
+Again, the transformation must not modify the alpha values -- i.e.,
+the alpha channels in the transformed image must be identical to the
+alpha channels in the original image.
+
+\section{Maintenance (approx. 20 minutes)}
+
+A user has found a bug with the static method
+\verb|ImageUtil.downsizeImage|.  When an image with a variety of alpha
+values is passed in, the alpha values of the resulting image do not
+look quite right.  \verb|ImageUtil.downsizeImage|, \textit{and any
+  other code code which averages over a block of values}, is supposed
+to average the alphas as well as the RGB values.  Please fix this bug
+in \verb|ImageUtil.downsizeImage|; If you happen to notice the same
+bug elsewhere, feel free to correct the code there as well.
+
+\section{Reflection (approx. 20 minutes)}
+
+Please type the answers the following questions about the
+recommendations provided by the tool, and the actions that you
+performed when performing the development and maintenance tasks.
+
+\paragraph{Similar Code Suggestions}
+
+\begin{enumerate}
+  \item Did you find the duplicate code tool's suggestions helpful?
+    Why, or why not? Does your answer differ for the development and
+    maintenance tasks? If so, why?
+  \item Was the ranking (ordering) of the tool's suggestions valid?
+    Why, or why not? Does your answer differ for the development and
+    maintenance tasks? If so, why?
+\end{enumerate}
+
+\paragraph{Method Extraction}
+
+\begin{enumerate}
+  \item If you extracted a method, how did you decide to extract the
+    method? 
+  \item If you chose not to extract a method, why did you decide not
+    to extract the method?
+\end{enumerate}
+
+\end{document}
