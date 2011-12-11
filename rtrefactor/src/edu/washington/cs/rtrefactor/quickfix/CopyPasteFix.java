@@ -113,7 +113,9 @@ public class CopyPasteFix extends CloneFix {
 
 	@Override
 	public String getDescription() {
-		String description = CloneResolutionGenerator.getCloneString(copyBlock.getStart(), copyBlock.getEnd(), super.getOtherContents());
+		String description = CloneResolutionGenerator.getCloneString(copyBlock.getStart(), copyBlock.getEnd(), 
+				getOtherRegion().getStart().getGlobalOffset(), getOtherRegion().getEnd().getGlobalOffset(), 
+				super.getOtherContents());
 		
 		if(isSameFile()) {
 			return "Paste clone from the same file: <br/>" 

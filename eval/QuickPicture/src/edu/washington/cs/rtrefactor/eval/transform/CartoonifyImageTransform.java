@@ -173,7 +173,8 @@ public strictfp class CartoonifyImageTransform implements ImageTransform {
 
 
                 newColor.setAlpha(curColor.getAlpha());
-                result.setColor(x, y, newColor);
+                result.setColor(x, y, newColor);;
+                
             }
         }
         return result;
@@ -186,4 +187,15 @@ public strictfp class CartoonifyImageTransform implements ImageTransform {
         else
             return result;
     }
+    public static void makeSameAlpha (QuickPicture orig, QuickPicture newPic) {
+    	for(int x = 0; x< orig.getWidth(); x++) {
+    		for(int y =0; y< orig.getHeight(); y++) {
+    			QuickColor  newColor = orig.getColor(x, y);
+    			newColor.setAlpha(orig.getColor(x,  y).getAlpha());
+    			newPic.setColor(x, y, newColor);
+    		}
+    	}
+    }
 }
+
+

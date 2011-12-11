@@ -148,13 +148,14 @@ public class CloneResolutionGenerator implements IMarkerResolutionGenerator {
 	/**
 	 * Gets a string suitable for the quick fix display showing the clone.
 	 * 
-	 * @param startOffOrig The starting offset of the clone
-	 * @param endOffOrig The end offset of the clone
+	 * @param startOffOrig The starting offset of the region the fix affects
+	 * @param endOffOrig The end offset of the region the fix affects
+	 * @param startOffClone The starting offset of the 
 	 * @param content The contents of the file the clones are in
 	 * @return A string, filled with HTML markup, displaying the bolded clone
 	 * 		with CONTEXT_LINES lines of context.  Intended to be shown to the user.
 	 */
-	public static String getCloneString(int startOffOrig, int endOffOrig, 
+	public static String getCloneString(int startOffOrig, int endOffOrig, int startOffClone, int endOffClone,
 			String content)
 	{
 		IPreferenceStore store = Activator.getDefault().getPreferenceStore();
@@ -194,11 +195,26 @@ public class CloneResolutionGenerator implements IMarkerResolutionGenerator {
 		}
 			
 		
-		
 		//return the string with the bolding tags
-		String ret = "\n" +content.substring(rStart, startOffOrig) + "<b>" +
-				content.substring(startOffOrig, endOffOrig) + "</b>" + 
-				content.substring(endOffOrig, rEnd) ;
+		String ret = "\n" +content.substring(rStart, startOffOrig) + "<b>";
+		if(startOffClone < startOffOrig)
+			startOffClone = startOffOrig;
+		if(endOffClone > endOffOrig)
+			endOffClone =  endOffOrig;
+		if(startOffOrig != startOffClone) {
+			ret +=  content.substring(startOffOrig, startOffClone)+ newline +  "</b>Clone Start:<b>" + newline  +
+					content.substring(startOffClone, endOffClone);
+		} else {
+		
+				ret += content.substring(startOffOrig, endOffClone);
+		}
+		
+		if(endOffOrig != endOffClone) {
+			ret +=  newline +" </b>Clone End<b>" + newline + 
+					content.substring(endOffClone, endOffOrig);
+		} 
+		
+		ret += "</b>" + content.substring(endOffOrig, rEnd) ;
 		
 		ret = FileUtil.shiftLeft(ret);
 		ret = "..."+ret+ "<br/>...";

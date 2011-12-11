@@ -76,9 +76,9 @@ public class ExtractMethodFix extends CloneFix {
 
 	@Override
 	public String getDescription() {
-		String description = CloneResolutionGenerator.getCloneString(
-				extractRegion.getStart().getGlobalOffset(), 
+		String description = CloneResolutionGenerator.getCloneString(extractRegion.getStart().getGlobalOffset(), 
 				extractRegion.getEnd().getGlobalOffset(), 
+				getOtherRegion().getStart().getGlobalOffset(), getOtherRegion().getEnd().getGlobalOffset(), 
 				super.getOtherContents());
 		
 		if(isSameFile()) {
