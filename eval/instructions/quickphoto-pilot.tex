@@ -30,7 +30,9 @@ you just performed.
 QuickPhoto is a GUI application which allows users to apply a variety
 of transformations to a square image of their choosing. The GUI is
 implemented in \verb|MainImage| and \verb|PaintShop|; you do not need
-to concern yourself with the details of their implementation.
+to concern yourself with the details of their implementation. To run
+the application, run the \verb|MainImage| class. Take a few minutes to
+run the application, trying a few image transformations.
 
 \paragraph{Colors}
 \verb|QuickPicture| and \verb|QuickColor| are the classes used to
@@ -101,10 +103,14 @@ You are tasked with completing the implementation of the
 \verb|NewImageTransform| transformation.  This transformation has two
 stages: In the first stage, the transformation iterates over each
 pixel and assign its color to be the average (mean) of each of its
-four diagonal neighbors. In the second stage, the transformation
-writes the image id indicated by the field \verb|imageId| to the upper
-left corner of the image.  To simplify the task, the number needs only
-to be written out in binary.  Here is the precise definition of how to
+four diagonal neighbors. If a pixel is missing a diagonal neighbor,
+use the value \verb|(0, 0, 0, 0)|.
+
+In the second stage, the transformation
+writes the image id indicated by the field \verb|imageId| \testit{in binary} to the lower
+left corner of the image.  To convert the number to a sequence of binary digits, use the 
+\verb|Integer.toBinaryString| method.
+Here is the precise definition of how to
 write out the two numerals, 1 and 0:
 
 \begin{itemize}

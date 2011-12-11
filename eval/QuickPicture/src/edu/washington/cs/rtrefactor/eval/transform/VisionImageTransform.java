@@ -29,7 +29,7 @@ public strictfp class VisionImageTransform implements ImageTransform {
         this.changeThreshold = changeThreshold;
     }
 
-    @Override
+   
     /**
      * Applies two transformations to the image which are reminiscent of computer vision techniques:
      * 
@@ -40,10 +40,10 @@ public strictfp class VisionImageTransform implements ImageTransform {
      * 
      * All changes are made in color (0,0,0).
      */
+    @Override
     public QuickPicture transform(QuickPicture old) {
         QuickPicture pic1 = detectEdges(old);
         QuickPicture pic2 = addRectangle(old);
-
 
         for (int r = 0 ; r < old.getHeight(); r++){
             for (int c = 0; c < old.getWidth() ; c ++){
@@ -55,9 +55,7 @@ public strictfp class VisionImageTransform implements ImageTransform {
 
             }
         }
-
-
-
+        
         return pic1;
     }
 
@@ -81,8 +79,6 @@ public strictfp class VisionImageTransform implements ImageTransform {
                 totals[x][y] = colorSum;
                 totalColor += colorSum;
                 maxColor = (colorSum > maxColor) ? colorSum : maxColor;
-
-
             }
         }
 
