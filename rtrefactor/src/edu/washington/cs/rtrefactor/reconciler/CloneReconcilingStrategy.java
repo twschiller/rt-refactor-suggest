@@ -152,10 +152,10 @@ public class CloneReconcilingStrategy implements IReconcilingStrategy,IReconcili
 			return;
 		}
 
-		//Clear the annotations that overlap with the target area
+		//Clear all annotations
 		//Retrieve data about each deletion
-		List<DeletedAnnotationData> removedAnnotations= removeAnnotations(active.getStart().getGlobalOffset(), 
-									active.getEnd().getGlobalOffset());
+		List<DeletedAnnotationData> removedAnnotations= removeAnnotations(0, 
+				fDocument.getLength());
 
 		//Run the detection
 		Set<ClonePair> hs = null;
