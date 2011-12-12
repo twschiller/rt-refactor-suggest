@@ -111,9 +111,15 @@ public class StatementCoverageVisitor extends ASTVisitor {
 
     @Override
     public boolean visit(Block node){
-        for (Object s : node.statements()){
-            record((Statement) s);
+        
+        if (node.statements().isEmpty()){
+            record(node);
+        }else{
+            for (Object s : node.statements()){
+                record((Statement) s);
+            }
         }
+
         return true;
     }
     
@@ -150,7 +156,9 @@ public class StatementCoverageVisitor extends ASTVisitor {
      * @return true iff <code>statement</code> cannot contain any sub-statements
      */
     public static boolean isBottomLevel(Statement statement){
-        return ! (statement instanceof Block
+        
+        return ! (
+                (statement instanceof Block && !((Block) statement).statements().isEmpty())
                 || statement instanceof DoStatement
                 || statement instanceof ForStatement
                 || statement instanceof WhileStatement
