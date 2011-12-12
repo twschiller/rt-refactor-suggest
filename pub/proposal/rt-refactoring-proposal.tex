@@ -242,7 +242,11 @@ Figure \ref{fig:screenshot} shows the Eclipse Quick Fix interface.
 \end{figure}
 
 \paragraph{Modes}
-The tool has two modes: development mode and maintenance mode. In
+We believe that during development being presented with many 
+clone annotations covering the entire file they are working in 
+could be highly distracting.  As such, it makes sense to reduce the visual clutter
+by only showing the clones that overlap the area they are currently typing.
+Because of this, the tool has two modes: development mode and maintenance mode. In
 development mode, only clones located in the active development area
 are highlighted (as determined by Eclipse's dirty region). In
 maintenance mode, all clones located in the file are displayed. The
