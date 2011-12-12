@@ -48,10 +48,10 @@ the following assumptions:
 
 \begin{enumerate}
 \item Each color channel is represented as an integer (\verb|int|).
-\item Colors are roughly centered at 0, i.e. (0, 0, 0) is guaranteed
+\item Colors are roughly centered at 0, i.e. \verb|(0, 0, 0)| is guaranteed
   to be gray,
 \item The scale of colors is consistent across an image and across
-  channels, e.g., (23, -40, 400) is always encodes same blue-ish color
+  channels, e.g., \verb|(23, -40, 400)| is always encodes same blue-ish color
 \end{enumerate}
 
 \paragraph{Image Transformations}
@@ -71,12 +71,13 @@ and shrink.
 
 The \verb|tests| package contains JUnit tests for the
 transformations. Each test consists of at least one original image and
-target image. If you have questions about how to run the unit tests,
-please ask the proctor before beginning the tasks.
-
+target image. 
 All tests pass initially except \verb|testNewTransform|
 and \verb|testShrink|, which should pass after you have completed
 the development and maintenance tasks, respectively.
+If you have questions about how to run the unit tests,
+please ask the proctor before beginning the tasks.
+
 
 \paragraph{Code Ownership}  
 You should feel free to modify any source files \textit{EXCEPT} the classes in
@@ -124,13 +125,15 @@ left corner of the image.  To convert the number to a sequence of binary digits,
 and \verb|1| should be written according to the following specification:
 
 \begin{itemize}
-\item The binary string is printed in the lower-left of the image. 
-The upper-left corner of the numerals starts at column \verb|5|, row \verb|height - 30|.
-\item Each character is written in a bounding box that is 20 pixels tall and 15 pixels wide.
-\item The zero (\verb|0|) is drawn as a rectangle 20 pixels tall and 10 pixels wide, flush
-  with the left side of its space.
-\item The one (\verb|1|) is a single vertical line, indented 5 pixels into its
-  bounding box (i.e. pixel offset 5) and 20 pixels tall.
+\item The binary string is printed in the lower-left of the image.
+  The upper-left corner of the numerals starts at column \verb|5|, row
+  \verb|height - 30|.
+\item Each character is written in a bounding box that is 20 pixels
+  tall and 15 pixels wide.
+\item The zero (\verb|0|) is drawn as a rectangle 20 pixels tall and
+  10 pixels wide, flush with the left side of its space.
+\item The one (\verb|1|) is a single vertical line, indented 5 pixels
+  into its bounding box (i.e. pixel offset 5) and 20 pixels tall.
 \item The RGB color of the lines must be equal to the \verb|idColor|
   field, but the alpha channel MUST be preserved.
 \end{itemize}
