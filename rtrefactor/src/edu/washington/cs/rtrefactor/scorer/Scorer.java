@@ -29,6 +29,7 @@ import edu.washington.cs.rtrefactor.quickfix.CloneResolutionGenerator;
 import edu.washington.cs.rtrefactor.quickfix.CopyPasteFix;
 import edu.washington.cs.rtrefactor.quickfix.ExtractMethodFix;
 import edu.washington.cs.rtrefactor.quickfix.FindBlock;
+import edu.washington.cs.rtrefactor.quickfix.FindBlock.Mode;
 import edu.washington.cs.rtrefactor.quickfix.FindBlock.StatementGroup;
 import edu.washington.cs.rtrefactor.quickfix.FindMethod;
 import edu.washington.cs.rtrefactor.quickfix.InsertCallFix;
@@ -340,7 +341,7 @@ strictfp public class Scorer {
 	private List<CloneFix> generateExtractMethodFixes(ClonePairData pair, CloneResolutionGenerator parent){
 		StatementGroup b;
 		try {
-			b = FindBlock.findLargestBlock(pair.getOtherRegion());
+			b = FindBlock.findLargestBlock(pair.getOtherRegion(), Mode.EXTRACT);
 		} catch (CoreException e) {
 			scoreLog.error("Error accessing block for clone pair", e);
 			return Lists.newArrayList();
@@ -369,8 +370,8 @@ strictfp public class Scorer {
 		StatementGroup pasteBlock;
 		
 		try {
-			copyBlock = FindBlock.findLargestBlock(pair.getOtherRegion());
-			pasteBlock = FindBlock.findLargestBlock(pair.getSourceRegion());
+			copyBlock = FindBlock.findLargestBlock(pair.getOtherRegion(), Mode.PASTE);
+			pasteBlock = FindBlock.findLargestBlock(pair.getSourceRegion(), Mode.PASTE);
 		} catch (CoreException e) {
 			scoreLog.error("Error accessing block for clone pair", e);
 			return Lists.newArrayList();
@@ -378,6 +379,8 @@ strictfp public class Scorer {
 		if (copyBlock == null || pasteBlock == null){
 			return Lists.newArrayList();
 		}
+		
+		copyBlock = copyBlock.extend();
 		
 		LinkedHashSet<String> copyIds = copyBlock.getCapturedVariables();
 		LinkedHashSet<String> pasteIds = pasteBlock.getCapturedVariables();
