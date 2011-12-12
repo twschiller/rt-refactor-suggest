@@ -74,10 +74,12 @@ transformations. Each test consists of at least one original image and
 target image. If you have questions about how to run the unit tests,
 please ask the proctor before beginning the tasks.
 
-\paragraph{Code Ownership}  
+All tests pass initially except \verb|testNewTransform| and \verb|testShrink|, which should pass after you have completed the development and maintenance tasks.
 
+\paragraph{Code Ownership}  
 You should feel free to modify any source files \textit{EXCEPT} the classes in
-the \verb|eval| package and the test cases.
+the \verb|eval| package and the test cases.  If you add any new methods,
+they must be documented.
 
 \section{Duplicate Code Plugin}
 The duplicate code plugin detects when similar code appears in
@@ -133,6 +135,8 @@ Again, the transformation must not modify the alpha values -- i.e.,
 the alpha channels in the transformed image must be identical to the
 alpha channels in the original image.
 
+If you have completed this task successfully, \verb|testNewTransform| will pass.
+
 \section{Maintenance (approx. 20 minutes)}
 
 A user has found a bug with the static method
@@ -143,6 +147,8 @@ look quite right.  \verb|ImageUtil.downsizeImage|, \textit{and any
 to average the alphas as well as the RGB values.  Please fix this bug
 in \verb|ImageUtil.downsizeImage|; If you happen to notice the same
 bug elsewhere, feel free to correct the code there as well.
+
+If you have fixed the bug successfully, \verb|testShrink| will pass.
 
 \section{Reflection (approx. 20 minutes)}
 

@@ -4,6 +4,7 @@
 \usepackage{amsmath}
 \usepackage{graphicx}
 \usepackage{multirow}
+\usepackage{epstopdf}
 
 \newcommand{\todo}[1]{{\bfseries [[#1]]}}
 %% To disable, just uncomment this line
@@ -428,44 +429,45 @@ external identifier mismatches.
 %spent. We will poll users after the fact to ask them how helpful they
 %found the tool.
 
-We will evaluate the tool via controlled user study. We will develop a
-fairly small Java codebase (15 files, 300 lines each) for this
-purpose. In addition to the code, the users will be given a suite of
-JUnit tests which cover the codebase.  Most of the tests will pass on
-the provided code, but there will be several tests which test their
-development task and thus will not pass initially.  Our current idea
-is to have the codebase be part of an image processing library with a
-custom image format. (no visual rendering will actually occur) There
-will be a small set of classes in a separate package (such as the base
-image class) which the users will be instructed not to
-modify. Subjects will be instructed that they ``own'' all other
-classes in the code base, that is they have permission to introduce
+We have evaluated the tool via controlled user study. We developed a
+fairly small Java codebase (13 files, ~900 total lines of code) for this
+purpose.  The code is an image library capable of dealing with custom-format high-fidelity
+images with over 256 colors per channel.  Several complex image tranformations
+are implemented, which perform tasks such as rudimentary edge detection and 
+smoothing. A GUI is provided to demonstrate some of the transformations.
+There are a small set of 5 classes in a separate package, contain ing the GUI 
+code and base classes,  which the users were instructed not to modify. Subjects were
+ instructed that they ``own'' all other
+classes in the code base, that is they had permission to introduce
 new methods, but must document the methods.
 
-In the development portion of the study, the users will be then be directed
-to implement a method of an existing class. The subjects will be instructed to implement a method 
-in such a way that the remaining unit tests pass.  They will be given a detailed 
- method specification. For example, the task may be to take a set of images and do a complex postprocessing operation them.  Implementing this specification will involve
- duplicating functionality that exists in other classes.  Some of the subtasks may be 
-performed by static methods of the other classes, others may be performed 
-within the body of methods belonging to the other classes. For example, blending images may be performed inside many methods, while reddening an image may be a separate function.
- Neither the specification
-nor instructions will indicate that these clones exist.  We intend that, if the cloned parts of the 
-task were replaced with method calls, the task would be about 5-10 lines, whereas duplicating clone functionality would take roughly 50 lines.
+In addition to the code, the users were a given a suite of
+JUnit tests which cover the codebase.  Most provided tests intially pass on
+the provided code, but there are several tests which test their
+development task, and one which tests their maintenace task, which do
+ not pass initially.  
 
-We will also include a maintenance task, as a second phase once the first is complete.  This task will involve functionality duplicated across the codebase.  We will provide each user with an initial location where the enhancement should occur.  For example, we will instruct the users that ``every time two images are blended, each should be darkened by 10\% first".  There will be 6 or so total locations that must be changed, but we will only tell users about the first one, and suggest that there might be others, but the total number will remain unknown to the user.
+In the development portion of the study, the users will be then be directed
+to implement a new image transformation in a provided skeleton class. The subjects were 
+given a detailed description of the task, and a unit test.  The subjects were 
+instructed that their task is not complete until the associated unit test passes.  
+ Implementing the image transformation involved duplicating functionality in two other classes:
+In one case, a the functionality needed (drawing a sequence of numerals on the image)
+ was exposed via a public method, in the other (blending each pixel with its four diagonal neighbors), 
+the functionality would have to be extracted from the middle of a long method.
+ We replaced all clones with method calls and the task took 14 lines, whereas duplicating clone functionality via copy and paste took 55 lines.
+
+We also included a maintenance task, which is introduced once the development task is complete.    The task consists of fixing a bug in which certain functions do not set the alpha channel properly.  We provided each user with a bug report and the location of the buggy method in the source code. We indicate that the same bug might occur elsewhere in the codebase, but do not elaborate.  In reality, there are two locations where the same bug occurs.  One is a direct, copy-and paste clone of the original section, while the other only clones part of the section and uses it to complete a different task (making an image more blocky instead of shrinking it). Each location has a comment that mentions there might be a bug in how it handles alpha.  These two locations have no public unit test that exposes the bug.
 
 %\todo{Characterize the tasks and code base} 
 
-The control group will use the stock Eclipse development
-environment with logging code, the tool group will use the Eclipse development
-environment with the tool. For the initial study for CSE 503, each
-group will consist of two individuals who have experience using the
-Java development environment.  
+The subjects were two grad students who had experience using the
+Java development environment. Each used the Eclipse development
+environment with the tool and its logging code.
 
 
 \subsection{Quantitative Evaluation}
-For the development tasks, we will record:
+For the development tasks, we record:
 
 \begin{itemize}
   \item the time to complete the task
@@ -477,12 +479,6 @@ For the development tasks, we will record:
   \item the percentage of the new code in the final method that is a
     duplicate of other code; this will be determined by human
     judgment with the aide of a clone detector.
-\end{itemize}
-
-\noindent For the control group, we will additionally record the
-number of times the developer searches for a method that performs a
-subtask. For the tool group, we will record:
-\begin{itemize}
   \item the number of times the user ignores the tool's alert
   \item the number of times the user views the tool's analysis
   \item the number of times the the user acts on the tool's analysis;
@@ -500,29 +496,28 @@ task.
 For the maintenance tasks, we will additionally record whether the
 user has correctly revised all of the clones. This will be determined
 by a separate hidden test suite, which is inaccessible to the users
-and will be run exclusively on their completed code).
+and will be run exclusively on their completed code.
 
 We will be successful if the users with the clone tool correct
 significantly more of the duplicates than the control group and/or
 take significantly less time to fix the same number of duplicates.
 
 \subsection{Qualitative Evaluation}
-In addition to the quantitative results, we will have the study
+In addition to the quantitative results, we had the study
 participants respond to the following questions:
 
 \begin{itemize}
+\item Did you find the duplicate code tool's suggestions helpful?
+    Why, or why not? Does your answer differ for the development and
+    maintenance tasks? If so, why?
+  \item Was the ranking (ordering) of the tool's suggestions valid?
+    Why, or why not? Does your answer differ for the development and
+    maintenance tasks? If so, why?
+  \item What situation(s), if any, would this tool be most useful to you as a  programmer?
   \item If you extracted a method, how did you decide to extract the
     method? 
   \item If you chose not to extract a method, why did you decide not
     to extract the method?
-\end{itemize}
-
-\noindent Additionally, the treatment group will respond to the following
-questions:
-
-\begin{itemize}
-  \item Did you find the tool's suggestions helpful? If not, why?
-  \item Was the ordering of the tool's suggestions valid? If not, why?
 \end{itemize}
 
 \subsection{Results}
@@ -568,7 +563,9 @@ validity:
     short-sighted action
   \item The results may not generalize, as in real software there may
     be many de facto or de jure restrictions (e.g., a certain module cannot
-    be changed) restricting the set of actions a user can make
+    be changed) restricting the set of actions a user can make or coding styles 
+   they must use. Hence the variation of coding styles we see in our results(??) may 
+   not generalize.
   \item This tool seems especially helpful if it suggests that a
     developer is cloning code which that developer personally wrote in the
     past.  This is because the developer may not initially recall having written 
