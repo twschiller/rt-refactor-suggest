@@ -45,6 +45,8 @@ import edu.washington.cs.rtrefactor.util.StatementCoverageVisitor;
  */
 public class FindBlock {
 
+    public enum Mode { PASTE, EXTRACT };
+    
 	/**
 	 * A group of consecutive statements, within a block
 	 * @author Todd Schiller
@@ -135,6 +137,16 @@ public class FindBlock {
 		public List<Statement> getTopLevelStatements(){
 			return topLevelStatements;
 		}
+		
+		/**
+		 * returns the statement group formed by extending this group to the end of the block
+		 * @return the statement group formed by extending this group to the end of the block
+		 */
+		@SuppressWarnings("unchecked")
+        public StatementGroup extend(){
+		    List<Statement> all = block.statements();
+		    return new StatementGroup(all.subList(all.indexOf(topLevelStatements.get(0)), all.size()), block, cu);
+		}
 	}	
 		
 	
@@ -145,7 +157,7 @@ public class FindBlock {
 	 * @return the largest {@link StatementGroup} that is covered by <code>region<code>
 	 * @throws CoreException iff an error occurred when accessing a workspace resource
 	 */
-	public static StatementGroup findLargestBlock(SourceRegion region) throws CoreException{
+	public static StatementGroup findLargestBlock(SourceRegion region, Mode mode) throws CoreException{
 		IWorkspace workspace = ResourcesPlugin.getWorkspace();
 		IWorkspaceRoot root = workspace.getRoot();
 		
@@ -164,7 +176,7 @@ public class FindBlock {
 					if (p.getKind() == IPackageFragmentRoot.K_SOURCE) {
 						for (ICompilationUnit cu : p.getCompilationUnits()){
 							if (cu.getElementName().equals(region.getFile().getName())){
-								return findLargestBlock(region, cu);
+								return findLargestBlock(region, cu, mode);
 							}
 						}
 					}
@@ -174,7 +186,7 @@ public class FindBlock {
 		throw new RuntimeException("Compilation unit corresponding to query file " + region.getFile().getAbsolutePath() + " not found");
 	}	
 	
-	private static StatementGroup findLargestBlock(SourceRegion region, ICompilationUnit cu){
+	private static StatementGroup findLargestBlock(SourceRegion region, ICompilationUnit cu, Mode mode){
 		if (!cu.getElementName().equals(region.getFile().getName())){
 			throw new IllegalArgumentException("File name for source region query does not match the compilation unit's name");
 		}
@@ -184,7 +196,7 @@ public class FindBlock {
 		StatementCoverageVisitor coverage = new StatementCoverageVisitor(region);
 		unit.accept(coverage);
 		
-		LargestRegionVisitor f = new LargestRegionVisitor(unit, coverage);
+		LargestRegionVisitor f = new LargestRegionVisitor(unit, coverage, mode);
 		unit.accept(f);
 		
 		return f.maxGroup;
@@ -213,6 +225,7 @@ public class FindBlock {
 		
 		private final CompilationUnit cu;
 		private final StatementCoverageVisitor coverage;
+		private final Mode mode;
 		
 		/**
 		 * The largest group of statements seen so far
@@ -228,10 +241,11 @@ public class FindBlock {
 		 * Constructor taking a query region
 		 * @param query the query region
 		 */
-		protected LargestRegionVisitor(CompilationUnit cu, StatementCoverageVisitor coverage) {
+		protected LargestRegionVisitor(CompilationUnit cu, StatementCoverageVisitor coverage, Mode mode) {
 			super();
 			this.cu = cu;
 			this.coverage = coverage;
+			this.mode = mode;
 		}
 
         @Override
@@ -242,14 +256,27 @@ public class FindBlock {
 			List<Statement> inc = Lists.newArrayList();	
 			
 			// the number of bottom-level statements covered
-			int size = 0;
-			
+            int size = 0;
+
 			for (Object o : node.statements()){
 			    Statement statement = (Statement) o;
-			    if (coverage.getNumUncovered(statement) == 0){
-			        inc.add(statement);
-			        size += coverage.getNumCovered(statement);
-			    }			    
+			    
+			    switch (mode){
+			    
+			    case EXTRACT:
+			        if (coverage.getNumUncovered(statement) == 0){
+	                    inc.add(statement);
+	                    size += coverage.getNumCovered(statement);
+	                }           
+			    case PASTE:
+			        // the _first_ statement must be completely covered, otherwise look for any coverage
+                    if ((inc.isEmpty() && coverage.getNumUncovered(statement) == 0)
+                         || (!inc.isEmpty() && coverage.getNumCovered(statement) > 0)){
+                        
+                        inc.add(statement);
+                        size += coverage.getNumCovered(statement);   
+                    }
+			    }
 			}
 			
 			if (size > 0 && size > max){
