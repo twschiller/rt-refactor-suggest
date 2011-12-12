@@ -28,6 +28,7 @@ public class StatementCoverageVisitor extends ASTVisitor {
     private final HashMultiset<Statement> covered = HashMultiset.create();
     private final HashMultiset<Statement> uncovered = HashMultiset.create();
    
+    
     /**
      * Constructor taking a query region
      * @param query the query region
@@ -37,27 +38,81 @@ public class StatementCoverageVisitor extends ASTVisitor {
         this.query = query;
     }
    
+    private boolean recorded(Statement statement){
+        return covered.contains(statement) || uncovered.contains(statement);
+    }
+    
+    /**
+     * record coverage for the statement if it is a bottom level statement
+     * and the information has not been recorded yet
+     * @param statement
+     */
+    private void record(Statement statement){
+        if (!recorded(statement) && isBottomLevel(statement)){
+            HashMultiset<Statement> tracker = covers(statement, query) ? covered : uncovered;
+            
+            // traverse up the AST, added each statement to 
+            // covered or uncovered, accordingly.
+            ASTNode current = statement;
+            do{
+                if (current instanceof Statement){
+                    tracker.add((Statement) current);
+                }
+                current = current.getParent();
+            }while(current != null);
+        }else{
+            // the statement will be visited automatically later 
+            // during the tree traversal
+        }
+    }
+     
+    @Override
+    public boolean visit(WhileStatement node) {
+        record(node.getBody());
+        return true;
+    }
+
+    @Override
+    public boolean visit(DoStatement node) {
+        record(node.getBody());
+        return true;
+    }
+
+    @Override
+    public boolean visit(EnhancedForStatement node) {
+        record(node.getBody());
+        return true;
+    }
+
+    @Override
+    public boolean visit(ForStatement node) {
+        record(node.getBody());
+        return true;
+    }
+
+    @Override
+    public boolean visit(SwitchStatement node) {
+        for (Object s : node.statements()){
+            record((Statement) s);
+        }
+        return true;
+    }
+
+    @Override
+    public boolean visit(IfStatement node) {
+        if (node.getThenStatement() != null && !recorded(node.getThenStatement())){
+            record(node.getThenStatement());
+        }
+        if (node.getElseStatement() != null && !recorded(node.getElseStatement())){
+            record(node.getElseStatement());
+        }
+        return true;
+    }
+
     @Override
     public boolean visit(Block node){
         for (Object s : node.statements()){
-            Statement statement = (Statement) s;
-            
-            if (isBottomLevel(statement)){
-                HashMultiset<Statement> tracker = covers(statement, query) ? covered : uncovered;
-                
-                // traverse up the AST, added each statement to 
-                // covered or uncovered, accordingly.
-                ASTNode current = statement;
-                do{
-                    if (current instanceof Statement){
-                        tracker.add((Statement) current);
-                    }
-                    current = current.getParent();
-                }while(current != null);
-            }else{
-                // the statement will be visited automatically later 
-                // during the tree traversal
-            }
+            record((Statement) s);
         }
         return true;
     }
@@ -68,7 +123,11 @@ public class StatementCoverageVisitor extends ASTVisitor {
      * @return the number of statements covered in <code>statement</code>
      */
     public int getNumCovered(Statement statement){
-        return covered.count(statement);
+        int cnt = covered.count(statement);
+        if (cnt == 0){
+            assert uncovered.count(statement) != 0;
+        }
+        return cnt;
     }
     
     /**
@@ -77,7 +136,11 @@ public class StatementCoverageVisitor extends ASTVisitor {
      * @return the number of statements uncovered in <code>statement</code>
      */
     public int getNumUncovered(Statement statement){
-        return uncovered.count(statement);
+        int cnt = uncovered.count(statement);
+        if (cnt == 0){
+            assert covered.count(statement) != 0;
+        }
+        return cnt;
     }
     
     /**
