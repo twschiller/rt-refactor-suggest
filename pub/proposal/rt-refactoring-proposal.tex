@@ -429,42 +429,73 @@ external identifier mismatches.
 %spent. We will poll users after the fact to ask them how helpful they
 %found the tool.
 
-We have evaluated the tool via controlled user study. We developed a
-fairly small Java codebase (13 files, ~900 total lines of code) for this
-purpose.  The code is an image library capable of dealing with custom-format high-fidelity
-images with over 256 colors per channel.  Several complex image tranformations
-are implemented, which perform tasks such as rudimentary edge detection and 
-smoothing. A GUI is provided to demonstrate some of the transformations.
-There are a small set of 5 classes in a separate package, contain ing the GUI 
-code and base classes,  which the users were instructed not to modify. Subjects were
- instructed that they ``own'' all other
-classes in the code base, that is they had permission to introduce
-new methods, but must document the methods.
+To evaluate the tool, we performed a controlled user study designed to
+emulate software development and maintenance.
 
-In addition to the code, the users were a given a suite of
-JUnit tests which cover the codebase.  Most provided tests intially pass on
-the provided code, but there are several tests which test their
-development task, and one which tests their maintenace task, which do
- not pass initially.  
+\paragraph{Subject Program}
+The subject project is a small Java image transformation libary and
+graphical user interface (13 files, consisting of 900 non-comment
+non-blank lines of source) developed for the study. To prevent the
+study participants from utilizing Java standard library functions, the
+library utilized a custom, ``high-fidelity,'' image format with custom
+RGB and Alpha scaling. The codebase consists of several complex image
+transformations, such as basic edge detection and smoothing. Unit tests
+are provided for each transformation included in the GUI.
 
-In the development portion of the study, the users will be then be directed
-to implement a new image transformation in a provided skeleton class. The subjects were 
-given a detailed description of the task, and a unit test.  The subjects were 
-instructed that their task is not complete until the associated unit test passes.  
- Implementing the image transformation involved duplicating functionality in two other classes:
-In one case, a the functionality needed (drawing a sequence of numerals on the image)
- was exposed via a public method, in the other (blending each pixel with its four diagonal neighbors), 
-the functionality would have to be extracted from the middle of a long method.
- We replaced all clones with method calls and the task took 14 lines, whereas duplicating clone functionality via copy and paste took 55 lines.
+%% There are a small set of 5 classes in a separate package, contain ing the GUI 
+%% code and base classes,  which the users were instructed not to modify. Subjects were
+%%  instructed that they ``own'' all other
+%% classes in the code base, that is they had permission to introduce
+%% new methods, but must document the methods.
 
-We also included a maintenance task, which is introduced once the development task is complete.    The task consists of fixing a bug in which certain functions do not set the alpha channel properly.  We provided each user with a bug report and the location of the buggy method in the source code. We indicate that the same bug might occur elsewhere in the codebase, but do not elaborate.  In reality, there are two locations where the same bug occurs.  One is a direct, copy-and paste clone of the original section, while the other only clones part of the section and uses it to complete a different task (making an image more blocky instead of shrinking it). Each location has a comment that mentions there might be a bug in how it handles alpha.  These two locations have no public unit test that exposes the bug.
+%% In addition to the code, the users were a given a suite of
+%% JUnit tests which cover the codebase.  Most provided tests intially pass on
+%% the provided code, but there are several tests which test their
+%% development task, and one which tests their maintenace task, which do
+%%  not pass initially.  
 
-%\todo{Characterize the tasks and code base} 
+\paragraph{Development Task}
+%% In the development portion of the study, the users will be then be directed
+%% to implement a new image transformation in a provided skeleton class. The subjects were 
+%% given a detailed description of the task, and a unit test.  The subjects were 
+%% instructed that their task is not complete until the associated unit test passes.  
+%%  Implementing the image transformation involved duplicating functionality in two other classes:
+%% In one case, a the functionality needed (drawing a sequence of numerals on the image)
+%%  was exposed via a public method, in the other (blending each pixel with its four diagonal neighbors), 
+%% the functionality would have to be extracted from the middle of a long method.
+%%  We replaced all clones with method calls and the task took 14 lines, whereas duplicating clone functionality via copy and paste took 55 lines.
 
-The subjects were two grad students who had experience using the
-Java development environment. Each used the Eclipse development
-environment with the tool and its logging code.
+For the development task, the study participants were asked to
+implement a new image transformation in a provided skeleton
+class. Participants were provided with both a detailed specification
+of the feature and corresponding unit tests. The development task was
+was chosen such that the new image transformation duplicates the
+functionality contained within two existing classes. Completing the
+task by making calls to existing methods requires approximately 15
+lines, whereas duplicating the functionality (e.g., via copy and
+paste) requires approximately 55 lines.
 
+\paragraph{Maintenance Task}
+
+Once the participant completed the development task, we introduced a
+maintenance task consisting of fixing a bug caused by a method not
+blending the Alpha channels during the image transformation. The bug
+can be fixed by replacing a line of code and adding a new line of
+code. We provided the participants with a bug report and the location
+of the buggy method in the source code.
+
+Additionally, we suggest that the same bug might occur elsewhere in
+the codebase, and indicate that these bugs should be fixed.  In
+reality, the subject program contains two instances of the same bug: a
+direct, copy-and-paste clone of the original section, and a clone
+which uses the buggy code as part of a different behavior.  At both
+locations, the subject program includes a comment that mentions there
+may be a bug in how the Alpha channel is handled. There are no public
+unit tests that expose these bugs.
+
+\paragraph{Study Participants}
+The two study participants were computer science graduate students with
+basic experience using Java and Eclipse.
 
 \subsection{Quantitative Evaluation}
 For the development tasks, we record:
@@ -513,7 +544,7 @@ participants respond to the following questions:
   \item Was the ranking (ordering) of the tool's suggestions valid?
     Why, or why not? Does your answer differ for the development and
     maintenance tasks? If so, why?
-  \item What situation(s), if any, would this tool be most useful to you as a  programmer?
+  \item In which situation(s), if any, would this tool be most useful to you as a programmer?
   \item If you extracted a method, how did you decide to extract the
     method? 
   \item If you chose not to extract a method, why did you decide not
