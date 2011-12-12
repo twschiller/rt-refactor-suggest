@@ -1,5 +1,6 @@
 package edu.washington.cs.rtrefactor.quickfix;
 
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 
@@ -33,6 +34,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
 import edu.washington.cs.rtrefactor.detect.SourceRegion;
+import edu.washington.cs.rtrefactor.util.StatementCoverageVisitor;
 
 // TODO we need to penalize for occurrences of local variables use a variable that would be 
 // defined locally in the extracted method
@@ -44,22 +46,29 @@ import edu.washington.cs.rtrefactor.detect.SourceRegion;
 public class FindBlock {
 
 	/**
-	 * Contains information about the statements to extract
+	 * A group of consecutive statements, within a block
 	 * @author Todd Schiller
 	 */
-	public static class BlockInfo{
-		private final List<Statement> statements;
+	public static class StatementGroup{
+		private final List<Statement> topLevelStatements;
+		private final Block block;
 		private final CompilationUnit cu;
 
-		protected BlockInfo(List<Statement> statements, CompilationUnit cu) {
-			if (statements.isEmpty()){
+		/**
+		 * Construct taking a list of the top-level statements in the group
+		 * @param topLevelStatements the top-level statements in the group
+		 * @param cu the compilation unit
+		 */
+		protected StatementGroup(List<Statement> topLevelStatements, Block block, CompilationUnit cu) {
+			if (topLevelStatements.isEmpty()){
 				throw new IllegalArgumentException("Block cannot be empty");
 			}else if (cu == null){
 				throw new NullPointerException("Compilation Unit cannot be null");
 			}
 			
-			this.statements = Lists.newArrayList(statements);
+			this.topLevelStatements = Lists.newArrayList(topLevelStatements);
 			this.cu = cu;
+			this.block = block;
 		}
 		
 		/**
@@ -67,7 +76,7 @@ public class FindBlock {
 		 * @return the starting global file offset
 		 */
 		public int getStart(){
-			return statements.get(0).getStartPosition();
+			return topLevelStatements.get(0).getStartPosition();
 		}
 		
 		/**
@@ -83,7 +92,7 @@ public class FindBlock {
 		 * @return the ending global file offset
 		 */
 		public int getEnd(){
-			Statement last =  statements.get(statements.size() - 1);
+			Statement last =  topLevelStatements.get(topLevelStatements.size() - 1);
 			return last.getStartPosition() + last.getLength();
 		}
 		
@@ -105,31 +114,38 @@ public class FindBlock {
 		 */
 		public LinkedHashSet<String> getCapturedVariables() {
 			VariableCaptureCounter counter = new VariableCaptureCounter();
-			for (Statement s : statements){
+			for (Statement s : topLevelStatements){
 				s.accept(counter);
 			}
 			return counter.captured;
 		}
 		
 		/**
-		 * Get a shallow reference to the statements
-		 * @return  a shallow reference to the statements
+		 * Get the surrounding block
+		 * @return the surrounding block
 		 */
-		public List<Statement> getStatements(){
-			return statements;
+		public Block getBlock(){
+		    return block;
+		}
+		
+		/**
+		 * Get a shallow reference to the top-level statements
+		 * @return a shallow reference to the top-level statements
+		 */
+		public List<Statement> getTopLevelStatements(){
+			return topLevelStatements;
 		}
 	}	
 		
 	
 	/**
-	 * Find the largest block (list of statements) that overlaps <code>region</code> in the Eclipse
-	 * workspace. Returns <code>null</code> if the region does not correspond to 
-	 * a block.
+	 * Find the largest {@link StatementGroup} that is covered by <code>region<code> in the Eclipse
+	 * workspace. Returns <code>null</code> if the region does not correspond to any statements.
 	 * @param region the query region
-	 * @return the largest block <code>region</code> in the Eclipse workspace
+	 * @return the largest {@link StatementGroup} that is covered by <code>region<code>
 	 * @throws CoreException iff an error occurred when accessing a workspace resource
 	 */
-	public static BlockInfo findLargestBlock(SourceRegion region) throws CoreException{
+	public static StatementGroup findLargestBlock(SourceRegion region) throws CoreException{
 		IWorkspace workspace = ResourcesPlugin.getWorkspace();
 		IWorkspaceRoot root = workspace.getRoot();
 		
@@ -158,17 +174,20 @@ public class FindBlock {
 		throw new RuntimeException("Compilation unit corresponding to query file " + region.getFile().getAbsolutePath() + " not found");
 	}	
 	
-	private static BlockInfo findLargestBlock(SourceRegion region, ICompilationUnit cu){
+	private static StatementGroup findLargestBlock(SourceRegion region, ICompilationUnit cu){
 		if (!cu.getElementName().equals(region.getFile().getName())){
 			throw new IllegalArgumentException("File name for source region query does not match the compilation unit's name");
 		}
 		
 		CompilationUnit unit = parse(cu);
 		
-		RegionFinder f = new RegionFinder(region, unit);
+		StatementCoverageVisitor coverage = new StatementCoverageVisitor(region);
+		unit.accept(coverage);
+		
+		LargestRegionVisitor f = new LargestRegionVisitor(unit, coverage);
 		unit.accept(f);
 		
-		return f.maxRegion;
+		return f.maxGroup;
 	}
 	
 	/**
@@ -186,64 +205,132 @@ public class FindBlock {
 	}
 	
 	/**
-	 * true iff <code>query</code> contains any part of <code>statement</code>
-	 * @param statement the statement
-	 * @param query the source region
-	 * @return true iff <code>query</code> contains any part of <code>statement</code>
-	 */
-	private static boolean covers(Statement statement, SourceRegion query){
-		int coverBegin = Math.max(statement.getStartPosition(), query.getStart().getGlobalOffset());
-		int coverEnd = Math.min(statement.getStartPosition() + statement.getLength(), query.getEnd().getGlobalOffset());
-		return (coverEnd - coverBegin > 0);
-	}
-	
-	/**
-	 * Class to traverse the AST and find the largest block (list of consecutive statements
-	 * covered by the specified source region). 
+	 * A {@link ASTVisitor} that calculates the largest {@link StatementGroup} with all the bottom-level
+	 * statements covered by a query.
 	 * @author Todd Schiller
 	 */
-	private static class RegionFinder extends ASTVisitor{
-		private int max = Integer.MIN_VALUE;
-		private final SourceRegion query;
+	private static class LargestRegionVisitor extends ASTVisitor{
+		
 		private final CompilationUnit cu;
+		private final StatementCoverageVisitor coverage;
 		
 		/**
-		 * The longest block (list of consecutive statements) covered by the region
+		 * The largest group of statements seen so far
 		 */
-		private BlockInfo maxRegion = null;
+		private StatementGroup maxGroup = null;
+		
+		/**
+		 * The number of bottom-level statements in {@link maxGroup}
+		 */
+		private int max = Integer.MIN_VALUE;
 		
 		/**
 		 * Constructor taking a query region
 		 * @param query the query region
 		 */
-		protected RegionFinder(SourceRegion query, CompilationUnit cu) {
+		protected LargestRegionVisitor(CompilationUnit cu, StatementCoverageVisitor coverage) {
 			super();
-			this.query = query;
 			this.cu = cu;
+			this.coverage = coverage;
 		}
 
-		@Override
-		public boolean visit(Block node){
-			List<Statement> inc = Lists.newArrayList();
+        @Override
+		public boolean visit(Block node){            
+            // it's OK to search this way because the query source region is contiguous
+            // i.e., each block only has a single source group that is covered
+            
+			List<Statement> inc = Lists.newArrayList();	
 			
-			for (Object s : node.statements()){
-				if (covers((Statement) s, query)){
-					inc.add((Statement)s);
-				}
+			// the number of bottom-level statements covered
+			int size = 0;
+			
+			for (Object o : node.statements()){
+			    Statement statement = (Statement) o;
+			    if (coverage.getNumUncovered(statement) == 0){
+			        inc.add(statement);
+			        size += coverage.getNumCovered(statement);
+			    }			    
 			}
 			
-			if (!inc.isEmpty()){
-				if (inc.size() > max){
-					max = inc.size();
-					maxRegion = new BlockInfo(inc, cu);
-				}
+			if (size > 0 && size > max){
+			    max = size;
+			    maxGroup = new StatementGroup(inc, node, cu);
 			}
 			
 			return true;
 		}
 	}
 	
+	/**
+	 * Given a source region to extract within a block, and the rest of the block, determines
+	 * which variable(s) must be return from the extracted method.
+	 * @author Todd Schiller
+	 */
+	protected static class ExtractReturnVisitor extends ASTVisitor{
+	    
+	    private final HashSet<IVariableBinding> bindings;
+	    private final HashSet<IVariableBinding> returns = Sets.newHashSet();
+	    
+	    protected ExtractReturnVisitor(StatementGroup query){
+	        BindingCollector x = new BindingCollector();
+	        for (Statement statement : query.getTopLevelStatements()){
+	            statement.accept(x);
+	        }	        
+	        bindings = x.bindings;
+	    }
+	    
+	    @Override
+        public boolean visit(SimpleName name){
+            doName(name);
+            return false;
+        }
+        
+        @Override
+        public boolean visit(QualifiedName name){
+            doName(name);
+            return false;
+        }
+        
+        /**
+         * Add to set of returned variable if the name binds to a variable
+         * defined in the region to extract
+         * @param name the name of variable
+         */
+        private void doName(Name name){
+            if (!(name.getParent() instanceof VariableDeclarationFragment)){
+                IBinding binding = name.resolveBinding();
+                if (binding instanceof IVariableBinding){
+                    IVariableBinding vb = (IVariableBinding) binding;
+                    if (bindings.contains(vb)){
+                        returns.add(vb);
+                    }
+                }
+            }
+        }
+        
+        public int getNumReturnValues(){
+            return returns.size();
+        }
+	    
+	}
 	
+	/**
+	 * Collects the variable bindings as {@link IVariableBinding}s
+	 * @author Todd Schiller
+	 */
+	private static class BindingCollector extends ASTVisitor{
+	    
+	    private final HashSet<IVariableBinding> bindings = Sets.newHashSet();
+	    
+	    @Override
+        public boolean visit(VariableDeclarationStatement x){
+            // only have to look at the first entry because we only care about the lowest number
+            VariableDeclarationFragment f = (VariableDeclarationFragment) x.fragments().get(0);
+            IVariableBinding binding = (IVariableBinding) f.getName().resolveBinding();
+            bindings.add(binding);
+            return true;
+        }
+	}
 	
 	/**
 	 * Collects the set of captured variables, pass in a sequence of statements.

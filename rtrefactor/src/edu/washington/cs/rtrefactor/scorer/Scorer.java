@@ -29,7 +29,7 @@ import edu.washington.cs.rtrefactor.quickfix.CloneResolutionGenerator;
 import edu.washington.cs.rtrefactor.quickfix.CopyPasteFix;
 import edu.washington.cs.rtrefactor.quickfix.ExtractMethodFix;
 import edu.washington.cs.rtrefactor.quickfix.FindBlock;
-import edu.washington.cs.rtrefactor.quickfix.FindBlock.BlockInfo;
+import edu.washington.cs.rtrefactor.quickfix.FindBlock.StatementGroup;
 import edu.washington.cs.rtrefactor.quickfix.FindMethod;
 import edu.washington.cs.rtrefactor.quickfix.InsertCallFix;
 import edu.washington.cs.rtrefactor.quickfix.JumpToFix;
@@ -45,7 +45,7 @@ strictfp public class Scorer {
 	
 	public static final int MAX_SCORE = 100;
 	public static final int MIN_SCORE = 10;
-	public static final int THRESHOLD = 70;
+	public static final int THRESHOLD = 0;
 	
 	// ADAPTIVE SCORING SYSTEM
 	// 
@@ -338,7 +338,7 @@ strictfp public class Scorer {
 	}
 	
 	private List<CloneFix> generateExtractMethodFixes(ClonePairData pair, CloneResolutionGenerator parent){
-		BlockInfo b;
+		StatementGroup b;
 		try {
 			b = FindBlock.findLargestBlock(pair.getOtherRegion());
 		} catch (CoreException e) {
@@ -346,10 +346,10 @@ strictfp public class Scorer {
 			return Lists.newArrayList();
 		}
 		
-		if (b == null){
+		if (b == null || !ExtractMethodFix.canExtract(b)){
 			return Lists.newArrayList();
 		}
-		
+	
 		double base = truncate(pair.getSimilarity() * Math.pow(NONLOCAL_PENALTY, b.getNumCapturedVariable()));
 		
 		int score = calc(base, EXTRACT, pair.getCloneNumber());
@@ -365,8 +365,8 @@ strictfp public class Scorer {
 	}
 	
 	private List<CloneFix> generatePasteCloneFixes(ClonePairData pair, CloneResolutionGenerator parent){
-		BlockInfo copyBlock;
-		BlockInfo pasteBlock;
+		StatementGroup copyBlock;
+		StatementGroup pasteBlock;
 		
 		try {
 			copyBlock = FindBlock.findLargestBlock(pair.getOtherRegion());
