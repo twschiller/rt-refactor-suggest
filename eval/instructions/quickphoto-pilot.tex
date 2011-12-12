@@ -74,12 +74,14 @@ transformations. Each test consists of at least one original image and
 target image. If you have questions about how to run the unit tests,
 please ask the proctor before beginning the tasks.
 
-All tests pass initially except \verb|testNewTransform| and \verb|testShrink|, which should pass after you have completed the development and maintenance tasks.
+All tests pass initially except \verb|testNewTransform|
+and \verb|testShrink|, which should pass after you have completed
+the development and maintenance tasks, respectively.
 
 \paragraph{Code Ownership}  
 You should feel free to modify any source files \textit{EXCEPT} the classes in
-the \verb|eval| package and the test cases.  If you add any new methods,
-they must be documented.
+the \verb|eval| package and the test cases.  If you choose to add any methods,
+you must document the methods.
 
 \section{Duplicate Code Plugin}
 The duplicate code plugin detects when similar code appears in
@@ -95,47 +97,54 @@ recommend four different actions:
 
 \paragraph{Plugin Modes}
 The tool has a development mode, and a maintenance mode; these modes
-can be toggled using the toolbar. In development mode, the tool only
+can be toggled using the toolbar button. In development mode, the tool only
 marks similar code in the region where the last file edit happened
 (where you are developing). In maintenance mode, the tool marks all of
 the similar code in the active file.
 
+\pagebreak
+
 \section{Development (approx. 20 minutes)}
 
 You are tasked with completing the implementation of the
-\verb|NewImageTransform| transformation.  This transformation has two
-stages: In the first stage, the transformation iterates over each
+\verb|NewImageTransform| transformation.  This transformation should
+work in two stages, as described below.
+
+\paragraph{Stage 1}
+In the first stage, the transformation iterates over each
 pixel and assign its color to be the average (mean) of each of its
 four diagonal neighbors. If a pixel is missing a diagonal neighbor,
-assume the neighbor exists with rgb values \verb|(0, 0, 0)|.
+assume the neighbor exists with RGB values \verb|(0, 0, 0)|.
 
+\paragraph{Stage2}
 In the second stage, the transformation
 writes the image id indicated by the field \verb|imageId| \textit{in binary} to the lower
-left corner of the image.  Hint: To convert the number to a sequence of binary digits, use the 
-\verb|Integer.toBinaryString()| method.
-
-
-Here is the precise definition of how to
-write out the two numerals, 1 and 0:
+left corner of the image.  To convert the number to a sequence of binary digits, use the 
+\verb|Integer.toBinaryString()| method. The numerals \verb|0|
+and \verb|1| should be written according to the following specification:
 
 \begin{itemize}
-\item The upper left corner of the numerals region starts at (5,
-  height-30), so the number is printed in the lower left of the image.
-\item The characters all get a 15 pixel space to work with before the
-  next character begins.
-\item The zero is a rectangle 20 pixels tall and 10 pixels wide, flush
-  to the left side of its space.
-\item The one is a single vertical line, indented 5 pixels into its
-  space (i.e. pixel index 5) and 20 pixels tall.
+\item The binary string is printed in the lower-left of the image. 
+The upper-left corner of the numerals starts at column \verb|5|, row \verb|height - 30|.
+\item Each character is written in a bounding box that is 20 pixels tall and 15 pixels wide.
+\item The zero (\verb|0|) is drawn as a rectangle 20 pixels tall and 10 pixels wide, flush
+  with the left side of its space.
+\item The one (\verb|1|) is a single vertical line, indented 5 pixels into its
+  bounding box (i.e. pixel offset 5) and 20 pixels tall.
 \item The RGB color of the lines must be equal to the \verb|idColor|
   field, but the alpha channel MUST be preserved.
 \end{itemize}
 
+\paragraph{Preserving the Alpha Channel}
 Again, the transformation must not modify the alpha values -- i.e.,
 the alpha channels in the transformed image must be identical to the
 alpha channels in the original image.
 
-If you have completed this task successfully, \verb|testNewTransform| will pass.
+\paragraph{Testing}
+When you have completed this task successfully,
+\verb|testNewTransform| will pass.
+
+\pagebreak
 
 \section{Maintenance (approx. 20 minutes)}
 
@@ -144,11 +153,13 @@ A user has found a bug with the static method
 values is passed in (such as  \verb|Ghost.png|), the alpha values of the resulting image do not
 look quite right.  \verb|ImageUtil.downsizeImage|, \textit{and any
   other code code which averages over a block of values}, is supposed
-to average the alphas as well as the RGB values.  Please fix this bug
+to average (mean) the alphas as well as the RGB values.  Please fix this bug
 in \verb|ImageUtil.downsizeImage|; If you happen to notice the same
 bug elsewhere, feel free to correct the code there as well.
 
-If you have fixed the bug successfully, \verb|testShrink| will pass.
+\paragraph{Testing} When you have fixed the bug successfully, \verb|testShrink| will pass.
+
+\pagebreak
 
 \section{Reflection (approx. 20 minutes)}
 
@@ -165,7 +176,8 @@ performed when performing the development and maintenance tasks.
   \item Was the ranking (ordering) of the tool's suggestions valid?
     Why, or why not? Does your answer differ for the development and
     maintenance tasks? If so, why?
-  \item What situation(s), if any, would this tool be most useful to you as a 		    programmer?
+  \item In which situation(s), if any, would this tool be most useful
+  to you as a programmer?
 \end{enumerate}
 
 \paragraph{Method Extraction}
