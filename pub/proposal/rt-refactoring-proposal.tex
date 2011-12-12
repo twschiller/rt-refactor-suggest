@@ -30,16 +30,17 @@ Code clone detection and analysis has historically been viewed as a
 maintenance problem. Recently, tools for managing clones during
 development have been introduced, however, these tools require
 users to maintain formal clone models.
-In this paper we propose a tool evaluation for (1) eliminating the
+In this paper we propose a tool for (1) eliminating the
 introduction of code clones during development without maintaining formal clone models, and (2) leveraging code
 similarity to boost programmer productivity.
-
 The tool
 is an Eclipse plugin providing real-time clone detection and action
 suggestions to the developer as (s)he writes and modifies
-code. If time allows, machine learning will be 
-employed to provide more pertinent results
-and suggestions to the developer.
+code. 
+
+To evaluate the tool, we perform a user study with two participants
+each performing the same development and maintenance task in Eclipse
+with the tool enabled.
 \end{abstract}
 
 \category{D.2.6}{Software Engineering}{Programming Environments}
@@ -130,7 +131,7 @@ are written because the developer is not aware of preexisting functionality,
 misses cases where functionality has been inadvertently 
 duplicated.
 
-This paper proceeds as follows: section~\ref{sec:finding-clones}
+This paper proceeds as follows: Section~\ref{sec:finding-clones}
 describes the user interface for the tool, along with the underlying
 clone detectors. Section~\ref{sec:eval} proposes a controlled user
 study to evaluate the tool. Section~\ref{sec:related} discusses
@@ -147,17 +148,17 @@ Section~\ref{sec:conclusion} concludes.
 %extraction), method calls, or copying. In the future, the tool could
 %be extended to other refactorings / uses.
 
-To support the developer actions enumerated in section~\ref{sec:intro},
-the tool will search the existing codebase for code
-that is similar to the region that is currently being developed or maintained
-(i.e. where the cursor is). The search is performed using the clone detectors
+To support the developer actions enumerated in Section~\ref{sec:intro},
+the tool searches the existing codebase for code
+that is similar to the region that is currently being developed or regions
+in the file being maintained. The search is performed using the clone detectors
 described in section~\ref{sec:detectors}. The clone detection is implemented as
-an Eclipse reconciler, which allows it to run in a background thread and only activate 
-when there is a natural pause in typing.
+an Eclipse reconciler, which means that it runs in the background whenever there
+is a natural pause in typing.
 
 In order to be practical in an online
 setting with a large codebase, the detectors must be
-fast and
+not only be fast, but also
 robust to identifying clones that are more obfuscated than direct
 copying, such as when a programmer re-implements the same
 functionality.
@@ -220,12 +221,13 @@ combine results.
 
 \subsection{Displaying Suggestions}
 \label{sec:display}
-Clones \emph{with suggested actions} are displayed as Eclipse annotations,
-which take 
-the form of highlighting with a marker icon on the left vertical bar and a 
-colored marking on the right vertical bar.  When users click the left marker,
+Clones \emph{with suggested actions} are displayed as Eclipse
+annotations, which consist of (1) source code highlighting, (2) a
+marker on the left vertical bar, and (3) a colored region on the right
+vertical bar.
+When users click the left-hand marker,
 the corresponding clone(s) and potential refactoring options are shown,
-similar to Eclipse's QuickFix functionality for resolving errors and warnings.
+along with other Eclipse Quick Fix resolutions for errors and warnings.
 Multiple clones at the same location are indicated by multicolored markers.
 Figure \ref{fig:screenshot} shows the Eclipse Quick Fix interface.
 
@@ -281,7 +283,10 @@ actions:
   \item $\textsc{Raw}_{\text{clone},\text{action}}$ is an action-specific score for the clone
     determined by the clone pair's similarity, and a heuristic
     estimate of the usefulness of the action; calculation details
-    are provided later in this section.
+    are provided later in this section. 
+    In order to maintain consistency across clone detectors, in this paper, the tool uses the
+    number of non-whitespace, non-Javadoc characters in the clone is
+    used.
   \item $\textsc{Pref}_{\text{action}} > 0$ is the user's preference for the action; $\textsc{Pref}_{\text{action}} / 
     \sum{\textsc{Pref}}$ is the user's relative preference for the action. The
     initial values are set with normative information (e.g., it is
@@ -354,8 +359,9 @@ the number of arguments in the resulting call.
 \label{sec:extract}
 The set of consecutive statements to extract for a clone pair is
 determined by finding the longest chain of statements (as measured by
-the \textit{number} of statements) for which some part of the system
-clone region overlaps the statements.  The score for the extraction
+the \textit{number} of basic statements) for which some part of the
+system clone region overlaps the every basic statements.
+The score for the extraction
 action is then determined by (1) the clone's similarity, and (2) the
 number of variables used in the statements that aren't declared
 locally in the statements --- i.e., fields, method parameters, local
@@ -372,6 +378,10 @@ similarity score for the clones, $0 < \textsc{NonLocalPenality} < 1$
 is a constant penalty for non-local variable usage, and
 $\textsc{\#NonLocal}$ is the number of non-static variables and fields
 used by the statements that are not declared within the statements.
+
+Some chains of statements cannot be extracted because multiple local
+variables defined in the chain are used subsequently in the block. In
+this case, no \textsc{Extract} action is generated.
 
 \subsubsection{Scoring \textsc{JumpTo} Actions}
 \textsc{JumpTo} actions aide analogous edits to system clones
@@ -430,14 +440,18 @@ external identifier mismatches.
 %found the tool.
 
 To evaluate the tool, we performed a controlled user study designed to
-emulate software development and maintenance.
+emulate software development and maintenance.  Two study participants
+each performed the same development and maintenance task on a subject
+program. The development task is given first so as to give the
+participants the opportunity to become acquainted with the codebase
+before performing the maintenance task.
 
 \paragraph{Subject Program}
 The subject project is a small Java image transformation libary and
 graphical user interface (13 files, consisting of 900 non-comment
 non-blank lines of source) developed for the study. To prevent the
 study participants from utilizing Java standard library functions, the
-library utilized a custom, ``high-fidelity,'' image format with custom
+library utilizes a custom, ``high-fidelity,'' image format with custom
 RGB and Alpha scaling. The codebase consists of several complex image
 transformations, such as basic edge detection and smoothing. Unit tests
 are provided for each transformation included in the GUI.
@@ -465,15 +479,15 @@ are provided for each transformation included in the GUI.
 %% the functionality would have to be extracted from the middle of a long method.
 %%  We replaced all clones with method calls and the task took 14 lines, whereas duplicating clone functionality via copy and paste took 55 lines.
 
-For the development task, the study participants were asked to
-implement a new image transformation in a provided skeleton
-class. Participants were provided with both a detailed specification
-of the feature and corresponding unit tests. The development task was
-was chosen such that the new image transformation duplicates the
-functionality contained within two existing classes. Completing the
-task by making calls to existing methods requires approximately 15
-lines, whereas duplicating the functionality (e.g., via copy and
-paste) requires approximately 55 lines.
+For the development task, we asked the study participants to implement
+a new image transformation in a provided skeleton class. Participants
+were provided with both a detailed specification of the feature and
+corresponding unit tests. The development task was was chosen such
+that the new image transformation duplicates the functionality
+contained within two existing classes. Completing the task by making
+calls to existing methods requires approximately 15 lines, whereas
+duplicating the functionality (e.g., via copy and paste) requires
+approximately 55 lines.
 
 \paragraph{Maintenance Task}
 
@@ -495,7 +509,38 @@ unit tests that expose these bugs.
 
 \paragraph{Study Participants}
 The two study participants were computer science graduate students with
-basic experience using Java and Eclipse.
+basic experience using both Java and Eclipse.
+
+\subsection{Results}
+
+Table \ref{table:actioncnt} shows a quantitative summary of each
+developers interactions with the tool.
+
+\begin{table*}[t]
+\begin{center}
+\begin{tabular}{ccc|c|c|c|c|c|}
+\cline{4-7}
+& & & \multicolumn{4}{|c|}{Actions} \\ \cline{2-8}
+& \multicolumn{1}{|c|}{Phase} & \multicolumn{1}{|c|}{\# Views} & \textsc{InsertCall} & \textsc{Extract} & \textsc{JumpTo} & \textsc{Paste} & \multicolumn{1}{|c|}{Develop} \\ \cline{1-8}
+\multicolumn{1}{|c|}{\multirow{2}{*}{Developer 1}} &
+\multicolumn{1}{|c|}{Development} & X & X & X & X & X & X    \\ \cline{2-8}
+\multicolumn{1}{|c|}{}                        &
+\multicolumn{1}{|c|}{Maintenance} & X & X & X & X & X & X  \\ \cline{1-8}
+\multicolumn{1}{|c|}{\multirow{2}{*}{Developer 2}} &
+\multicolumn{1}{|c|}{Development} & X & X & X & X & X & X\\ \cline{2-8}
+\multicolumn{1}{|c|}{}                        &
+\multicolumn{1}{|c|}{Maintenance} & X & X & X & X & X & X\\ \cline{1-8}
+\end{tabular}
+\end{center}
+\caption{Developer actions during the development and maintenance
+  phases of the evaluation. ``\# Views'' is the number of times the
+  developer invoked QuickFix on marker with code clone
+  suggestions. ``Develop'' is the number of times the developer
+  ignored the QuickFix suggestions and then performed a development
+  action.}
+\label{table:actioncnt}
+\end{table*}
+
 
 \subsection{Quantitative Evaluation}
 For the development tasks, we record:
@@ -550,36 +595,6 @@ participants respond to the following questions:
   \item If you chose not to extract a method, why did you decide not
     to extract the method?
 \end{itemize}
-
-\subsection{Results}
-
-Table \ref{table:actioncnt} shows a quantitative summary of each
-developers interactions with the tool.
-
-\begin{table*}[t]
-\begin{center}
-\begin{tabular}{ccc|c|c|c|c|c|}
-\cline{4-7}
-& & & \multicolumn{4}{|c|}{Actions} \\ \cline{2-8}
-& \multicolumn{1}{|c|}{Phase} & \multicolumn{1}{|c|}{\# Views} & \textsc{InsertCall} & \textsc{Extract} & \textsc{JumpTo} & \textsc{Paste} & \multicolumn{1}{|c|}{Develop} \\ \cline{1-8}
-\multicolumn{1}{|c|}{\multirow{2}{*}{Developer 1}} &
-\multicolumn{1}{|c|}{Development} & X & X & X & X & X & X    \\ \cline{2-8}
-\multicolumn{1}{|c|}{}                        &
-\multicolumn{1}{|c|}{Maintenance} & X & X & X & X & X & X  \\ \cline{1-8}
-\multicolumn{1}{|c|}{\multirow{2}{*}{Developer 2}} &
-\multicolumn{1}{|c|}{Development} & X & X & X & X & X & X\\ \cline{2-8}
-\multicolumn{1}{|c|}{}                        &
-\multicolumn{1}{|c|}{Maintenance} & X & X & X & X & X & X\\ \cline{1-8}
-\end{tabular}
-\end{center}
-\caption{Developer actions during the development and maintenance
-  phases of the evaluation. ``\# Views'' is the number of times the
-  developer invoked QuickFix on marker with code clone
-  suggestions. ``Develop'' is the number of times the developer
-  ignored the QuickFix suggestions and then performed a development
-  action.}
-\label{table:actioncnt}
-\end{table*}
 
 \subsection{Threats to Validity}
 The evaluation outline in this section is meant as a preliminary study
