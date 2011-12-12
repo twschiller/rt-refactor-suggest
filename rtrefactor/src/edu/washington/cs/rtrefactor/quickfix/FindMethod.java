@@ -60,9 +60,13 @@ public class FindMethod {
 		
 		for (int i = region.getStart().getGlobalOffset(); i < region.getEnd().getGlobalOffset(); i++){
 			try{
-				IMethod m = getSurroundingMethod(cu.getElementAt(i));
-				if (m != null){
-					elts.add(m);
+				IJavaElement elt = cu.getElementAt(i);
+				if(elt != null)
+				{
+					IMethod m = getSurroundingMethod(elt);
+					if (m != null){
+						elts.add(m);
+					}
 				}
 			}catch (JavaModelException ex){
 				// ignore
@@ -93,10 +97,14 @@ public class FindMethod {
 
 		for (int i = region.getStart().getGlobalOffset(); i < region.getEnd().getGlobalOffset(); i++){
 			try{
-				IMethod m = getSurroundingMethod(cu.getElementAt(i));
+				IJavaElement elt = cu.getElementAt(i);
+				if(elt != null)
+				{
+					IMethod m = getSurroundingMethod(elt);
 				
-				if (m != null && method.isSimilar(m)){
-					cnt++;
+					if (m != null && method.isSimilar(m)){
+						cnt++;
+					}
 				}
 			}catch (JavaModelException ex){
 				// ignore

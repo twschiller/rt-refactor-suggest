@@ -6,6 +6,7 @@ import java.util.LinkedHashSet;
 import java.util.Map;
 
 import org.eclipse.core.resources.IMarker;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.Name;
@@ -20,6 +21,7 @@ import org.eclipse.text.edits.TextEdit;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.PlatformUI;
 
+import edu.washington.cs.rtrefactor.quickfix.FindBlock.Mode;
 import edu.washington.cs.rtrefactor.quickfix.FindBlock.StatementGroup;
 import edu.washington.cs.rtrefactor.quickfix.FindBlock.VariableCaptureCounter;
 import edu.washington.cs.rtrefactor.reconciler.CloneEditor;
@@ -101,13 +103,17 @@ public class CopyPasteFix extends CloneFix {
 			// Paste the cloned block verbatim
 			doc.replace(pasteBlock.getStart(), pasteBlock.getEnd() - pasteBlock.getStart(), otherBlockText);
 			
+			StatementGroup newPasteBlock = FindBlock.findLargestBlock(this.getSourceRegion(), Mode.PASTE).extend();
 			//Replace the variable names in the new block with the old names.
-			TextEdit te = replaceNames(origVars, pasteBlock, copyBlock, doc);
+			TextEdit te = replaceNames(origVars, newPasteBlock, copyBlock, doc);
 			te.apply(doc);
 			
 		} catch (BadLocationException e) {
 			MessageDialog.openError(null, "Paste Clone", "An error occured when pasting the clone");
 			CloneReconciler.reconcilerLog.error("Bad location when copy & pasting " + e.getMessage());
+		} catch (CoreException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		} 
 	}
 
@@ -148,6 +154,9 @@ public class CopyPasteFix extends CloneFix {
 			s.accept(otherCounter);
 		}
 		
+
+		
+		
 		//Create the mapping between variables.  Currently only order is used.
 		HashMap<String, String> variableReplacements = new HashMap<String, String>();
 		Iterator<String> otherVars =  otherCounter.captured.iterator();
@@ -156,6 +165,7 @@ public class CopyPasteFix extends CloneFix {
 			CloneReconciler.reconcilerLog.debug("Replacing " + otherVar + " with " + sourceVar);
 			variableReplacements.put(otherVar, sourceVar);
 		}
+		
 		
 		CompilationUnit myUnit = before.getCompilationUnit();
 		
@@ -179,7 +189,7 @@ public class CopyPasteFix extends CloneFix {
 	 */
 	protected static class VariableReferenceReplacer extends ASTVisitor{
 		
-		// TODO modify to resolve names, instwad of doing string comparison
+		// TODO modify to resolve names, instead of doing string comparison
 		
 		private final Map<String, String> replacements;
 		
