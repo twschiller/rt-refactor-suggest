@@ -38,9 +38,16 @@ is an Eclipse plugin providing real-time clone detection and action
 suggestions to the developer as (s)he writes and modifies
 code. 
 
-To evaluate the tool, we perform a user study with two participants
+To evaluate the tool, we performed a user study with two participants
 each performing the same development and maintenance task in Eclipse
-with the tool enabled.
+with the tool enabled.  While the tool failed to identify code reuse
+opportunities during the development task, the tool aided both
+participants in locating example API uses. During the maintenance
+task, the tool quickly guided both users to the locations where the
+bug was replicated. Our results confirm that clone detection is
+beneficial during maintenance, but suggest that more sophisticated
+detection is required for development use.
+
 \end{abstract}
 
 \category{D.2.6}{Software Engineering}{Programming Environments}
@@ -133,8 +140,10 @@ duplicated.
 
 This paper proceeds as follows: Section~\ref{sec:finding-clones}
 describes the user interface for the tool, along with the underlying
-clone detectors. Section~\ref{sec:eval} proposes a controlled user
-study to evaluate the tool. Section~\ref{sec:related} discusses
+clone detectors. Section~\ref{sec:eval} describes a controlled user
+user study to evaluate the tool, with Section~\ref{sec:results}
+reporting and discussing the results of the study.
+Section~\ref{sec:related} discusses
 related work in clone detection, analysis, and refactoring. Finally,
 Section~\ref{sec:conclusion} concludes.
 
@@ -517,6 +526,7 @@ programming intern at the University of Washington. Both participant
 had at least basic experience using both Java and Eclipse.
 
 \section{Experimental Results}
+\label{sec:results}
 
 %% Table \ref{table:actioncnt} shows a quantitative summary of each
 %% developers interactions with the tool.
