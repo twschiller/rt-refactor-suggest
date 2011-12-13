@@ -545,6 +545,108 @@ developers interactions with the tool.
 \label{table:actioncnt}
 \end{table*}
 
+\subsubsection{Development Results}
+During the development task, we expected to see each participant write two clones.
+We expected our tool to recognize and present the clones to the participants, along with options
+to insert call, extract method, jump to, or paste.  We expected the participants would act on 
+these suggestions, reducing their development time.
+
+Participant 1 began development by first looking through the codebase for existing code with similar functionality.
+He searched through several files very closely until he found code in the vision library which consisted of 
+using a kernel to filter pixels of an image.  Because the code used kernels, which he stated he was familiar with, 
+he copied the code manually.  However, because the code that was copied did not perform the task he 
+assumed it would, participant 1 spent a lot of time adapting the code to suit fill the functionality.  The clone
+detector detected this copy-and pasted clone throughout development, but the participant ignored it 
+because he knew the code was duplicated.  When he finished, he moved on to directly writing
+the second part of the task (writing binary symbols), without consulting the rest of the codebase
+further.  His code was very different structurally: It used a switch instead of an if-else, and used several
+methods to draw lines.  As such, the code detector did not detect any duplication in this part
+of the task.  We had to cut him off during debugging because he ran out of time at 40 minutes.
+He stated in his written response that the tool was not useful to him in the development
+task.
+
+Participant 2  began development by examining the short (two line) clone that had been
+marked in the constructor of the development task.  He manually went to the file containing the 
+clone, which he had open side-by-side with his main window throughout the development task.
+The class containing the constructor clone also contained code to write the binary annotations,
+however, because participant 2 never copy-and-pasted or inserted a call to that method,
+we do not believe he recognized it as implementing the same functionality.  He began writing
+the first part of the task, though his code used a different style to the clone,
+such as using collections and a large number of methods such as ``averageColor()" to avoid 
+having unnecessary duplication.  He then proceeded to implement part 2 of the task, again
+using a large number of very short methods.  These structural differences led to our detector
+not being able to recognize that most of his code was functionally a clone.  The participant's code
+had many bugs, and his attempts to use the eclipse debugger to debug them took significant amounts 
+of  time.  He was cut off because he ran out of time at 40 minutes.  The participant indicated
+that he found the tool moderately helpful during development because it pointed him to similar code,
+which allowed him to get a better sense of how APIs are used and code is structured.
+
+These results indicate that this tool is not currently useful for development, at least for
+developers new to a project.  Though the participants did write clones of existing functionality, 
+none of the clone tools we evaluated would be capable of detecting these clones due to the
+extensive structural differences in how the code was written.  Our results also indicate that,
+picking the wrong clone can be very costly, as seen by participant 1, and that even 
+clones with poor scores, such as those in a constructor, can be useful to new developers
+in order to allow them to explore the codebase.  Future work in this area should move toward 
+detecting when code blocks are functionally similar, regardless of the appearance of their source 
+code.
+
+\subsection{Maintenance Results}
+During the maintenance task, we expected participants to start in start looking at the code in 
+ImageUtil where the bug was initially reported.  Upon viewing the code, our tool would display
+markings indicating the two clones, one exact, and one partial, of that code present in the source. 
+ The participant would use our \textsc{JumpTo} action to fix the bug in all three clones separately.
+
+Participant 1 viewed the initial bug location, and, before changing it, examined our tool's
+suggestions.  Our tool suggested only one clone (the exact one) along with \textsc{Paste} and \textsc{JumpTo}
+actions.  The participant selected the first suggestion, which was \textsc{JumpTo}, and viewed the other
+code.  Upon viewing it, the participant stated that he realized that it was a (at least partial) clone, and switched
+back and forth from the code to the clone several times to assure himself that it was an exact clone.
+Once he had determined this, he manually replaced the clone with a call to the ImageUtil method.
+He then returned to the ImageUtil method, which was still marked as a clone, and selected our
+suggestion again.  It then revealed the second clone, which he jumped to (suggestion 1).  He 
+flipped back and forth several times to ensure himself that it was a clone, but he then stated that he realized 
+that the clone was only partial, so he would not not extract it to a method.  He then fixed the bug in 
+both sections of code.   However, he stated that he did not trust the detector, and so spent extra 
+time searching through the code for other potential clones which contained the bug.  He found the 
+changed the way the kernel code handled alphas, even though that code did not exactly meet our definition of taking the 
+average(mean) of a block of pixels.  Without running the unit tests, he announced he was done.
+His indicated that he found the tool useful for finding clones during maintenance.
+
+Participant 2, upon viewing the bug location, immediately examined our tool's suggestions.
+The tool suggested both clones.  He ignored our \textsc{JumpTo} actions and instead manually opened 
+the clones in two windows, lining them up based on our code annotations.  He then manually
+replaced the exact clone with a call to the ImageUtil method.  He closely examined the second 
+clone, and created a complicated framework where the two partial clones could be combined into 
+a single method, by passing functions around.  This code took him some time to write.  Once he was 
+finished, he spent further time investigating a short 3-line clone our detector had found, in which 
+all three channels of two colors were added together, in the code we was writing and a completely 
+unrelated class.  After struggling to combine the two pieces of code, he eventually gave up and 
+returned to fixing the bug.  He ran the unit tests, which failed due to a bad alpha channel.
+He then struggled to fix the bug with the alpha channel by extensively using the eclipse debugger,
+however this was made exceedingly complicated by his code changes.  He eventually timed out 
+after XX minutes. He indicated the tool was helpful in alerting him to other places where the same bug 
+occurred.
+
+These results indicate that our tool can be very helpful when performing software maintenance.  
+Both subjects used our tool to quickly identify the duplicated sections of code, whcih they then 
+revised.  Both subjects indicated on the questionnaire that the tool was helpful in finding the buggy 
+code quickly.
+
+However, much of the refactoring had to be done manually, because the scores for 
+InsertCall and ExtractMethod were not high enough to be displayed.  Also, it is disappointing 
+how little the participants trusted the tool:  One felt that there must be many undetected clones
+and so wasted time and made mistakes searching through the codebase by hand, while the other never 
+executed an action because he was unsure what it would do. Hopefully, with continued
+use of the tool participants would learn when it could be trusted and when further investigation 
+is warranted.
+
+% TSM : where to put this nugget?: Neither participant indicated that the ranking was useful or meaningful, but this could be due to the 
+%small number of clones displayed during the task.
+
+
+
+
 
 \subsection{Quantitative Evaluation}
 For the development tasks, we record:
@@ -599,6 +701,7 @@ participants respond to the following questions:
   \item If you chose not to extract a method, why did you decide not
     to extract the method?
 \end{itemize}
+
 
 \subsection{Threats to Validity}
 The evaluation outline in this section is meant as a preliminary study
