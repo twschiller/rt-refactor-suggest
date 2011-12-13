@@ -442,16 +442,19 @@ of unmatched external identifiers, and $0 <
 \textsc{IdMismatchPenality} < 1$ is a constant penalty to apply for
 external identifier mismatches.
 
-\section{Tracking clones}
-Our score contains $\textsc{DevDecay} and $\textsc{MainDecay} which lower
-the score of a clone if the same clone is viewed or acted on multiple times.  We
-currently use Eclipse's markers to track clones over time, these are invariant to 
-changes outside the cloned region.  However, there are two problems with this 
-approach: (1) In development mode, we remove markers if the user switches the 
-area in whcih they are developing, thus losing the tracking information, and
-(2) any changes inside the cloned region will result in it being identified as a new 
-clone.  Future work involves developing a richer model of clone equality to determine 
-when user action history should be retained.
+\subsubsection{Tracking clones}
+The score $\textsc{Adj}$ decays when the same clone is viewed multiple
+times ($\textsc{MainDecay}$), and when the developers performs a
+development action instead of selecting a suggested action ($\textsc{DevDecay}$).
+The current implementation uses
+Eclipse markers to track clones over time, which are invariant to 
+changes outside the cloned region.  
+However, this approach is suboptimal in two scenarios:
+(1) in development mode, the marker information is lost when the user
+switches in which area they are developing, and
+(2) any change inside a clone results in it being identified as a new clone.
+We leave developing a more robust model of clone equality
+for tracking user action history to future work.
 
 \section{Experimental Design}
 \label{sec:eval}
@@ -887,18 +890,21 @@ the results.
 \section{Conclusion}
 \label{sec:conclusion}
 
-In the past, code clones detection and analysis has been viewed as a
-post-hoc maintenance problem. 
-We believe informing developers about clones as they are modifying code
- can improve code organization and reduce development time.
-We have proposed a tool for identifying and refactoring code clones
-during development and maintenance of a medium-sized codebase.
-We have performed a user study, which indicates that our tool is
-ineffective at detecting clones introduction during development, but is
-beneficial for guiding users to relevant clones during code maintenance.
-More sophisticated clone detection techniques are required in
-order to aid the management of clones during software development.
+In the past, code clone detection and analysis has been viewed as a
+post-hoc maintenance problem.
+We believe informing developers about clones as they are modifying
+code can both improve code organization and reduce development time.
+We have described and implemented a tool which realizes this belief by
+identifying clones and suggesting refactorings in real-time during
+development and maintenance.
 
+Additionally, we have performed a user study which indicates that,
+while the tool is ineffective at aiding development by levering
+existing code,, the tool is beneficial for guiding users to relevant
+clones during code maintenance. More sophisticated clone detection
+techniques are required to identify clones that arise during
+development, as they are likely to structually differ from existing
+code with the same behavior.
 
 %
 % The following two commands are all you need in the
