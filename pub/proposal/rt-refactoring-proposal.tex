@@ -488,8 +488,9 @@ a new image transformation in a provided skeleton class. Participants
 were provided with both a detailed specification of the feature and
 corresponding unit tests. The development task was was chosen such
 that the new image transformation duplicates the functionality
-contained within two existing classes. Completing the task by making
-calls to existing methods requires approximately 15 lines, whereas
+contained within two existing classes. Completing the task by extracting 
+the first clone to a method and inserting a call to the function containing 
+the second clone requires approximately 15 lines, whereas
 duplicating the functionality (e.g., via copy and paste) requires
 approximately 55 lines.
 
@@ -503,7 +504,7 @@ code. We provided the participants with a bug report and the location
 of the buggy method in the source code.
 
 Additionally, we suggest that the same bug might occur elsewhere in
-the codebase, and indicate that these bugs should be fixed.  In
+the codebase, and indicate that these bugs should also be fixed.  In
 reality, the subject program contains two instances of the same bug: a
 direct, copy-and-paste clone of the original section, and a clone
 which uses the buggy code as part of a different behavior.  At both
@@ -513,7 +514,7 @@ unit tests that expose these bugs.
 
 \paragraph{Study Participants}
 The two study participants were a computer science PhD student, and a
-programming intern at the University of Washington. Both participant
+programming intern at the University of Washington. Both participants
 had at least basic experience using both Java and Eclipse.
 
 \subsection{Results}
