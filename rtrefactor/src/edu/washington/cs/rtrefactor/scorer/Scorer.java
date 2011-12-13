@@ -80,7 +80,7 @@ strictfp public class Scorer {
 	private static final int INSERT = 2;
 	private static final int EXTRACT = 3;
 
-	private double preferences[] = new double[] { 50., 20., 90., 85. };
+	private double preferences[] = new double[] { 50., 20., 90., 100. };
 		
 	// DECAY SCENARIOS
 	// 
@@ -118,13 +118,13 @@ strictfp public class Scorer {
 	 * Penalty incurred for the number of arguments in the method when
 	 * scoring an InsertCall action
 	 */
-	private static double ARGS_PENALTY = 0.05;
+	private static double ARGS_PENALTY = 0.025;
 	
 	/**
 	 * Penalty incurred for the number of non-local when
 	 * scoring an Extract Method action
 	 */
-	private static double NONLOCAL_PENALTY = 0.05;
+	private static double NONLOCAL_PENALTY = 0.025;
 	
 	/**
 	 * Penalty incurred for identifier mismatches when scoring
