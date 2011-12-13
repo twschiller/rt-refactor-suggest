@@ -677,7 +677,7 @@ clone to use the buggy method by adding additional parameters
 (including an interface he defined) to the buggy method. In the
 process of fixing compilation errors, the participant investigated a
 short clone for which the system clone was in an unrelated
-class, and tried unsucessfully to manually refactor the clone. 
+class, and tried unsuccessfully to manually refactor the clone. 
 Eventually, the participant reread the instructions for the
 task, and attempted to fix the bug. He struggled to investigate the
 his code with the Eclipse debugger, as the code was made complicated
@@ -700,7 +700,9 @@ attempted to fix the bugs in the other locations.
 While the both participants chose to refactor code by
 inserting a method call, the tool failed to provide
 \textsc{InsertCall} and \textsc{ExtractMethod} suggestions for those
-clones. \todo{Why did this happen?}
+clones. We have not yet investigated whether this is because the score 
+was too low or because Eclipse's refactoring engine could
+not determine how to extract the code into a method.
 
 \subsection{General Discussion}
 Niether participant trusted the tool: Participant 1 suspected that the
@@ -801,8 +803,8 @@ present a case study for a C++ project which demonstrates that code refactoring 
 addition to clone detection. However, they do describe any way to rank or score the refactorings,
 the programmer is required to choose based on code knowledge
 
-Higo et al. present Aries, a tool which integrates various clone
-information to present to the user \cite{Higo2008}.  The tool displays the
+Higo et al. present Aries, a tool which organizes various clone
+information and presents it to the user \cite{Higo2008}.  The tool displays the
 cloned blocks of code and presents refactoring options such as method
 extraction; it augments the options with various metrics, including position in
 the class hierarchy, and number of external variables. These metrics
