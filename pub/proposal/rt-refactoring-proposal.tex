@@ -559,8 +559,10 @@ inspected several files until finding a transformation which applies a
 kernel filter to an image. The participant stated that he was familiar
 with the kernel approach, and copied the code manually. The tool
 detected the copied code in the new file, and alerted the participant,
-frustrating the participant. The participant adapted the code to meet
-the specification. Upon implementing the first stage of the image
+frustrating the participant. The participant spent a significant amount of time adapting
+the copied code to meet the specification. The tool continued to annotate the region
+under development as a clone during this process.
+Upon implementing the first stage of the image
 transformation, the participant began implementing the second stage
 without further consulting the codebase. Because the participant's
 implementation differed structurally from behavioral clone in the
@@ -570,7 +572,7 @@ debugging the code because 40 minutes had already elapsed, and we were
 confident that no additional code clone information would be detected
 or presented.
 
-Participant 2 began development by examining 2-line clone that had
+Participant 2 began development by examining a 2-line clone that had
 been marked in the constructor of the provided skeleton class.  He
 \textit{manually} opened the system clone in an editor, keeping the
 editor open to the right of the main development window throughout the
@@ -597,8 +599,8 @@ structure.
 The results suggest that the tool is not useful for development
 because new developers on a project are unlikely to write code that is
 detectable as a clone, due to differences in both style and
-strategy. Furthermore, the tool can be harmful, as the developer may
-waste time discovering that a near-clone is, in fact, behaviorally
+strategy. Furthermore, false positives in clone detection can be harmful, as the developer may
+waste time discovering that code which is structurally similar is, in fact, behaviorally
 different than what is required. Future work ought to explore (1) how
 to detect clones that are behaviorally similar, but differ
 structurally, and (2) aide users in understanding the behavior of a
