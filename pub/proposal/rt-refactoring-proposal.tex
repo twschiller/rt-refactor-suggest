@@ -630,26 +630,27 @@ making the expected changes. Upon fixing the bug, the participant
 stated that he did not trust the clone detector, and therefore
 manually inspected the other classes for other code containing the
 bug. He incorrectly identified another location, and made the
-corresponding change. This mistake can be attributed to an imprecise
-description of the bug in the instructions.
-%Without running the unit tests, he announced he was done.
+corresponding change (He did not run the unit tests,
+and so did not notice the mistake). This mistake can be attributed 
+to an imprecise description of the bug in the instructions. 
 
 Participant 2, upon viewing the bug location, immediately examined the
 tool's suggestions without first examining the buggy class and method.
 Instead of selecting the \textsc{JumpTo} actions for the exact and
-partial clones, the participant manually opened the clones in separed
+partial clones, the participant manually opened the clones in separated
 buffers, again opting for a side-by-side view. As with Participant 1,
 he manually replaced the system clone in the existing code with a call
 to the buggy method. Again, before fixing the bug in the method, he
-examined the partial clone and then attempted to rewrite the partial
+examined the partial clone closely. He then attempted to rewrite the partial
 clone to use the buggy method by adding additional parameters
 (including an interface he defined) to the buggy method. In the
 process of fixing compilation errors, the participant investigated a
 short clone for which the system clone was in an unrelated
-class. Eventually, the participant reread the instructions for the
+class, and tried unsucessfully to manually refactor the clone. 
+Eventually, the participant reread the instructions for the
 task, and attempted to fix the bug. He struggled to investigate the
 his code with the Eclipse debugger, as the code was made complicated
-by his code changed. We stopped the task after 30 minutes had elapsed,
+by his code changes. We stopped the task after 30 minutes had elapsed,
 as we believed the code had stablized.
 
 \paragraph{Participant Feedback}
@@ -662,7 +663,8 @@ significantly helpful.
 
 \paragraph{Discussion}
 As expected, the tool enabled both participants to quickly identify
-the locations where the bug had been duplicated. Both participants
+the locations where the bug had been duplicated, regardless of whether
+the clone was exact or partial. Both participants
 attempted to fix the bugs in the other locations. 
 While the both participants chose to refactor code by
 inserting a method call, the tool failed to provide
@@ -679,10 +681,11 @@ been caused by a lack of understanding, probably caused by the limited
 tool description that were included with the participant
 instructions. Evidence of this lack of understanding included the fact
 that both participants neglected the suggestion rankings. Participant
-1 reported only really looking at the top-ranked
+1 reported only focusing on the top-ranked
 suggestion. Participant 2 reported assuming the suggestions were
 unordered. In subsequent studies it may be helpful to describe the
-tool's operation in greater detail.
+tool's operation in greater detail, perhaps by demonstrating the tool
+on example code.
 
 \subsection{Threats to Validity}
 The evaluation performed is a preliminary study of the efficacy of the
@@ -712,7 +715,7 @@ following potential threats to validity:
     code written by another developer in production code, it may be
     less beneficial for the developer to refactor or otherwise modify
     it.
-  \item As the developer is performing relative few tasks, the
+  \item As the developer is performing relatively few tasks, the
     adaptive ranking system does not have the opportunity to adapt to
     the developer's preferences.
 \end{itemize}
