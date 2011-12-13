@@ -41,8 +41,8 @@ code.
 To evaluate the tool, we performed a user study with two participants
 each performing the same development and maintenance task in Eclipse
 with the tool enabled.  While the tool failed to identify code reuse
-opportunities during the development task, the tool aided both
-participants in locating example API uses. During the maintenance
+opportunities during the development task, the tool aided one
+participant in locating example API uses. During the maintenance
 task, the tool quickly guided both users to the locations where the
 bug was replicated. Our results confirm that clone detection is
 beneficial during maintenance, but suggest that more sophisticated
@@ -141,7 +141,7 @@ duplicated.
 This paper proceeds as follows: Section~\ref{sec:finding-clones}
 describes the user interface for the tool, along with the underlying
 clone detectors. Section~\ref{sec:eval} describes a controlled user
-user study to evaluate the tool, with Section~\ref{sec:results}
+study to evaluate the tool, with Section~\ref{sec:results}
 reporting and discussing the results of the study.
 Section~\ref{sec:related} discusses
 related work in clone detection, analysis, and refactoring. Finally,
@@ -159,10 +159,11 @@ Section~\ref{sec:conclusion} concludes.
 
 To support the developer actions enumerated in Section~\ref{sec:intro},
 the tool searches the existing codebase for code
-that is similar to the region that is currently being developed or regions
-in the file being maintained. The search is performed using the clone detectors
-described in section~\ref{sec:detectors}. The clone detection is implemented as
-an Eclipse reconciler, which means that it runs in the background whenever there
+that is similar to the region that is currently being developed or maintained.
+% or regions in the file being maintained. 
+The search is performed using the clone detectors
+described in Section~\ref{sec:detectors}. The clone detection is implemented as
+an Eclipse reconciler, running in the background whenever there
 is a natural pause in typing.
 
 In order to be practical in an online
@@ -199,17 +200,13 @@ The tool is currently packaged with three code clone detectors:
 \end{enumerate}
 
 All three detectors perform detection over the entire codebase, as
-opposed to searching for clones for a given query. The speed of JCCD
-and Checkstyle may not be practical for real-time detection in large
-projects. Since both are open source, we can and will optimize the
-detection for use in our tool, if necessary.  
-
+opposed to searching for clones for a given query. 
 These code clone detectors were selected because they all support Java
 1.5 features (e.g., generics), are Java-based, and are freely
 available for at least academic use. JCCD and Checkstyle are
 open-source, and therefore can be modified to perform one-way clone
 search. 
-The tool is designed so that other clone detectors can be easily used instead.
+The tool is designed so that other clone detectors can be substituted easily.
 
 %% TWS: the big-O analysis isn't correct, and I don't believe this adds anything
 %% Such optimization could potentially involve exploiting knowledge of the 
@@ -246,16 +243,17 @@ Figure \ref{fig:screenshot} shows the Eclipse Quick Fix interface.
 \caption{Eclipse Quick Fix clone suggestions. The color of the icon
   next to a fix differs by clone pair. The right side window shows the
   other side of the clone, higlighted with additional lines of
-  context, or the body of the method call that will be inserted.}
+  context, the code to be pasted, or the region to be extracted,
+  or the body of the method call that will be inserted.}
 \label{fig:screenshot}
 \end{figure}
 
 \paragraph{Modes}
-We believe that during development being presented with many 
-clone annotations covering the entire file they are working in 
-could be highly distracting.  As such, it makes sense to reduce the visual clutter
-by only showing the clones that overlap the area they are currently typing.
-Because of this, the tool has two modes: development mode and maintenance mode. In
+We believe that, in cases such as development, being presented with
+clone annotations for the entire file is prohibitively distracting.
+Therefore, the tool has two modes: development mode and maintenance
+mode.
+In
 development mode, only clones located in the active development area
 are highlighted (as determined by Eclipse's dirty region). In
 maintenance mode, all clones located in the file are displayed. The
@@ -298,14 +296,13 @@ actions:
     estimate of the usefulness of the action; calculation details
     are provided later in this section. 
     In order to maintain consistency across clone detectors, in this paper, the tool uses the
-    number of non-whitespace, non-Javadoc characters in the clone is
-    used.
+    number of non-whitespace, non-Javadoc characters in the clone.
   \item $\textsc{Pref}_{\text{action}} > 0$ is the user's preference for the action; $\textsc{Pref}_{\text{action}} / 
     \sum{\textsc{Pref}}$ is the user's relative preference for the action. The
     initial values are set with normative information (e.g., it is
     better to insert a method call than it is to paste a clone). The
     value is then adaptively adjusted according to the users actions, as described
-    later in section \ref{sec:preference}.
+    later in Section \ref{sec:preference}.
   \item $\textsc{\#Display}_{\text{clone}}$ is the number of times the clone has been
     displayed in a Quick Fix session.
   \item $\textsc{\#Dev}_{\text{clone}}$ is the number of times one or more development
@@ -373,7 +370,7 @@ the number of arguments in the resulting call.
 The set of consecutive statements to extract for a clone pair is
 determined by finding the longest chain of statements (as measured by
 the \textit{number} of basic statements) for which some part of the
-system clone region overlaps the every basic statements.
+system clone region overlaps every basic statements.
 The score for the extraction
 action is then determined by (1) the clone's similarity, and (2) the
 number of variables used in the statements that aren't declared
@@ -393,13 +390,13 @@ $\textsc{\#NonLocal}$ is the number of non-static variables and fields
 used by the statements that are not declared within the statements.
 
 Some chains of statements cannot be extracted because multiple local
-variables defined in the chain are used subsequently in the block. In
+variables defined in the chain are subsequently used in the block. In
 this case, no \textsc{Extract} action is generated.
 
 \subsubsection{Scoring \textsc{JumpTo} Actions}
 \textsc{JumpTo} actions aide analogous edits to system clones
 during maintenance and bugfixing, therefore the scores are higher when
-the developer is maintaining code. The score for a ``jump to'' action
+the developer is maintaining code. The score for a \textsc{JumpTo} action
 is determined by (1) the clone's similarity, and (2) the mode (see
 section \ref{sec:display}):
 
@@ -497,7 +494,9 @@ a new image transformation in a provided skeleton class. Participants
 were provided with both a detailed specification of the feature and
 corresponding unit tests. The development task was was chosen such
 that the new image transformation duplicates the functionality
-contained within two existing classes. Completing the task by making
+contained within two existing classes. Neither of the existing 
+functionalites are obviously exposed in the GUI.
+Completing the task by making
 calls to existing methods requires approximately 15 lines, whereas
 duplicating the functionality (e.g., via copy and paste) requires
 approximately 55 lines.
@@ -520,9 +519,14 @@ locations, the subject program includes a comment that mentions there
 may be a bug in how the Alpha channel is handled. There are no public
 unit tests that expose these bugs.
 
+\paragraph{Tool Setup}
+For the study, we used the Simian~\cite{Simian} code clone detector,
+as JCCD~\cite{JCCD} and CheckStyle's~\cite{CheckStyle} speed were
+insufficient for real-time use.
+
 \paragraph{Study Participants}
-The two study participants were a computer science PhD student, and a
-programming intern at the University of Washington. Both participant
+The two study participants were a computer science PhD student (Participant 1), and a
+programming intern at the University of Washington (Participant 2). Both participants
 had at least basic experience using both Java and Eclipse.
 
 \section{Experimental Results}
@@ -559,8 +563,8 @@ had at least basic experience using both Java and Eclipse.
 \subsection{Development Results}
 During the development task, we expected that each participant would
 write at least two clones, as the transformation partially duplicated
-the behavior of two existing transformations. Additionally, we
-expected that the tool would detect the codes, and present the four
+the behavior of two existing transformations. Additionally, for each class, we
+expected that the tool would detect the clones, and present the four
 actions to the participants, aiding their development.
 
 Participant 1 began the development task by first exploring the
@@ -596,7 +600,7 @@ detector did not detect any code duplication. As with the first
 participant, we stopped the task as the participant was debugging
 their code because 40 minutes had elapsed, and the code had stabilized
 to the point that we believed no additional code clones would be
-introduced..
+introduced.
 
 \paragraph{Participant Feedback}
 Consistent with his observed experience, Participant 1 indicated that
@@ -646,7 +650,7 @@ description of the bug in the instructions.
 Participant 2, upon viewing the bug location, immediately examined the
 tool's suggestions without first examining the buggy class and method.
 Instead of selecting the \textsc{JumpTo} actions for the exact and
-partial clones, the participant manually opened the clones in separed
+partial clones, the participant \textit{manually} opened the clones in separed
 buffers, again opting for a side-by-side view. As with Participant 1,
 he manually replaced the system clone in the existing code with a call
 to the buggy method. Again, before fixing the bug in the method, he
@@ -665,7 +669,7 @@ as we believed the code had stablized.
 Both participants indicated that the tool was useful for discovering
 clones during maintenance. Participant 1 felt that tool would be
 especially useful for discovering cases in which novice developers had
-copy and pasted a lot of code. However, he could not recall a
+copied and pasted a significant amount of code. However, he could not recall a
 situation from working with his own code in which the tool would be
 significantly helpful.
 
@@ -682,7 +686,7 @@ clones. \todo{Why did this happen?}
 Niether participant trusted the tool: Participant 1 suspected that the
 tool missed clones of the buggy code in the maintenance task, and
 Participant 2 generally executed the actions by hand instead of
-selecting the actions in Eclipse's QuickFix dialog, as he was unsure
+selecting the actions in Eclipse's Quick Fix dialog, as he was unsure
 what automatic action the tool would take. This lack of trust may have
 been caused by a lack of understanding, probably caused by the limited
 tool description that were included with the participant
@@ -735,12 +739,12 @@ following potential threats to validity:
 \label{sec:related}
 
 The code clone literature can be divided into two areas: (1)
-\emph{post} hoc code clone detection and
+\emph{post}-hoc code clone detection and
 (2) \emph{development-time} clone management. By post-hoc we mean the scenario in which
 detection is manually invoked to find all clones across an entire codebase, typically with the assumption that the codebase compiles and has already passed some level of testing.  In contrast, we use development-time to refer to the scenario in which detection automatically occurs as the user modifies code, typically without requirements about the compilability of the code.  The techniques used in the
 post-hoc detection can vary greatly  based on the authors' definition of what 
 level of similarity defines a ``clone", but typically utilize an
-ad hoc model of clones. In contrast, the development-time literature focuses on
+ad-hoc model of clones. In contrast, the development-time literature focuses on
 the creation and maintenance of formal code clone models during the
 development process.
 
