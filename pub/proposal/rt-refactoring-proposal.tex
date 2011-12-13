@@ -192,14 +192,17 @@ The tool is currently packaged with three code clone detectors:
 All three detectors perform detection over the entire codebase, as
 opposed to searching for clones for a given query. The speed of JCCD
 and Checkstyle may not be practical for real-time detection in large
-projects. Since both are open source, we can and will optimize the
-detection for use in our tool, if necessary.  
+projects. 
+
+%Since both are open source, we can and will optimize the
+% detection for use in our tool, if necessary.  
 
 These code clone detectors were selected because they all support Java
 1.5 features (e.g., generics), are Java-based, and are freely
-available for at least academic use. JCCD and Checkstyle are
-open-source, and therefore can be modified to perform one-way clone
-search. 
+available for at least academic use. 
+%JCCD and Checkstyle are
+%open-source, and therefore can be modified to perform one-way clone
+% search. 
 The tool is designed so that other clone detectors can be easily used instead.
 
 %% TWS: the big-O analysis isn't correct, and I don't believe this adds anything
@@ -228,7 +231,8 @@ vertical bar.
 When users click the left-hand marker,
 the corresponding clone(s) and potential refactoring options are shown,
 along with other Eclipse Quick Fix resolutions for errors and warnings.
-Multiple clones at the same location are indicated by multicolored markers.
+Multiple clones at the same location are indicated by multicolored markers
+in the Quick Fix dialog.
 Figure \ref{fig:screenshot} shows the Eclipse Quick Fix interface.
 
 \begin{figure}[here]
@@ -243,9 +247,9 @@ Figure \ref{fig:screenshot} shows the Eclipse Quick Fix interface.
 
 \paragraph{Modes}
 We believe that during development being presented with many 
-clone annotations covering the entire file they are working in 
+clone annotations covering the entire file that developers are working in 
 could be highly distracting.  As such, it makes sense to reduce the visual clutter
-by only showing the clones that overlap the area they are currently typing.
+by only showing the clones that overlap the area in which the developer is currently typing.
 Because of this, the tool has two modes: development mode and maintenance mode. In
 development mode, only clones located in the active development area
 are highlighted (as determined by Eclipse's dirty region). In
@@ -288,9 +292,8 @@ actions:
     determined by the clone pair's similarity, and a heuristic
     estimate of the usefulness of the action; calculation details
     are provided later in this section. 
-    In order to maintain consistency across clone detectors, in this paper, the tool uses the
-    number of non-whitespace, non-Javadoc characters in the clone is
-    used.
+    In order to maintain consistency across clone detectors, the current version of the tool uses the
+    number of non-whitespace, non-Javadoc characters.
   \item $\textsc{Pref}_{\text{action}} > 0$ is the user's preference for the action; $\textsc{Pref}_{\text{action}} / 
     \sum{\textsc{Pref}}$ is the user's relative preference for the action. The
     initial values are set with normative information (e.g., it is
@@ -431,6 +434,17 @@ of unmatched external identifiers, and $0 <
 \textsc{IdMismatchPenality} < 1$ is a constant penalty to apply for
 external identifier mismatches.
 
+\section{Tracking clones}
+Our score contains $\textsc{DevDecay} and $\textsc{MainDecay} which lower
+the score of a clone if the same clone is viewed or acted on multiple times.  We
+currently use Eclipse's markers to track clones over time, these are invariant to 
+changes outside the cloned region.  However, there are two problems with this 
+approach: (1) In development mode, we remove markers if the user switches the 
+area in whcih they are developing, thus losing the tracking information, and
+(2) any changes inside the cloned region will result in it being identified as a new 
+clone.  Future work involves developing a richer model of clone equality to determine 
+when user action history should be retained.
+
 \section{Experimental Design}
 \label{sec:eval}
 
@@ -443,8 +457,9 @@ external identifier mismatches.
 %spent. We will poll users after the fact to ask them how helpful they
 %found the tool.
 
-To evaluate the tool, we performed a controlled user study designed to
-emulate software development and maintenance.  Two study participants
+%TSM: The study is no longer "controlled"!
+To evaluate the tool, we performed a user study designed to
+emulate the process of software development and maintenance.  Two study participants
 each performed the same development and maintenance task on a subject
 program. The development task is given first so as to give the
 participants the opportunity to become acquainted with the codebase
@@ -587,7 +602,7 @@ detector did not detect any code duplication. As with the first
 participant, we stopped the task as the participant was debugging
 their code because 40 minutes had elapsed, and the code had stabilized
 to the point that we believed no additional code clones would be
-introduced..
+introduced.
 
 \paragraph{Participant Feedback}
 Consistent with his observed experience, Participant 1 indicated that
