@@ -551,7 +551,7 @@ During the development task, we expected that each participant would
 write at least two clones, as the transformation partially duplicated
 the behavior of two existing transformations. Additionally, we
 expected that the tool would detect the codes, and present the four
-actions to the participants, aiding their development.
+actions to the participants, aiding development.
 
 Participant 1 began the development task by first exploring the
 codebase for existing code with similar functionality. He manually
@@ -559,8 +559,10 @@ inspected several files until finding a transformation which applies a
 kernel filter to an image. The participant stated that he was familiar
 with the kernel approach, and copied the code manually. The tool
 detected the copied code in the new file, and alerted the participant,
-frustrating the participant. The participant adapted the code to meet
-the specification. Upon implementing the first stage of the image
+frustrating the participant. The participant spent significant time and effort
+adapting the filtering code to meet the smoothing specification, 
+during which time the tool continued to annotate the code
+as a clone. Upon implementing the first stage of the image
 transformation, the participant began implementing the second stage
 without further consulting the codebase. Because the participant's
 implementation differed structurally from behavioral clone in the
@@ -570,7 +572,7 @@ debugging the code because 40 minutes had already elapsed, and we were
 confident that no additional code clone information would be detected
 or presented.
 
-Participant 2 began development by examining 2-line clone that had
+Participant 2 began development by examining a 2-line clone that had
 been marked in the constructor of the provided skeleton class.  He
 \textit{manually} opened the system clone in an editor, keeping the
 editor open to the right of the main development window throughout the
@@ -584,7 +586,7 @@ detector did not detect any code duplication. As with the first
 participant, we stopped the task as the participant was debugging
 their code because 40 minutes had elapsed, and the code had stabilized
 to the point that we believed no additional code clones would be
-introduced..
+introduced.
 
 \paragraph{Participant Feedback}
 Consistent with his observed experience, Participant 1 indicated that
@@ -597,15 +599,15 @@ structure.
 The results suggest that the tool is not useful for development
 because new developers on a project are unlikely to write code that is
 detectable as a clone, due to differences in both style and
-strategy. Furthermore, the tool can be harmful, as the developer may
-waste time discovering that a near-clone is, in fact, behaviorally
-different than what is required. Future work ought to explore (1) how
+strategy. Furthermore, false postives in clone detection can be harmful, 
+as the developer may waste time discovering that code which is structurally similar is, in fact, 
+behaviorally different than what is required. Future work ought to explore (1) how
 to detect clones that are behaviorally similar, but differ
 structurally, and (2) aide users in understanding the behavior of a
 piece of code, or the difference in behavior between two clones.
 
 \subsection{Maintenance Results}
-During the maintenance task, we expected participants to start in start looking at the code in 
+During the maintenance task, we expected participants to start looking at the code in 
 ImageUtil where the bug was initially reported.  Upon viewing the code, our tool would display
 markings indicating the two clones, one exact, and one partial, of that code present in the source. 
  The participant would use our \textsc{JumpTo} action to fix the bug in all three clones separately.
@@ -624,7 +626,7 @@ both sections of code.   However, he stated that he did not trust the detector, 
 time searching through the code for other potential clones which contained the bug.  He found the 
 changed the way the kernel code handled alphas, even though that code did not exactly meet our definition of taking the 
 average(mean) of a block of pixels.  Without running the unit tests, he announced he was done.
-His indicated that he found the tool useful for finding clones during maintenance.
+He indicated that he found the tool useful for finding clones during maintenance.
 
 Participant 2, upon viewing the bug location, immediately examined our tool's suggestions.
 The tool suggested both clones.  He ignored our \textsc{JumpTo} actions and instead manually opened 
