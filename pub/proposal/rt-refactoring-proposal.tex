@@ -431,7 +431,7 @@ of unmatched external identifiers, and $0 <
 \textsc{IdMismatchPenality} < 1$ is a constant penalty to apply for
 external identifier mismatches.
 
-\section{Evaluation}
+\section{Experimental Design}
 \label{sec:eval}
 
 %We plan to evaluate based on user studies to determine how helpful our
@@ -517,7 +517,7 @@ The two study participants were a computer science PhD student, and a
 programming intern at the University of Washington. Both participants
 had at least basic experience using both Java and Eclipse.
 
-\subsection{Results}
+\section{Experimental Results}
 
 %% Table \ref{table:actioncnt} shows a quantitative summary of each
 %% developers interactions with the tool.
@@ -547,12 +547,12 @@ had at least basic experience using both Java and Eclipse.
 %% \label{table:actioncnt}
 %% \end{table*}
 
-\subsubsection{Development Results}
+\subsection{Development Results}
 During the development task, we expected that each participant would
 write at least two clones, as the transformation partially duplicated
 the behavior of two existing transformations. Additionally, we
 expected that the tool would detect the codes, and present the four
-actions to the participants, aiding development.
+actions to the participants, aiding their development.
 
 Participant 1 began the development task by first exploring the
 codebase for existing code with similar functionality. He manually
@@ -560,10 +560,10 @@ inspected several files until finding a transformation which applies a
 kernel filter to an image. The participant stated that he was familiar
 with the kernel approach, and copied the code manually. The tool
 detected the copied code in the new file, and alerted the participant,
-frustrating the participant. The participant spent significant time and effort
-adapting the filtering code to meet the smoothing specification, 
-during which time the tool continued to annotate the code
-as a clone. Upon implementing the first stage of the image
+frustrating the participant. The participant spent a significant amount of time adapting
+the copied code to meet the specification. The tool continued to annotate the region
+under development as a clone during this process.
+Upon implementing the first stage of the image
 transformation, the participant began implementing the second stage
 without further consulting the codebase. Because the participant's
 implementation differed structurally from behavioral clone in the
@@ -587,7 +587,7 @@ detector did not detect any code duplication. As with the first
 participant, we stopped the task as the participant was debugging
 their code because 40 minutes had elapsed, and the code had stabilized
 to the point that we believed no additional code clones would be
-introduced.
+introduced..
 
 \paragraph{Participant Feedback}
 Consistent with his observed experience, Participant 1 indicated that
@@ -600,156 +600,127 @@ structure.
 The results suggest that the tool is not useful for development
 because new developers on a project are unlikely to write code that is
 detectable as a clone, due to differences in both style and
-strategy. Furthermore, false postives in clone detection can be harmful, 
-as the developer may waste time discovering that code which is structurally similar is, in fact, 
-behaviorally different than what is required. Future work ought to explore (1) how
+strategy. Furthermore, false positives in clone detection can be harmful, as the developer may
+waste time discovering that code which is structurally similar is, in fact, behaviorally
+different than what is required. Future work ought to explore (1) how
 to detect clones that are behaviorally similar, but differ
 structurally, and (2) aide users in understanding the behavior of a
 piece of code, or the difference in behavior between two clones.
 
 \subsection{Maintenance Results}
-During the maintenance task, we expected participants to start looking at the code in 
-ImageUtil where the bug was initially reported.  Upon viewing the code, our tool would display
-markings indicating the two clones, one exact, and one partial, of that code present in the source. 
- The participant would use our \textsc{JumpTo} action to fix the bug in all three clones separately.
+During the maintenance task, we expected the participants to first
+examine the code in the class and method where the bug was initially
+reported. The participants would then utilize the \textsc{JumpTo}
+action proposed by the tool to view the two clones, and fix the bug in
+each of the clones \textit{separately}.
 
-Participant 1 viewed the initial bug location, and, before changing it, examined our tool's
-suggestions.  Our tool suggested only one clone (the exact one) along with \textsc{Paste} and \textsc{JumpTo}
-actions.  The participant selected the first suggestion, which was \textsc{JumpTo}, and viewed the other
-code.  Upon viewing it, the participant stated that he realized that it was a (at least partial) clone, and switched
-back and forth from the code to the clone several times to assure himself that it was an exact clone.
-Once he had determined this, he manually replaced the clone with a call to the ImageUtil method.
-He then returned to the ImageUtil method, which was still marked as a clone, and selected our
-suggestion again.  It then revealed the second clone, which he jumped to (suggestion 1).  He 
-flipped back and forth several times to ensure himself that it was a clone, but he then stated that he realized 
-that the clone was only partial, so he would not not extract it to a method.  He then fixed the bug in 
-both sections of code.   However, he stated that he did not trust the detector, and so spent extra 
-time searching through the code for other potential clones which contained the bug.  He found the 
-changed the way the kernel code handled alphas, even though that code did not exactly meet our definition of taking the 
-average(mean) of a block of pixels.  Without running the unit tests, he announced he was done.
-He indicated that he found the tool useful for finding clones during maintenance.
+Participant 1 examined the initial bug location. Prior to beginning to
+fix the bug, the participant viewed the tool's suggestions for the
+clone, which only included the \textsc{Paste} and \textsc{JumpTo}
+actions for the exact clone, and then selected the \textsc{JumpTo}
+action. The participant then visually examined the two clones to
+assure himself the the clones were identical. Upon assuring himself,
+he manually replaced the system clone in the existing code with a call
+to the buggy function. Once again viewing the initial bug location,
+the participant selected the \textsc{JumpTo} action for the partial
+clone. Via visual inspection, the participant correctly identified the
+code as merely a partial clone, and therefore decided not to extract
+it as a method. He then manually fixed the bug in both clones by
+making the expected changes. Upon fixing the bug, the participant
+stated that he did not trust the clone detector, and therefore
+manually inspected the other classes for other code containing the
+bug. He incorrectly identified another location, and made the
+corresponding change. This mistake can be attributed to an imprecise
+description of the bug in the instructions.
+%Without running the unit tests, he announced he was done.
 
-Participant 2, upon viewing the bug location, immediately examined our tool's suggestions.
-The tool suggested both clones.  He ignored our \textsc{JumpTo} actions and instead manually opened 
-the clones in two windows, lining them up based on our code annotations.  He then manually
-replaced the exact clone with a call to the ImageUtil method.  He closely examined the second 
-clone, and created a complicated framework where the two partial clones could be combined into 
-a single method, by passing functions around.  This code took him some time to write.  Once he was 
-finished, he spent further time investigating a short 3-line clone our detector had found, in which 
-all three channels of two colors were added together, in the code we was writing and a completely 
-unrelated class.  After struggling to combine the two pieces of code, he eventually gave up and 
-returned to fixing the bug.  He ran the unit tests, which failed due to a bad alpha channel.
-He then struggled to fix the bug with the alpha channel by extensively using the eclipse debugger,
-however this was made exceedingly complicated by his code changes.  He eventually timed out 
-after XX minutes. He indicated the tool was helpful in alerting him to other places where the same bug 
-occurred.
+Participant 2, upon viewing the bug location, immediately examined the
+tool's suggestions without first examining the buggy class and method.
+Instead of selecting the \textsc{JumpTo} actions for the exact and
+partial clones, the participant manually opened the clones in separed
+buffers, again opting for a side-by-side view. As with Participant 1,
+he manually replaced the system clone in the existing code with a call
+to the buggy method. Again, before fixing the bug in the method, he
+examined the partial clone and then attempted to rewrite the partial
+clone to use the buggy method by adding additional parameters
+(including an interface he defined) to the buggy method. In the
+process of fixing compilation errors, the participant investigated a
+short clone for which the system clone was in an unrelated
+class. Eventually, the participant reread the instructions for the
+task, and attempted to fix the bug. He struggled to investigate the
+his code with the Eclipse debugger, as the code was made complicated
+by his code changed. We stopped the task after 30 minutes had elapsed,
+as we believed the code had stablized.
 
-These results indicate that our tool can be very helpful when performing software maintenance.  
-Both subjects used our tool to quickly identify the duplicated sections of code, whcih they then 
-revised.  Both subjects indicated on the questionnaire that the tool was helpful in finding the buggy 
-code quickly.
+\paragraph{Participant Feedback}
+Both participants indicated that the tool was useful for discovering
+clones during maintenance. Participant 1 felt that tool would be
+especially useful for discovering cases in which novice developers had
+copy and pasted a lot of code. However, he could not recall a
+situation from working with his own code in which the tool would be
+significantly helpful.
 
-However, much of the refactoring had to be done manually, because the scores for 
-InsertCall and ExtractMethod were not high enough to be displayed.  Also, it is disappointing 
-how little the participants trusted the tool:  One felt that there must be many undetected clones
-and so wasted time and made mistakes searching through the codebase by hand, while the other never 
-executed an action because he was unsure what it would do. Hopefully, with continued
-use of the tool participants would learn when it could be trusted and when further investigation 
-is warranted.
+\paragraph{Discussion}
+As expected, the tool enabled both participants to quickly identify
+the locations where the bug had been duplicated. Both participants
+attempted to fix the bugs in the other locations. 
+While the both participants chose to refactor code by
+inserting a method call, the tool failed to provide
+\textsc{InsertCall} and \textsc{ExtractMethod} suggestions for those
+clones. \todo{Why did this happen?}
 
-% TSM : where to put this nugget?: Neither participant indicated that the ranking was useful or meaningful, but this could be due to the 
-%small number of clones displayed during the task.
-
-
-
-
-
-\subsection{Quantitative Evaluation}
-For the development tasks, we record:
-
-\begin{itemize}
-  \item the time to complete the task
-  \item the number of times the the tool detects a code clone
-    throughout development (or would detect a clone during
-    development, for the control group
-  \item the number of methods extracted/calls inserted
-  \item the number of code clones introduced into the code base
-  \item the percentage of the new code in the final method that is a
-    duplicate of other code; this will be determined by human
-    judgment with the aide of a clone detector.
-  \item the number of times the user ignores the tool's alert
-  \item the number of times the user views the tool's analysis
-  \item the number of times the the user acts on the tool's analysis;
-    when the user acts on the tool's analysis, we will additionally
-    record the ranking of the clone the user acted on.
-\end{itemize}
-
-We expect to see a dramatic reduction in resulting method size and
-time (each approximately 50\% reduced).  We hope that the user views
-several of our suggestions and invokes the fixes several times.
-Failure would be defined as the user never acts on any fix suggestion,
-and shows no significant reduction in code size or time spent on the
-task.
-
-For the maintenance tasks, we will additionally record whether the
-user has correctly revised all of the clones. This will be determined
-by a separate hidden test suite, which is inaccessible to the users
-and will be run exclusively on their completed code.
-
-We will be successful if the users with the clone tool correct
-significantly more of the duplicates than the control group and/or
-take significantly less time to fix the same number of duplicates.
-
-\subsection{Qualitative Evaluation}
-In addition to the quantitative results, we had the study
-participants respond to the following questions:
-
-\begin{itemize}
-\item Did you find the duplicate code tool's suggestions helpful?
-    Why, or why not? Does your answer differ for the development and
-    maintenance tasks? If so, why?
-  \item Was the ranking (ordering) of the tool's suggestions valid?
-    Why, or why not? Does your answer differ for the development and
-    maintenance tasks? If so, why?
-  \item In which situation(s), if any, would this tool be most useful to you as a programmer?
-  \item If you extracted a method, how did you decide to extract the
-    method? 
-  \item If you chose not to extract a method, why did you decide not
-    to extract the method?
-\end{itemize}
-
+\subsection{General Discussion}
+Niether participant trusted the tool: Participant 1 suspected that the
+tool missed clones of the buggy code in the maintenance task, and
+Participant 2 generally executed the actions by hand instead of
+selecting the actions in Eclipse's QuickFix dialog, as he was unsure
+what automatic action the tool would take. This lack of trust may have
+been caused by a lack of understanding, probably caused by the limited
+tool description that were included with the participant
+instructions. Evidence of this lack of understanding included the fact
+that both participants neglected the suggestion rankings. Participant
+1 reported only really looking at the top-ranked
+suggestion. Participant 2 reported assuming the suggestions were
+unordered. In subsequent studies it may be helpful to describe the
+tool's operation in greater detail.
 
 \subsection{Threats to Validity}
-The evaluation outline in this section is meant as a preliminary study
-to investigate the efficacy of the tool --- it is not meant to be
-conclusive. That being said, this study, and potentially larger
-studies of the same design have the following potential threats to
-validity:
+The evaluation performed is a preliminary study of the efficacy of the
+tool, and was not intended to be conclusive. That being said, this
+study, and potentially larger studies of the same design have the 
+following potential threats to validity:
 
 \begin{itemize}
   \item The study participants do not have to maintain the code in the
     future, and are therefore may be more likely to perform a
-    short-sighted action
+    short-sighted action. Participant 1 reported not performing method
+    extraction due to time constraints.
   \item The results may not generalize, as in real software there may
     be many de facto or de jure restrictions (e.g., a certain module cannot
     be changed) restricting the set of actions a user can make or coding styles 
-   they must use. Hence the variation of coding styles we see in our results(??) may 
-   not generalize.
+    they must use. 
   \item This tool seems especially helpful if it suggests that a
-    developer is cloning code which that developer personally wrote in the
-    past.  This is because the developer may not initially recall having written 
-code with duplicate functionality and/or may not be willing to take the time to manually locate it,
-but once the tool suggests the clone they may remember writing it and have no reservations about refactoring that section of code.
-	If the tool suggests an unfamiliar section of code written by another developer, in contrast, the programmer may be less willing to refactor or otherwise modify it.
-	Due to time limitations this scenario may be difficult to
-    induce, as it usually occurs after one has been working on the
-    same project for a long time.
+    developer is cloning code which that developer personally wrote in
+    the past.  Such code would likely be structurally and
+    stylistically similar to the original code. Additionally, the
+    developer may be more likely to refactor or modify the existing
+    code. 
+    %Due to time limitations this
+    %scenario may be difficult to induce, as it usually occurs after
+    %one has been working on the same project for a long time.
+    In contrast, if the tool is able to detect a section of
+    code written by another developer in production code, it may be
+    less beneficial for the developer to refactor or otherwise modify
+    it.
+  \item As the developer is performing relative few tasks, the
+    adaptive ranking system does not have the opportunity to adapt to
+    the developer's preferences.
 \end{itemize}
 
-We believe that the first threat can be mitigated via instructions to
-the study participants. The second factor may require an additional
-investigation where such restrictions are in place.  The third factor
-requires a long-term study over weeks, months, or years.
+%% We believe that the first threat can be mitigated via instructions to
+%% the study participants. The second factor may require an additional
+%% investigation where such restrictions are in place.  The third factor
+%% requires a long-term study over weeks, months, or years.
 
 \section{Related Work}
 \label{sec:related}
