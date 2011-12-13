@@ -512,84 +512,97 @@ may be a bug in how the Alpha channel is handled. There are no public
 unit tests that expose these bugs.
 
 \paragraph{Study Participants}
-The two study participants were computer science graduate students with
-basic experience using both Java and Eclipse.
+The two study participants were a computer science PhD student, and a
+programming intern at the University of Washington. Both participant
+had at least basic experience using both Java and Eclipse.
 
 \subsection{Results}
 
-Table \ref{table:actioncnt} shows a quantitative summary of each
-developers interactions with the tool.
+%% Table \ref{table:actioncnt} shows a quantitative summary of each
+%% developers interactions with the tool.
 
-\begin{table*}[t]
-\begin{center}
-\begin{tabular}{ccc|c|c|c|c|c|}
-\cline{4-7}
-& & & \multicolumn{4}{|c|}{Actions} \\ \cline{2-8}
-& \multicolumn{1}{|c|}{Phase} & \multicolumn{1}{|c|}{\# Views} & \textsc{InsertCall} & \textsc{Extract} & \textsc{JumpTo} & \textsc{Paste} & \multicolumn{1}{|c|}{Develop} \\ \cline{1-8}
-\multicolumn{1}{|c|}{\multirow{2}{*}{Developer 1}} &
-\multicolumn{1}{|c|}{Development} & X & X & X & X & X & X    \\ \cline{2-8}
-\multicolumn{1}{|c|}{}                        &
-\multicolumn{1}{|c|}{Maintenance} & X & X & X & X & X & X  \\ \cline{1-8}
-\multicolumn{1}{|c|}{\multirow{2}{*}{Developer 2}} &
-\multicolumn{1}{|c|}{Development} & X & X & X & X & X & X\\ \cline{2-8}
-\multicolumn{1}{|c|}{}                        &
-\multicolumn{1}{|c|}{Maintenance} & X & X & X & X & X & X\\ \cline{1-8}
-\end{tabular}
-\end{center}
-\caption{Developer actions during the development and maintenance
-  phases of the evaluation. ``\# Views'' is the number of times the
-  developer invoked QuickFix on marker with code clone
-  suggestions. ``Develop'' is the number of times the developer
-  ignored the QuickFix suggestions and then performed a development
-  action.}
-\label{table:actioncnt}
-\end{table*}
+%% \begin{table*}[t]
+%% \begin{center}
+%% \begin{tabular}{ccc|c|c|c|c|c|}
+%% \cline{4-7}
+%% & & & \multicolumn{4}{|c|}{Actions} \\ \cline{2-8}
+%% & \multicolumn{1}{|c|}{Phase} & \multicolumn{1}{|c|}{\# Views} & \textsc{InsertCall} & \textsc{Extract} & \textsc{JumpTo} & \textsc{Paste} & \multicolumn{1}{|c|}{Develop} \\ \cline{1-8}
+%% \multicolumn{1}{|c|}{\multirow{2}{*}{Developer 1}} &
+%% \multicolumn{1}{|c|}{Development} & X & X & X & X & X & X    \\ \cline{2-8}
+%% \multicolumn{1}{|c|}{}                        &
+%% \multicolumn{1}{|c|}{Maintenance} & X & X & X & X & X & X  \\ \cline{1-8}
+%% \multicolumn{1}{|c|}{\multirow{2}{*}{Developer 2}} &
+%% \multicolumn{1}{|c|}{Development} & X & X & X & X & X & X\\ \cline{2-8}
+%% \multicolumn{1}{|c|}{}                        &
+%% \multicolumn{1}{|c|}{Maintenance} & X & X & X & X & X & X\\ \cline{1-8}
+%% \end{tabular}
+%% \end{center}
+%% \caption{Developer actions during the development and maintenance
+%%   phases of the evaluation. ``\# Views'' is the number of times the
+%%   developer invoked QuickFix on marker with code clone
+%%   suggestions. ``Develop'' is the number of times the developer
+%%   ignored the QuickFix suggestions and then performed a development
+%%   action.}
+%% \label{table:actioncnt}
+%% \end{table*}
 
 \subsubsection{Development Results}
-During the development task, we expected to see each participant write two clones.
-We expected our tool to recognize and present the clones to the participants, along with options
-to insert call, extract method, jump to, or paste.  We expected the participants would act on 
-these suggestions, reducing their development time.
+During the development task, we expected that each participant would
+write at least two clones, as the transformation partially duplicated
+the behavior of two existing transformations. Additionally, we
+expected that the tool would detect the codes, and present the four
+actions to the participants, aiding their development.
 
-Participant 1 began development by first looking through the codebase for existing code with similar functionality.
-He searched through several files very closely until he found code in the vision library which consisted of 
-using a kernel to filter pixels of an image.  Because the code used kernels, which he stated he was familiar with, 
-he copied the code manually.  However, because the code that was copied did not perform the task he 
-assumed it would, participant 1 spent a lot of time adapting the code to suit fill the functionality.  The clone
-detector detected this copy-and pasted clone throughout development, but the participant ignored it 
-because he knew the code was duplicated.  When he finished, he moved on to directly writing
-the second part of the task (writing binary symbols), without consulting the rest of the codebase
-further.  His code was very different structurally: It used a switch instead of an if-else, and used several
-methods to draw lines.  As such, the code detector did not detect any duplication in this part
-of the task.  We had to cut him off during debugging because he ran out of time at 40 minutes.
-He stated in his written response that the tool was not useful to him in the development
-task.
+Participant 1 began the development task by first exploring the
+codebase for existing code with similar functionality. He manually
+inspected several files until finding a transformation which applies a
+kernel filter to an image. The participant stated that he was familiar
+with the kernel approach, and copied the code manually. The tool
+detected the copied code in the new file, and alerted the participant,
+frustrating the participant. The participant adapted the code to meet
+the specification. Upon implementing the first stage of the image
+transformation, the participant began implementing the second stage
+without further consulting the codebase. Because the participant's
+implementation differed structurally from behavioral clone in the
+codebase, the detector did not detect any duplication during this
+phase of the task. We stopped the task as the participant was
+debugging the code because 40 minutes had already elapsed, and we were
+confident that no additional code clone information would be detected
+or presented.
 
-Participant 2  began development by examining the short (two line) clone that had been
-marked in the constructor of the development task.  He manually went to the file containing the 
-clone, which he had open side-by-side with his main window throughout the development task.
-The class containing the constructor clone also contained code to write the binary annotations,
-however, because participant 2 never copy-and-pasted or inserted a call to that method,
-we do not believe he recognized it as implementing the same functionality.  He began writing
-the first part of the task, though his code used a different style to the clone,
-such as using collections and a large number of methods such as ``averageColor()" to avoid 
-having unnecessary duplication.  He then proceeded to implement part 2 of the task, again
-using a large number of very short methods.  These structural differences led to our detector
-not being able to recognize that most of his code was functionally a clone.  The participant's code
-had many bugs, and his attempts to use the eclipse debugger to debug them took significant amounts 
-of  time.  He was cut off because he ran out of time at 40 minutes.  The participant indicated
-that he found the tool moderately helpful during development because it pointed him to similar code,
-which allowed him to get a better sense of how APIs are used and code is structured.
+Participant 2 began development by examining 2-line clone that had
+been marked in the constructor of the provided skeleton class.  He
+\textit{manually} opened the system clone in an editor, keeping the
+editor open to the right of the main development window throughout the
+task. Though the class the participant opened contained the
+functionality required for the second stage of the clone, he did not
+notice this -- he instead used the existing code as a reference client
+for calling the image API. The participant's implementation of both
+stages of the image transformation made use of many small helper
+methods, perhaps in an attempt to avoid code duplication; the clone
+detector did not detect any code duplication. As with the first
+participant, we stopped the task as the participant was debugging
+their code because 40 minutes had elapsed, and the code had stabilized
+to the point that we believed no additional code clones would be
+introduced..
 
-These results indicate that this tool is not currently useful for development, at least for
-developers new to a project.  Though the participants did write clones of existing functionality, 
-none of the clone tools we evaluated would be capable of detecting these clones due to the
-extensive structural differences in how the code was written.  Our results also indicate that,
-picking the wrong clone can be very costly, as seen by participant 1, and that even 
-clones with poor scores, such as those in a constructor, can be useful to new developers
-in order to allow them to explore the codebase.  Future work in this area should move toward 
-detecting when code blocks are functionally similar, regardless of the appearance of their source 
-code.
+\paragraph{Participant Feedback}
+Consistent with his observed experience, Participant 1 indicated that
+the tool was not useful during the development task. Participant 2
+reported that the tool was moderately helpful during development for
+pointing him to similar code, showing examples of API usage and code
+structure.
+
+\paragraph{Discussion}
+The results suggest that the tool is not useful for development
+because new developers on a project are unlikely to write code that is
+detectable as a clone, due to differences in both style and
+strategy. Furthermore, the tool can be harmful, as the developer may
+waste time discovering that a near-clone is, in fact, behaviorally
+different than what is required. Future work ought to explore (1) how
+to detect clones that are behaviorally similar, but differ
+structurally, and (2) aide users in understanding the behavior of a
+piece of code, or the difference in behavior between two clones.
 
 \subsection{Maintenance Results}
 During the maintenance task, we expected participants to start in start looking at the code in 
