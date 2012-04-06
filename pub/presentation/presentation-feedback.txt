@@ -1,0 +1,41 @@
+Presentation Feedback from Mike
+
+Again, thanks for your work on the clone detection project.  It's an
+interesting idea and you did a lot of good prototyping to produce a system
+that you could experiment with.  Here are some comments on your
+presentation.
+
+The introduction to the talk felt extremely rushed -- both in the slides
+and in the demo.  As a result, the audience didn't understand the problem
+or your solution very well, and didn't ask as many questions as I would
+have expected.  Please take care with the motivation and framing, or else
+the audience won't appreciate what you are doing, how, or why.  Then, a
+lack of questions indicates not clarity of your presentation, but
+confusion.  Throughout the talk, I got the impression that the audience was
+lost, due to the lack of background and unclear organization.
+
+It was odd that time went *up* on your timeline.  Right would have been
+more standard, and down also acceptable.
+
+The talk needed a list of all possible actions (that the user can take in
+the tool), early on, to prepare the audience for the structure of the
+presentation.  You may have mentioned this, but too briefly and without
+emphasis.  It wasn't even clear what each of the actions meant as you
+introduced them, since the demo had not explained them.  Furthermore, you
+need to justify your list of possible actions by tying it to programmer
+needs and practices.  In fact, start with that.  The best way to motivate
+the tool's capabilities.  is to present the actions as a logical and
+complete response to programmer needs.
+
+When you want to show a code transformation that is performed by your tool
+or a programmer, the best way to do that is to show the before and after
+versions simultaneously, side-by-side.  Otherwise, the audience can't
+easily compare, and if anyone isn't paying strict attention at the moment
+that you switch the slides, they will be lost.
+
+You talked about your successes and failures in terms of your empirical
+evaluation, which I really appreciated.  I would have liked to hear some
+synthesis or lessons learned, from the point of view of the experimenter.
+What are the takeaways regarding tool construction, deployment, and use?
+What do you wish you had known before starting the experiments, or what
+would you do differently if you did it again?
