@@ -39,14 +39,14 @@ suggestions to the developer as (s)he writes and modifies
 code. 
 
 To evaluate the tool, we performed a user study with two participants
-each performing the same development and maintenance task in Eclipse
+each performing both the same development task and maintenance task in Eclipse
 with the tool enabled.  While the tool failed to identify code reuse
 opportunities during the development task, the tool aided one
 participant in locating example API uses. During the maintenance
 task, the tool quickly guided both users to the locations where the
 bug was replicated. Our results confirm that clone detection is
 beneficial during maintenance, but suggest that more sophisticated
-detection is required for development use.
+detection is required for development-time use.
 
 \end{abstract}
 
@@ -64,7 +64,7 @@ application that 79.3\% of commits included modifications to files
 containing code clones, but that only 9.7\% of such commits included
 modifications to files containing the other
 clones suggesting some clones may have erroneously not been updated
-(the minimum clone length considered was 50 characters).
+(the minimum clone length considered was 50 characters)
 ~\cite{Yamashina2008}. 
 In a study of a commercial product line, Li and Ernst report that 4\%
 of bugs were duplicated across at least one product or file;
@@ -113,7 +113,7 @@ The tool suggests two actions that eliminate code duplication:
     method.
 \end{enumerate}
 
-\noindent Additionally, two actions may be suggested to help the developer
+\noindent Additionally, the tool suggests two actions to help the developer
 develop or maintain code with duplication:
 
 \begin{enumerate}
@@ -159,15 +159,15 @@ Section~\ref{sec:conclusion} concludes.
 
 To support the developer actions enumerated in Section~\ref{sec:intro},
 the tool searches the existing codebase for code
-that is similar to the region that is currently being developed or maintained.
-% or regions in the file being maintained. 
+that is similar to the region that is currently being developed or maintained, 
+as determined by the position of the last edit.
 The search is performed using the clone detectors
 described in Section~\ref{sec:detectors}. The clone detection is implemented as
 an Eclipse reconciler, running in the background whenever there
 is a natural pause in typing.
 
 In order to be practical in an online
-setting with a large codebase, the detectors must be
+setting with a large codebase, the detectors should ideally 
 not only be fast, but also
 robust to identifying clones that are more obfuscated than direct
 copying, such as when a programmer re-implements the same
@@ -177,7 +177,7 @@ functionality.
 \subsection{Clone Detectors}
 The tool is designed to perform detection both during development and
 during maintenance.  As such, it may not be possible to parse the source
-file, build an Abstract Syntax Tree (AST), or type the AST. Given this, text-based detectors
+file, build an Abstract Syntax Tree (AST), or resolve types in the AST. Given this, text-based detectors
 are advantageous because they can be run during active
 development. When a program is parsable or compilable,
 more-sophisticated detectors that use ASTs or program
@@ -195,19 +195,21 @@ The tool is currently packaged with three code clone detectors:
 \item Checkstyle~\cite{CheckStyle}: performs a textual comparison on
   the lines of a program
 \item Simian~\cite{Simian}: the Simian software is proprietary (though
-  free for non-commercial use), but it appears the Simian can perform
+  free for non-commercial use), but it appears that Simian can perform
   both textual and AST-based detection.
 \end{enumerate}
 
 All three detectors perform detection over the entire codebase, as
-opposed to searching for clones for a given query. 
- 
-
-%Since both are open source, we can and will optimize the
-% detection for use in our tool, if necessary.  
+opposed to searching for clones for a given query. Due to the
+uneccessary work, the clone detectors cannot run in real-time on codebases
+larger than 5000 SLOC.
 These code clone detectors were selected because they all support Java
-1.5 features (e.g., generics), are Java-based, and are freely
+1.5 features (e.g., generics), have Java APIs, and are freely
 available for at least academic use. 
+Currently, only a single detector can be active at a time. In the
+future, it may be beneficial to run the analyses simultaneously and
+combine results.
+
 %JCCD and Checkstyle are
 %open-source, and therefore can be modified to perform one-way clone
 % search. 
@@ -225,9 +227,6 @@ available for at least academic use.
 %% time our search for a tool for generating detailed Java PDGs has been
 %% unsuccessful.
 
-Currently, only a single detector can be active at a time. In the
-future, it may be beneficial to run the analyses simultaneously and
-combine results.
 
 \subsection{Displaying Suggestions}
 \label{sec:display}
@@ -247,8 +246,8 @@ Figure \ref{fig:screenshot} shows the Eclipse Quick Fix interface.
 \includegraphics[width=80mm]{img/screen1.eps}
 \caption{Eclipse Quick Fix clone suggestions. The color of the icon
   next to a fix differs by clone pair. The right side window shows the
-  other side of the clone, higlighted with additional lines of
-  context, the code to be pasted, or the region to be extracted,
+  other side of the clone, bolded with additional lines of
+  context, the code to be pasted, the region to be extracted,
   or the body of the method call that will be inserted.}
 \label{fig:screenshot}
 \end{figure}
@@ -260,7 +259,8 @@ Therefore, the tool has two modes: development mode and maintenance
 mode.
 In
 development mode, only clones located in the active development area
-are highlighted (as determined by Eclipse's dirty region). In
+are highlighted (as determined by Eclipse's dirty region, the source region
+in which the last edit occured). In
 maintenance mode, all clones located in the file are displayed. The
 developer switches between the two modes using a toolbar button.
 
@@ -334,15 +334,15 @@ distance from the threshold:
 \end{equation*}
 
 \noindent, where 100 is the maximum allowable
-score. If the user selects an action with a score close to, or at, the
-threshold, it has a greater positive effect on the preference than
-when the user selects a ``perfect'' action.
+score. If the user selects an action with a low relevance score, 
+it has a greater positive effect on the preference than
+when the user selects a highly relevant action.
 %Time permitting, we also plan to investigate simple machine learning
 %strategies to base the preference terms $\textsc{Pref}$ on the features of the
 %clone pair as well. The learner may
 %be trained on each individual user to
 %account for different programming styles.
-While a developer's preference for an action may be low, it cannot be
+While $\textsc{Pref}_{action}$ may be low, it cannot be
 negative. Therefore, preference alone cannot preclude a suggestion
 from being shown to the developer: $\textsc{Pref}_{action} > 0 \Rightarrow
 \textsc{Raw}_{\text{action,clone}}\left(1 + \frac{\textsc{Pref}_{\text{action}}}{\sum{\textsc{Pref}}}\right) > \textsc{Raw}_{\text{action,clone}}$.
